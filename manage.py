@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os
 
-environment_file = '.env'
+environment_file = 'sys.env'
 if os.path.exists(environment_file):
     print 'Importing environment from %s ...' % environment_file
     for line in open(environment_file):
