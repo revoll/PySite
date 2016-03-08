@@ -15,8 +15,7 @@ Changelog
 
 2016.01.26  Successed in deploying Nginx+uWSGI+Flask on ubuntu 14.04 OS.
 
-	Liunx系统各种脚本的启动顺序
-	===========================
+	Liunx系统各种脚本的启动顺序:
 	* /etc/default/  -- 
 	* /etc/init.d/   -- 系统各种服务到启动和停止脚本,包含start/stop/restart/reload/force-reload.
 	* /etc/rcS.d/ /etc/rc(0-6).d/ -- 分别代表开机,...

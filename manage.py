@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
 
+"""
 environment_file = 'sys.env'
 if os.path.exists(environment_file):
     print 'Importing environment from %s ...' % environment_file
@@ -14,7 +15,7 @@ if os.path.exists(environment_file):
             os.environ[key] = val
 else:
     print 'No environment file -- %s was found !' % environment_file
-
+"""
 COV = None
 if os.environ.get('FLASK_COVERAGE'):
     import coverage
@@ -77,7 +78,7 @@ def profile(length=25, profile_dir=None):
 def deploy():
     """Run deployment tasks."""
     from flask.ext.migrate import upgrade
-    from app.database.models import Role, User
+    from app.models.user import Role, User
 
     # migrate database to latest revision
     upgrade()

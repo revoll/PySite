@@ -6,6 +6,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.login import LoginManager
 from flask.ext.pagedown import PageDown
 from config import config
+import os
 
 bootstrap = Bootstrap()
 # mail = Mail()
@@ -19,7 +20,8 @@ login_manager.login_view = 'auth.login'
 
 
 def create_app(config_name):
-    app = Flask(__name__, static_url_path='', static_folder='/home/wangkui/p/flasky/app/static')
+    app = Flask(__name__, static_url_path='',
+                static_folder=os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static'))
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 
@@ -53,8 +55,5 @@ def create_app(config_name):
 
     from .movie import movie as movie_blueprint
     app.register_blueprint(movie_blueprint, url_prefix='/movie')
-
-    from .api_1_0 import api as api_1_0_blueprint
-    app.register_blueprint(api_1_0_blueprint, url_prefix='/api/v1.0')
 
     return app

@@ -10,11 +10,11 @@
             // 第1个参数是加载编辑器div容器，第2个参数是编辑器类型，第3个参数是div容器宽，第4个参数是div容器高
             xiuxiu.embedSWF("altContent", 5, "100%", "100%");
             // 修改为您自己的图片上传接口
-            xiuxiu.setUploadURL('{{ url_for('user.upload_avatar', _external=True) }}');
+            xiuxiu.setUploadURL('{{ url_for('upload.upload_avatar', _external=True) }}');
             xiuxiu.setUploadType(2);
             xiuxiu.setUploadDataFieldName("upload_file");
             xiuxiu.onInit = function () {
-                xiuxiu.loadPhoto('{{ avatar_url }}');
+                xiuxiu.loadPhoto('{{ url_for('upload.upload_avatar', _external=True, hash=current_user.avatar_hash) }}');
             };
             xiuxiu.onUploadResponse = function (data) {
                 // 上传完成的返回消息,可以开启调试

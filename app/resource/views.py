@@ -2,13 +2,12 @@
 import os
 import uuid
 
-from flask import request, current_app, send_file, url_for, render_template
-
+from flask import request, current_app, send_file, render_template
 from flask.ext.login import login_required, current_user
 
 from .. import db
 from . import upload, image
-from ..utils.images import quadrating_image, thumbnail_image
+from ..utils import quadrating_image, thumbnail_image
 
 """
 资源文件服务:
@@ -20,7 +19,6 @@ from ..utils.images import quadrating_image, thumbnail_image
 * /page/...
 """
 
-global _avatar_fault_timestamp
 _avatar_fault_timestamp = '2016-00-00'
 
 
@@ -54,8 +52,7 @@ def upload_avatar(max_size=256):
         # return redirect(url_for('user_np.profile'))
         return 'success'
     else:
-        avatar_url = url_for('resource.avatar', _external=True, hash=current_user.avatar_hash)
-        return render_template('user/edit_avatar.html', avatar_url=avatar_url)
+        return render_template('user/edit_avatar.html')
 
 
 @image.route('/avatar/<hash>')  # /img/avatar/<hash>?size=xxx
