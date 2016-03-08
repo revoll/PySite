@@ -5,14 +5,23 @@ from flask.ext.moment import Moment
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.login import LoginManager
 from flask.ext.pagedown import PageDown
+from flask.ext.uploads import configure_uploads, patch_request_class, UploadSet
 from config import config
 import os
+
+
+base_dir = os.path.abspath(os.path.dirname(__file__))
 
 bootstrap = Bootstrap()
 # mail = Mail()
 moment = Moment()
 db = SQLAlchemy()
 pagedown = PageDown()
+
+us_image = UploadSet('img', extensions=tuple('bmp jpg png'.split()),
+                     default_dest=lambda a: os.path.join(base_dir, 'static/img'))
+us_files = UploadSet('files', extensions=tuple('txt doc xls ppt'.split()),
+                     default_dest=lambda a: os.path.join(base_dir, 'static/files'))
 
 login_manager = LoginManager()
 login_manager.session_protection = 'strong'
@@ -21,7 +30,7 @@ login_manager.login_view = 'auth.login'
 
 def create_app(config_name):
     app = Flask(__name__, static_url_path='',
-                static_folder=os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static'))
+                static_folder=os.path.join(base_dir, 'static'))
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 
@@ -31,6 +40,9 @@ def create_app(config_name):
     db.init_app(app)
     login_manager.init_app(app)
     pagedown.init_app(app)
+
+    configure_uploads(app, (us_image, us_files))
+    patch_request_class(app, 32 * 1024 * 1024)  # 32MB Max
 
     if not app.debug and not app.testing and not app.config['SSL_DISABLE']:
         from flask.ext.sslify import SSLify

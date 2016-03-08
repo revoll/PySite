@@ -4,15 +4,18 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class Config:
+    """ Application Configurations """
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess string'  # JSON Auth in User.py
     SSL_DISABLE = True
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_RECORD_QUERIES = True
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
     MAIL_SERVER = os.environ.get('MAIL_SERVER')
     MAIL_PORT = int(os.environ.get('MAIL_PORT', 25))
     MAIL_USE_TLS = True
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+
     FLASKY_ADMIN = '17717529317@163.com'
     FLASKY_MAIL_SUBJECT_PREFIX = ''
     FLASKY_MAIL_SENDER = 'Flasky Admin <17717529317@163.com>'
@@ -21,6 +24,18 @@ class Config:
     FLASKY_FOLLOWERS_PER_PAGE = 50
     FLASKY_COMMENTS_PER_PAGE = 30
     FLASKY_SLOW_DB_QUERY_TIME = 0.5
+
+    """ Configurations of Flask-Uploads module
+    UPLOADS_DEFAULT_DEST = os.path.join(basedir, 'app/static')
+    UPLOADS_DEFAULT_URL = ''
+    UPLOADED_FILES_DEST = ''
+    UPLOADED_FILES_URL = ''
+    UPLOADED_FILES_ALLOW = ''
+    UPLOADED_FILES_DENY = ''
+    UPLOADED_IMG_DEST = ''
+    UPLOADED_IMG_URL = ''
+    UPLOADED_IMG_ALLOW = tuple('bmp jpg jpeg jpe png tiff'.split())
+    UPLOADED_IMG_DENY = '' """
 
     @staticmethod
     def init_app(app):

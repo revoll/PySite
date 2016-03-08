@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 import os
+from app import create_app, db
+from app.models.user import User, Follow, Role, Permission
+from app.models.blog import Post, Comment
+from flask.ext.script import Manager, Shell
+from flask.ext.migrate import Migrate, MigrateCommand
+
 
 """
 environment_file = 'sys.env'
@@ -16,6 +22,7 @@ if os.path.exists(environment_file):
 else:
     print 'No environment file -- %s was found !' % environment_file
 """
+
 COV = None
 if os.environ.get('FLASK_COVERAGE'):
     import coverage
@@ -23,11 +30,6 @@ if os.environ.get('FLASK_COVERAGE'):
     COV = coverage.coverage(branch=True, include='app/*')
     COV.start()
 
-from app import create_app, db
-from app.models.user import User, Follow, Role, Permission
-from app.models.blog import Post, Comment
-from flask.ext.script import Manager, Shell
-from flask.ext.migrate import Migrate, MigrateCommand
 
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
 manager = Manager(app)

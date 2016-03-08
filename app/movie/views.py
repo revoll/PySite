@@ -40,3 +40,17 @@ def delete(id):
 def delete_still(id):
     pass
 """
+from flask import request, redirect, render_template, url_for, flash
+from . import movie
+from .. import us_image
+
+
+@movie.route('/upload', methods=['GET', 'POST'])
+def upload():
+    if request.method == 'POST' and 'photo' in request.files:
+        filename = us_image.save(request.files['photo'])
+        # rec = Photo(filename=filename, user=g.user.id)
+        # rec.store()
+        flash("Photo saved.")
+        # return redirect(url_for('show', id=rec.id))
+    return render_template('movie/upload.html')
