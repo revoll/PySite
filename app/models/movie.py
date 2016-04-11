@@ -5,6 +5,13 @@ from .. import db
 from ..models.user import User
 
 
+str_country = u'中国大陆,香港,台湾,\
+            美国,日本,英国,法国,韩国,德国,意大利,印度,泰国,西班牙,欧洲,加拿大,澳大利亚,俄罗斯,伊朗,爱尔兰,\
+            瑞典,巴西,波兰,丹麦,捷克,阿根廷,比利时,墨西哥,奥地利,荷兰,新西兰,土耳其,匈牙利,以色列,新加坡'
+
+str_movie_type = u'动作与历险,儿童与家庭,喜剧,剧情,爱情,恐怖与惊悚,科幻与奇幻,记录与传记,动画,情色,其他'
+
+
 class Poster(db.Model):
     __tablename__ = 'posters'
     id = db.Column(db.Integer, primary_key=True)
@@ -78,20 +85,13 @@ class Country(db.Model):
 
     @staticmethod
     def insert_countries():
-        str_country = u'中国大陆,香港,台湾,\
-            美国,日本,英国,法国,韩国,德国,意大利,印度,泰国,西班牙,欧洲,加拿大,澳大利亚,俄罗斯,伊朗,爱尔兰,\
-            瑞典,巴西,波兰,丹麦,捷克,阿根廷,比利时,墨西哥,奥地利,荷兰,新西兰,土耳其,匈牙利,以色列,新加坡'
-        countries = str_country.split(',')
+        countries = str_country.split(u',')
         for c in countries:
             country = Country.query.filter_by(name=c).first()
             if country is None:
                 country = Country(name=c)
             db.session.add(country)
         db.session.commit()
-
-    @staticmethod
-    def get_country_list():
-        return Country.query.all()
 
 
 class MovieType(db.Model):
@@ -102,18 +102,13 @@ class MovieType(db.Model):
 
     @staticmethod
     def insert_types():
-        str_type = u'动作与历险,儿童与家庭,喜剧,剧情,爱情,恐怖与惊悚,科幻与奇幻,记录与传记,动画,情色,其他'
-        types = str_type.split(',')
+        types = str_movie_type.split(u',')
         for t in types:
             type = MovieType.query.filter_by(name=t).first()
             if type is None:
                 type = MovieType(name=t)
             db.session.add(type)
         db.session.commit()
-
-    @staticmethod
-    def get_types_list():
-        return MovieType.query.all()
 
 
 class Still(db.Model):

@@ -2,29 +2,22 @@
 from flask.ext.wtf import Form
 from wtforms import StringField, TextAreaField, SelectField, \
     SubmitField, DateField, IntegerField, FileField
-from wtforms.validators import Required, Length
-
-from ..models.movie import MovieType, Country
+from wtforms.validators import DataRequired, Length
+from ..models.movie import str_country, str_movie_type
 
 
 def make_country_options():
-    country_list = Country.get_country_list()
-    options = []
-    for item in country_list:
-        options.append((country_list[item], item))
-    return options
+    country_list = str_country.split(u',')
+    return [(country_list[i], i) for i in range(0, len(country_list))]
 
 
 def make_types_options():
-    types_list = MovieType.get_types_list()
-    options = []
-    for item in types_list:
-        options.append((types_list[item], item))
-    return options
+    types_list = str_movie_type.split(u',')
+    return [(types_list[i], i) for i in range(0, len(types_list))]
 
 
 class PosterForm(Form):
-    name = StringField(u'电影名', validators=[Required(), Length(0, 100)])
+    name = StringField(u'电影名', validators=[DataRequired(), Length(0, 100)])
     alisa = StringField(u'翻译', validators=[Length(0, 100)])
     director = StringField(u'导演', validators=[Length(0, 20)])
     performers = StringField(u'主演', validators=[Length(0, 180)])
@@ -35,6 +28,7 @@ class PosterForm(Form):
     douban_link = StringField(u'豆瓣链接', validators=[Length(0, 20)])
     introduction = TextAreaField()
     submit = SubmitField(u'Submit')
+
 
 class StillForm(Form):
     images = FileField()
