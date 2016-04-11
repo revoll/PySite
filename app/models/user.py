@@ -19,20 +19,6 @@ class Permission:
     ADMINISTER = 0x80000000
 
 
-global roles
-roles = {
-    'User': (Permission.FOLLOW |
-             Permission.COMMENT |
-             Permission.WRITE_ARTICLES, True),
-    'Moderator': (Permission.FOLLOW |
-                  Permission.COMMENT |
-                  Permission.WRITE_ARTICLES |
-                  Permission.MODERATE_COMMENTS |
-                  Permission.DELETE_COMMENT, False),
-    'Administrator': (0xffffffff, False)
-}
-
-
 class Role(db.Model):
     __tablename__ = 'roles'
     id = db.Column(db.Integer, primary_key=True)
@@ -43,7 +29,16 @@ class Role(db.Model):
 
     @staticmethod
     def insert_roles():
-        global roles
+        roles = {
+            'User': (Permission.FOLLOW |
+                     Permission.COMMENT |
+                     Permission.WRITE_ARTICLES, True),
+            'Moderator': (Permission.FOLLOW |
+                          Permission.COMMENT |
+                          Permission.WRITE_ARTICLES |
+                          Permission.MODERATE_COMMENTS, False),
+            'Administrator': (0xff, False)
+        }
         for r in roles:
             role = Role.query.filter_by(name=r).first()
             if role is None:
@@ -80,7 +75,6 @@ class User(UserMixin, db.Model):
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
     avatar_hash = db.Column(db.String(32))
-
     followed = db.relationship('Follow',
                                foreign_keys=[Follow.follower_id],
                                backref=db.backref('follower', lazy='joined'),
@@ -93,6 +87,8 @@ class User(UserMixin, db.Model):
                                 cascade='all, delete-orphan')
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     comments = db.relationship('Comment', backref='author', lazy='dynamic')
+    posters = db.relationship('Poster', backref='author', lazy='dynamic')
+    stills = db.relationship('Still', backref='author', lazy='dynamic')
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -190,8 +186,8 @@ class User(UserMixin, db.Model):
         #    url = 'http://www.gravatar.com/avata'
         hash = self.avatar_hash or hashlib.md5(
             self.email.encode('utf-8')).hexdigest()
-        return '{url}{hash}?s={size}'.format(
-            url=url_for('image.avatar', hash=''), hash=hash, size=size)
+        return '{url}?s={size}'.format(
+            url=url_for('main.get_avatar', ava_hash=hash), size=size)
 
     def follow(self, user):
         if not self.is_following(user):

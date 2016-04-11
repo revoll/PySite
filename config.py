@@ -20,22 +20,11 @@ class Config:
     FLASKY_MAIL_SUBJECT_PREFIX = ''
     FLASKY_MAIL_SENDER = 'Flasky Admin <17717529317@163.com>'
     FLASKY_MAIL_NOTIFICATION = os.environ.get('FLASKY_MAIL_NOTIFICATION')
+    FLASKY_SLOW_DB_QUERY_TIME = 0.5
     FLASKY_POSTS_PER_PAGE = 20
     FLASKY_FOLLOWERS_PER_PAGE = 50
     FLASKY_COMMENTS_PER_PAGE = 30
-    FLASKY_SLOW_DB_QUERY_TIME = 0.5
-
-    """ Configurations of Flask-Uploads module
-    UPLOADS_DEFAULT_DEST = os.path.join(basedir, 'app/static')
-    UPLOADS_DEFAULT_URL = ''
-    UPLOADED_FILES_DEST = ''
-    UPLOADED_FILES_URL = ''
-    UPLOADED_FILES_ALLOW = ''
-    UPLOADED_FILES_DENY = ''
-    UPLOADED_IMG_DEST = ''
-    UPLOADED_IMG_URL = ''
-    UPLOADED_IMG_ALLOW = tuple('bmp jpg jpeg jpe png tiff'.split())
-    UPLOADED_IMG_DENY = '' """
+    FLASKY_POSTERS_PER_PAGE = 20
 
     @staticmethod
     def init_app(app):

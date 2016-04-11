@@ -1,8 +1,8 @@
-{% extends "base.html" %}
+{% extends "common/base.html" %}
+{% import "common/macros.html" as macros %}
 {% import "bootstrap/wtf.html" as wtf %}
-{% import "_macros.html" as macros %}
 
-{% block title %}Flasky - Post{% endblock %}
+{% block title %}Blog - Post{% endblock %}
 
 {% block page_content %}
     {% include 'blog/_posts.html' %}

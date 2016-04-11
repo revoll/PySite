@@ -1,7 +1,7 @@
-{% extends "base.html" %}
+{% extends "common/base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
 
-{% block title %}Flasky - Edit Post{% endblock %}
+{% block title %}Blog - Edit Post{% endblock %}
 
 {% block page_content %}
     <div class="page-header">
@@ -14,5 +14,6 @@
 
 {% block scripts %}
     {{ super() }}
-    {{ pagedown.include_pagedown() }}
+    <script src="{{ url_for('static', filename='js/Markdown.Converter.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/Markdown.Sanitizer.min.js') }}"></script>
 {% endblock %}

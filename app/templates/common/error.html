@@ -1,0 +1,11 @@
+{% extends "common/base.html" %}
+
+{% block title %}PySite - {{ code }}: {{ name }}{% endblock %}
+
+{% block page_content %}
+    <div class="page-header">
+        <h1>{{ code }}: {{ name }}</h1>
+
+        <p>{{ description }}</p>
+    </div>
+{% endblock %}
