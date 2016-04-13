@@ -3,6 +3,7 @@ from flask.ext.wtf import Form
 from wtforms import StringField, TextAreaField, SelectField, \
     SubmitField, DateField, IntegerField, FileField
 from wtforms.validators import DataRequired, Length
+
 from ..models.movie import str_country, str_movie_type
 
 
@@ -17,6 +18,7 @@ def make_types_options():
 
 
 class PosterForm(Form):
+    poster = FileField()
     name = StringField(u'电影名', validators=[DataRequired(), Length(0, 100)])
     alisa = StringField(u'翻译', validators=[Length(0, 100)])
     director = StringField(u'导演', validators=[Length(0, 20)])

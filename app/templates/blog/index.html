@@ -1,7 +1,8 @@
 {% extends "common/base.html" %}
 {% import "common/macros.html" as macros %}
+{% import "bootstrap/wtf.html" as wtf %}
 
-{% block title %}Movie - Index{% endblock %}
+{% block title %}Blog - Index{% endblock %}
 
 {% block page_content %}
     <div class="page-header">
@@ -21,15 +22,17 @@
                 </li>
             {% endif %}
         </ul>
-        {% include 'movie/_posters.html' %}
+        {% include 'blog/_posts.html' %}
     </div>
     {% if pagination %}
         <div class="pagination">
-            {{ macros.pagination_widget(pagination, 'movie.index') }}
+            {{ macros.pagination_widget(pagination, 'blog.index') }}
         </div>
     {% endif %}
 {% endblock %}
 
 {% block scripts %}
     {{ super() }}
+    <script src="{{ url_for('static', filename='js/Markdown.Converter.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/Markdown.Sanitizer.min.js') }}"></script>
 {% endblock %}

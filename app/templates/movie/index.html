@@ -1,0 +1,40 @@
+{% extends "common/base.html" %}
+{% import "common/macros.html" as macros %}
+
+{% block title %}Movie - Index{% endblock %}
+
+{% block page_content %}
+    <div class="page-header">
+        <h1>Hello, {% if current_user.is_authenticated %}{{ current_user.username }}{% else %}Stranger{% endif %}!</h1>
+    </div>
+    <div class="poster-tabs">
+        <ul class="posters">
+            {% for poster in posters %}
+                <li class="poster">
+                    <h2>Name: {{ poster.name }}</h2>
+
+                    <h3>Alias: {{ poster.alias }}</h3>
+                    <h4>Director: {{ poster.director }}</h4>
+                    <h4>Performers: {{ poster.performers }}</h4>
+                    <h4>Length: {{ poster.length }}</h4>
+                    <h4>Release: {{ poster.release_date }}</h4>
+                    <h4>Douban: {{ poster.douban_link }}</h4>
+                    <h4>Type: {{ poster.type.name }}</h4>
+                    <h4>Country: {{ poster.country.name }}</h4>
+                    <h4>Author: {{ poster.author.name }}</h4>
+                    <h4>TimeStamp: {{ poster.timestamp }}</h4>
+                    <h4>Introduction: {{ poster.introduction }}</h4>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% if pagination %}
+        <div class="pagination">
+            {{ macros.pagination_widget(pagination, 'movie.index') }}
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+{% endblock %}

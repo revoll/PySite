@@ -1,13 +1,14 @@
 # encoding: utf-8
 from datetime import datetime
 
+from flask import url_for
+
 from .. import db
 from ..models.user import User
 
-
-str_country = u'中国大陆,香港,台湾,\
-            美国,日本,英国,法国,韩国,德国,意大利,印度,泰国,西班牙,欧洲,加拿大,澳大利亚,俄罗斯,伊朗,爱尔兰,\
-            瑞典,巴西,波兰,丹麦,捷克,阿根廷,比利时,墨西哥,奥地利,荷兰,新西兰,土耳其,匈牙利,以色列,新加坡'
+str_country = u'中国大陆,香港,台湾,' \
+              u'美国,日本,英国,法国,韩国,德国,意大利,印度,泰国,西班牙,欧洲,加拿大,澳大利亚,俄罗斯,伊朗,爱尔兰,' \
+              u'瑞典,巴西,波兰,丹麦,捷克,阿根廷,比利时,墨西哥,奥地利,荷兰,新西兰,土耳其,匈牙利,以色列,新加坡'
 
 str_movie_type = u'动作与历险,儿童与家庭,喜剧,剧情,爱情,恐怖与惊悚,科幻与奇幻,记录与传记,动画,情色,其他'
 
@@ -40,18 +41,18 @@ class Poster(db.Model):
         num_author = User.query.count()
         for i in range(count):
             p = Poster()
-            p.name = forgery_py.lorem_ipsum.title(),
-            p.alias = '(Empty)',
-            p.director = forgery_py.name.full_name(),
-            p.performers = forgery_py.name.full_name() + '/' + forgery_py.name.full_name() + '/' + forgery_py.name.full_name(),
-            p.length = randint(90, 180),
-            p.release_date = forgery_py.date.date(),
-            p.douban_link = 'http://movie.douban.com/' + forgery_py.internet.domain_name(),
-            p.type_id = randint(0, num_type),
-            p.country_id = randint(0, num_country),
-            p.author_id = randint(0, num_author),
+            p.name = forgery_py.lorem_ipsum.title()
+            p.alias = u'(Empty)'
+            p.director = forgery_py.name.full_name()
+            p.performers = forgery_py.name.full_name() + u'/' + forgery_py.name.full_name() + u'/' + forgery_py.name.full_name()
+            p.length = randint(90, 180)
+            p.release_date = forgery_py.date.date()
+            p.douban_link = u'http://movie.douban.com/' + forgery_py.internet.domain_name()
+            p.type_id = randint(0, num_type)
+            p.country_id = randint(0, num_country)
+            p.author_id = randint(0, num_author)
             p.timestamp = forgery_py.date.date(True)
-            p.introduction = forgery_py.lorem_ipsum.sentence(randint(1, 5))
+            p.introduction = forgery_py.lorem_ipsum.sentences(randint(1, 5))
             db.session.add(p)
         try:
             db.session.commit()
@@ -70,7 +71,7 @@ class Poster(db.Model):
             'douban_link': self.douban_link,
             'type': MovieType.query.filter_by(id=self.type_id).first().name,
             'country': Country.query.filter_by(id=self.country_id).first().name,
-            # 'author': url_for('api.get_user', id=self.author_id, _external=True),
+            'author': url_for('api.get_user', id=self.author_id, _external=True),
             'introduction': self.introduction,
             'timestamp': self.timestamp
         }

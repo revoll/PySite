@@ -104,7 +104,7 @@ def edit_profile():
         current_user.about_me = form.about_me.data
         db.session.add(current_user)
         flash('Your profile has been updated.')
-        return redirect(url_for('user_np.profile', username=current_user.username))
+        return redirect(url_for('main.profile', username=current_user.username))
     form.name.data = current_user.name
     form.location.data = current_user.location
     form.about_me.data = current_user.about_me
@@ -127,7 +127,7 @@ def edit_profile_admin(id):
         user.about_me = form.about_me.data
         db.session.add(user)
         flash('The profile has been updated.')
-        return redirect(url_for('user_np.profile', username=user.username))
+        return redirect(url_for('main.profile', username=user.username))
     form.email.data = user.email
     form.username.data = user.username
     form.confirmed.data = user.confirmed
@@ -148,10 +148,10 @@ def follow(username):
         return redirect(url_for('.index'))
     if current_user.is_following(user):
         flash('You are already following this user.')
-        return redirect(url_for('user_np.profile', username=username))
+        return redirect(url_for('main.profile', username=username))
     current_user.follow(user)
     flash('You are now following %s.' % username)
-    return redirect(url_for('user_np.profile', username=username))
+    return redirect(url_for('main.profile', username=username))
 
 
 @main.route('/unfollow/<username>')
@@ -164,10 +164,10 @@ def unfollow(username):
         return redirect(url_for('.index'))
     if not current_user.is_following(user):
         flash('You are not following this user.')
-        return redirect(url_for('user_np.profile', username=username))
+        return redirect(url_for('main.profile', username=username))
     current_user.unfollow(user)
     flash('You are not following %s anymore.' % username)
-    return redirect(url_for('user_np.profile', username=username))
+    return redirect(url_for('main.profile', username=username))
 
 
 @main.route('/followers/<username>')
@@ -207,17 +207,17 @@ def followed_by(username):
 @main.route('/init-db')
 def init_db():
     from .. import db
-    from ..models.user import Role, User
-    from ..models.blog import Post
+    from ..models.user import Role
     from ..models.movie import Country, MovieType
 
-    db.drop_all()
+    # db.drop_all()
     db.create_all()
     Role.insert_roles()
     Country.insert_countries()
     MovieType.insert_types()
-    User.generate_fake()
-    Post.generate_fake()
+    # User.generate_fake()
+    # Post.generate_fake()
+    # Poster.generate_fake()
     flash('init db with success.')
 
     return redirect(url_for('.index'))
