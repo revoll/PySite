@@ -1,10 +1,10 @@
 # encoding: utf-8
 from flask.ext.wtf import Form
 from wtforms import StringField, TextAreaField, SelectField, \
-    SubmitField, DateField, IntegerField, FileField
+    SubmitField, FileField
 from wtforms.validators import DataRequired, Length
 
-from ..models.movie import str_country, str_movie_type
+from ..models.movie import str_movie_type
 
 
 def make_types_options():

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>新建海报</title>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+    <!--[if lt IE 9]>
+	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
+    <style type="text/css">
+        body {
+            font-family: "Segoe UI", "Lucida Grande", Helvetica, Arial, "Microsoft YaHei", FreeSans, Arimo,
+            "Droid Sans", "wenquanyi micro hei", "Hiragino Sans GB", "Hiragino Sans GB W3", Arial, sans-serif;
+        }
+
+        .cards-container {
+            width: 100%;
+        }
+
+        .poster-card {
+            -webkit-box-shadow: 3px 3px 3px #ddd;
+            -moz-box-shadow: 3px 3px 3px #ddd;
+            box-shadow: 3px 3px 3px #ddd;
+        }
+
+        .poster-card-wrapper {
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 9px;
+            min-width: 750px;
+        }
+
+        .poster-card .poster-image {
+            float: left;
+            width: 240px;
+        }
+
+        .poster-card .info-wrapper {
+            padding-left: 280px;
+            width: 100%;
+            min-height: 260px;
+        }
+
+        .poster-card .edit-card {
+            position: absolute;
+            width: 50px;
+            height: 35px;
+            right: 0;
+            top: 0;
+        }
+    </style>
+</head>
+<body>
+<div class="navbar navbar-inverse" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="./movie.html">PySite</a>
+        </div>
+        <div class="navbar-collapse collapse">
+        </div>
+    </div>
+</div>
+
+<div class="cards-container">
+
+    <div class="poster-card" id="card-01">
+        <canvas id="canvas-01" style="position: absolute; display: none;"></canvas>
+        <div class="container">
+            <div class="poster-card-wrapper">
+                <a class="btn btn-default" style="width: 20px; height: 20px; position:absolute;"
+                   href="/movie/edit-poster"></a>
+                <a href="/movie/edit-poster">
+                    <img class="poster-image" src="img/p2326843219.jpg" id="image-01"/>
+                </a>
+
+                <div class="info-wrapper">
+                    <h1><a href="https://movie.douban.com/subject/25757186/?from=showing" role="button">伦敦陷落</a>
+                        <small>LONDON HAS FALLEN</small>
+                    </h1>
+
+                    <p><b>导演：</b>巴巴克·纳加非</p>
+
+                    <p><b>主演：</b>杰拉德·巴特勒 / 艾伦·艾克哈特 / 摩根·弗里曼 / 阿隆·阿布布尔 / 安吉拉·贝塞特 / 更多...</p>
+
+                    <p><b>时长：</b>98分钟(中国大陆) / 99分钟</p>
+
+                    <p><b>类型：</b>动作 / 惊悚 / 犯罪</p>
+
+                    <p><b>地区：</b>英国 / 美国 / 保加利亚</p>
+
+                    <p><b>上映日期：</b>2016-04-08(中国大陆) / 2016-03-04(美国/英国)</p>
+
+                    <p><b>豆瓣链接：</b>https://movie.douban.com/subject/25757186/?from=showing</p>
+
+                    <p><b>别名：</b>白宫沦陷2：伦敦沦陷(港) / 全面攻占2：伦敦救援(台)</p>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="poster-card" id="card-00">
+        <canvas id="canvas-00" style="position: absolute; display: none;"></canvas>
+        <div class="container">
+            <div class="poster-card-wrapper">
+                <a class="btn btn-default" style="width: 20px; height: 20px; position:absolute;"
+                   href="/movie/edit-poster"></a>
+                <a href="/movie/edit-poster">
+                    <img class="poster-image" src="img/p2327611337.jpg" id="image-00"/>
+                </a>
+
+                <div class="info-wrapper">
+                    <h1><a href="https://movie.douban.com/subject/25757186/?from=showing" role="button">伦敦陷落</a>
+                        <small>LONDON HAS FALLEN</small>
+                    </h1>
+
+                    <p><b>导演：</b>巴巴克·纳加非</p>
+
+                    <p><b>主演：</b>杰拉德·巴特勒 / 艾伦·艾克哈特 / 摩根·弗里曼 / 阿隆·阿布布尔 / 安吉拉·贝塞特 / 更多...</p>
+
+                    <p><b>时长：</b>98分钟(中国大陆) / 99分钟</p>
+
+                    <p><b>类型：</b>动作 / 惊悚 / 犯罪</p>
+
+                    <p><b>地区：</b>英国 / 美国 / 保加利亚</p>
+
+                    <p><b>上映日期：</b>2016-04-08(中国大陆) / 2016-03-04(美国/英国)</p>
+
+                    <p><b>豆瓣链接：</b>https://movie.douban.com/subject/25757186/?from=showing</p>
+
+                    <p><b>别名：</b>白宫沦陷2：伦敦沦陷(港) / 全面攻占2：伦敦救援(台)</p>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="js/jquery-2.2.2.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/StackBlur.js"></script>
+<script type="text/javascript">
+    $(window).load(function () {
+
+        var div2 = document.getElementById('card-01');
+        var w2 = div2.offsetWidth;
+        var h2 = div2.offsetHeight;
+        var canvas2 = document.getElementById('canvas-01');
+        canvas2.width = w2;
+        canvas2.height = h2;
+        stackBlurImage_FillMode('image-01', 'canvas-01', 100, false);
+        div2.style.backgroundImage = 'url(' + canvas2.toDataURL('image/png') + ')';
+
+
+        var div1 = document.getElementById('card-00');
+        var w1 = div1.offsetWidth;
+        var h1 = div1.offsetHeight;
+        var canvas1 = document.getElementById('canvas-00');
+        canvas1.width = w1;
+        canvas1.height = h1;
+        stackBlurImage_FillMode('image-00', 'canvas-00', 100, false);
+        div1.style.backgroundImage = 'url(' + canvas1.toDataURL('image/png') + ')';
+
+
+    });
+</script>
+</body>
+</html>
