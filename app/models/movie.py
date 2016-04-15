@@ -12,7 +12,8 @@ str_movie_type = u'动作与历险,儿童与家庭,喜剧,剧情,爱情,恐怖�
 class Poster(db.Model):
     __tablename__ = 'posters'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), unique=True)
+    name = db.Column(db.String(50), unique=True)
+    o_name = db.Column(db.String(50))
     alias = db.Column(db.String(160))
     director = db.Column(db.String(20))
     performers = db.Column(db.String(180))
@@ -37,6 +38,7 @@ class Poster(db.Model):
         for i in range(count):
             p = Poster()
             p.name = forgery_py.lorem_ipsum.title()
+            p.o_name = forgery_py.lorem_ipsum.title()
             p.alias = u'(Empty)'
             p.director = forgery_py.name.full_name()
             p.performers = forgery_py.name.full_name() + u'/' + forgery_py.name.full_name() + u'/' + forgery_py.name.full_name()

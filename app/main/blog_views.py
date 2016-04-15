@@ -94,14 +94,13 @@ def edit(id):
 @blog.route('/delete/<int:id>')
 @login_required
 def delete(id):
-    redirect_url = request.args.get('redirect')
     post = Post.query.get_or_404(id)
     user = current_user._get_current_object()
+    redirect_url = request.args.get('redirect', url_for('main.profile', username=user.username))
     if user.id == post.author_id or user.can(Permission.DELETE_POST):
         db.session.delete(post)
         flash('Post ({0}) is deleted.'.format(str(id)))
-    return redirect(redirect_url) if redirect_url is not None \
-        else redirect(url_for('main.profile', username=user.username))
+    return redirect(redirect_url)
 
 
 @blog.route('/delete-comment/<int:id>')
