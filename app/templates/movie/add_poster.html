@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title></title>
-</head>
-<body>
+{% extends "common/base.html" %}
+{% import "common/wtf.html" as wtf %}
 
-</body>
-</html>
+{% block title %}Add Poster{% endblock %}
+
+    {% block page_content %}
+        {{ wtf.quick_form(form, action=url_for('movie.add_poster')) }}
+    {% endblock %}

@@ -1,10 +1,15 @@
 # encoding: utf-8
 from datetime import datetime
-
 from flask import url_for
-
 from .. import db
 from ..models.user import User
+
+
+"""
+str_country = u'中国大陆,香港,台湾,' \
+              u'美国,日本,英国,法国,韩国,德国,意大利,印度,泰国,西班牙,欧洲,加拿大,澳大利亚,俄罗斯,伊朗,爱尔兰,' \
+              u'瑞典,巴西,波兰,丹麦,捷克,阿根廷,比利时,墨西哥,奥地利,荷兰,新西兰,土耳其,匈牙利,以色列,新加坡'
+"""
 
 str_movie_type = u'动作与历险,儿童与家庭,喜剧,剧情,爱情,恐怖与惊悚,科幻与奇幻,记录与传记,动画,情色,其他'
 
@@ -15,12 +20,12 @@ class Poster(db.Model):
     name = db.Column(db.String(50), unique=True)
     o_name = db.Column(db.String(50))
     alias = db.Column(db.String(160))
-    director = db.Column(db.String(20))
-    performers = db.Column(db.String(180))
+    director = db.Column(db.String(40))
+    performers = db.Column(db.String(200))
     length = db.Column(db.String(60))
     release_date = db.Column(db.String(60))
+    country = db.Column(db.String(100))
     douban_link = db.Column(db.String(80))
-    country = db.Column(db.String(120))
     type_id = db.Column(db.Integer, db.ForeignKey('movie_type.id'))
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
@@ -57,22 +62,24 @@ class Poster(db.Model):
             db.session.rollback()
 
     def to_json(self):
-        json_post = {
-            # 'url': url_for('api.get_poster', id=self.id, _external=True),
+        json_poster = {
+            'url': '',  # url_for('movie.poster', poster_id=self.id, _external=True),
             'name': self.name,
+            'original': self.o_name,
             'alias': self.alias,
             'director': self.director,
             'performers': self.performers,
             'length': self.length,
             'release_date': self.release_date,
             'douban_link': self.douban_link,
-            'type': MovieType.query.filter_by(id=self.type_id).first().name,
+            'type': self.type.name,
             'country': self.country,
             'author': url_for('api.get_user', id=self.author_id, _external=True),
             'introduction': self.introduction,
+            'stills': '',  # url_for('movie.poster_stills', poster_id=self.id, _external=True),
             'timestamp': self.timestamp
         }
-        return json_post
+        return json_poster
 
 
 class MovieType(db.Model):
@@ -95,49 +102,36 @@ class MovieType(db.Model):
 class Still(db.Model):
     __tablename__ = 'stills'
     id = db.Column(db.Integer, primary_key=True)
+    timeline = db.Column(db.Integer, default=0)
     comment = db.Column(db.Text)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     poster_id = db.Column(db.Integer, db.ForeignKey('posters.id'))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
-
-"""
-str_country = u'中国大陆,香港,台湾,' \
-              u'美国,日本,英国,法国,韩国,德国,意大利,印度,泰国,西班牙,欧洲,加拿大,澳大利亚,俄罗斯,伊朗,爱尔兰,' \
-              u'瑞典,巴西,波兰,丹麦,捷克,阿根廷,比利时,墨西哥,奥地利,荷兰,新西兰,土耳其,匈牙利,以色列,新加坡'
-
-
-class Poster(db.Model):
-    __tablename__ = 'posters'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), unique=True)
-    alias = db.Column(db.String(100))
-    director = db.Column(db.String(20))
-    performers = db.Column(db.String(180))
-    length = db.Column(db.Integer)
-    release_date = db.Column(db.Date)
-    douban_link = db.Column(db.String(80))
-    type_id = db.Column(db.Integer, db.ForeignKey('movie_type.id'))
-    country_id = db.Column(db.Integer, db.ForeignKey('country.id'))
-    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    introduction = db.Column(db.Text)
-    stills = db.relationship('Still', backref='poster', lazy='dynamic')
-
-
-class Country(db.Model):
-    __tablename__ = 'country'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(40), unique=True)
-    posters = db.relationship('Poster', backref='country', lazy='dynamic')
+    def to_json(self):
+        json_still = {
+            'id': self.id,
+            'comment': self.comment,
+            'author': '',  # self.author,
+            'poster': '',  # url_for('movie.poster', poster_id=self.poster_id, _external=True),
+            'timestamp': self.timestamp
+        }
+        return json_still
 
     @staticmethod
-    def insert_countries():
-        countries = str_country.split(u',')
-        for c in countries:
-            country = Country.query.filter_by(name=c).first()
-            if country is None:
-                country = Country(name=c)
-            db.session.add(country)
-        db.session.commit()
-"""
+    def timeline_str_to_int(str_time):
+        m, s = str_time.split(':')
+        try:
+            time = int(m) * 60 + int(s)
+        except ValueError:
+            return 0
+            # raise ValueError('Value Error while processing ' + str_time)
+        return time
+
+    @staticmethod
+    def timeline_int_to_str(int_time):
+        if int_time < 0:
+            int_time = 0
+        s = int_time % 60
+        m = int_time / 60
+        return '{0}:{1}'.format(m, s)

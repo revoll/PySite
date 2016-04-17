@@ -216,7 +216,7 @@ def init_db():
     MovieType.insert_types()
     # User.generate_fake()
     # Post.generate_fake()
-    Poster.generate_fake()
+    # Poster.generate_fake()
     flash('init db with success.')
 
     return redirect(url_for('.index'))

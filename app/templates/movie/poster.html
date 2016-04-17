@@ -1,0 +1,48 @@
+{% extends "common/base.html" %}
+{% import "common/wtf.html" as wtf %}
+{% import "common/macros.html" as macros %}
+
+{% block title %}Movie - Poster{% endblock %}
+
+    {% block page_content %}
+        <img src="{{ url_for('static', filename='img/poster/{0}/archive.jpg'.format(poster.id)) }}" style="width: 600px;" />
+        <h1>{{ poster.name }}
+            <small>{{ poster.o_name }}</small>
+        </h1>
+        <p><b>别名：</b>{{ poster.alias }}</p>
+        <p><b>导演：</b>{{ poster.director }}</p>
+        <p><b>主演：</b>{{ poster.performers }}</p>
+        <p><b>时长：</b>{{ poster.length }}</p>
+        <p><b>地区：</b>{{ poster.country }}</p>
+        <p><b>类型：</b>{{ poster.type.name }}</p>
+        <p><b>上映日期：</b>{{ poster.release_date }}</p>
+        <p><b>豆瓣链接：</b>{{ poster.douban_link }}</p>
+        <p><b>创建人：</b>{{ poster.author.name }}</p>
+        <p><b>时间：</b>{{ poster.timestamp }}</p>
+        <p><b>简介：</b>{{ poster.introduction }}</p>
+
+        <a class="btn btn-warning" href="{{ url_for('movie.edit_poster', poster_id=poster.id) }}" role="button">编辑</a>
+        <a class="btn btn-danger" href="{{ url_for('movie.delete_poster', poster_id=poster.id) }}" role="button">删除</a>
+        <a class="btn btn-info" href="{{ url_for('movie.edit_stills', poster_id=poster.id) }}" role="button">编辑图片</a>
+
+        <hr>
+
+        {{ wtf.quick_form(form_new, action=url_for('movie.add_still', poster_id=poster.id)) }}
+
+        {% for still in stills %}
+        <div id="stills">
+            <img src="{{ url_for('static', filename='img/poster/{0}/{1}.jpg'.format(poster.id, still.id)) }}" style="width: 600px;" />
+            <h3>{{ still.comment }}</h3>
+            <hr>
+        </div>
+        {% endfor %}
+        {% if pagination %}
+        <div class="pagination">
+            {{ macros.pagination_widget(pagination, 'movie.poster', fragment='#stills', poster_id=poster.id) }}
+        </div>
+        {% endif %}
+    {% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+{% endblock %}

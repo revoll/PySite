@@ -1,10 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title></title>
-</head>
-<body>
+{% extends "common/base.html" %}
+{% import "common/wtf.html" as wtf %}
+{% import "common/macros.html" as macros %}
 
-</body>
-</html>
+{% block title %}Edit Stills{% endblock %}
+
+    {% block page_content %}
+        {{ wtf.quick_form(form_new, action=url_for('movie.add_still', poster_id=poster_id, redirect=url_for('movie.edit_stills', poster_id=poster_id))) }}
+        {% for form in forms %}
+        <div>
+            <img src="{{ '/static/img/poster/{0}/{1}.jpg'.format(poster_id, form.id) }}" style="height: 240px;" />
+            <a class="btn btn-danger" href="{{ url_for('movie.delete_still', still_id=form.id) }}" role="button">Delete</a>
+            {{ wtf.quick_form(form, action=url_for('movie.edit_still', still_id=form.id, redirect=url_for('movie.edit_stills', poster_id=poster_id))) }}
+        </div>
+        {% endfor %}
+        {% if pagination %}
+        <div class="pagination">
+            {{ macros.pagination_widget(pagination, 'movie.edit_stills', poster_id=poster_id) }}
+        </div>
+        {% endif %}
+    {% endblock %}

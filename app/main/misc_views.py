@@ -2,16 +2,43 @@
 import os
 import datetime
 import urllib2
-from StringIO import StringIO
 from PIL import Image
-
+from StringIO import StringIO
 from flask import render_template, request, current_app, send_file
-
 from flask.ext.login import login_required, current_user
-
 from . import main
 from .. import db
-from ..tools import quadrating_image, thumbnail_image
+
+
+@main.route('/crossdomain.xml')
+def get_crossdomain():
+    return send_file(os.path.join(current_app.static_folder, 'crossdomain.xml'))
+
+
+def quadrating_image(img, size=150):
+    if not isinstance(img, Image.Image) or size <= 0:
+        return img  # None
+    if img.size[0] != img.size[1]:
+        if img.size[0] > img.size[1]:
+            i_size = img.size[1]
+            i_diff = (img.size[0] - img.size[1]) / 2
+            box = (i_diff, 0, i_size + i_diff, i_size)
+        else:
+            i_size = img.size[0]
+            i_diff = (img.size[1] - img.size[0]) / 2
+            box = (0, i_diff, i_size, i_size + i_diff)
+        img = img.crop(box)
+    return img.resize((size, size), Image.ANTIALIAS)
+
+
+def thumbnail_image(image_path, size=150, fmt='PNG'):
+    img_sio = StringIO()
+    img = Image.open(image_path)
+    # img.thumbnail((th_size, th_size), Image.ANTIALIAS)
+    img = quadrating_image(img, size)
+    img.save(img_sio, fmt)  # quality=70
+    img_sio.seek(0)
+    return img_sio
 
 
 @main.route('/upload-avatar', methods=['GET', 'POST'])
@@ -26,20 +53,21 @@ def upload_avatar(max_size=256):
     """
     if request.method == 'POST':
         try:
-            f = request.files['upload_file']  # avatar resolution: 256*256
             file_path = os.path.join(current_app.static_folder, 'img/avatar/')
             file_name = current_user.id + '.jpg'
+            current_user.avatar_hash = file_name
+            db.session.add(current_user)
+            f = request.files['avatar']  # avatar resolution: 256*256
+            assert f
             img = Image.open(f)
             img_min = img.size[0] if img.size[0] < img.size[1] else img.size[1]
             new_size = img_min if img_min < max_size else max_size
             img = quadrating_image(img, new_size)
-            img.save(file_path + file_name, 'JPG')  # quality=70
-            current_user.avatar_hash = file_name
-            db.session.add(current_user)
-        except IOError:
+            img.save(file_path + file_name, 'JPEG')  # quality=70
+            return 'success'
+        except Exception:
+            db.session.rollback()
             return 'failed'
-        # return redirect(url_for('user_np.profile'))
-        return 'success'
     else:
         return render_template('user/edit_avatar.html')
 
