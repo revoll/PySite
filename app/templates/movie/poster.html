@@ -5,44 +5,135 @@
 {% block title %}Movie - Poster{% endblock %}
 
     {% block page_content %}
-        <img src="{{ url_for('static', filename='img/poster/{0}/archive.jpg'.format(poster.id)) }}" style="width: 600px;" />
-        <h1>{{ poster.name }}
-            <small>{{ poster.o_name }}</small>
-        </h1>
-        <p><b>别名：</b>{{ poster.alias }}</p>
-        <p><b>导演：</b>{{ poster.director }}</p>
-        <p><b>主演：</b>{{ poster.performers }}</p>
-        <p><b>时长：</b>{{ poster.length }}</p>
-        <p><b>地区：</b>{{ poster.country }}</p>
-        <p><b>类型：</b>{{ poster.type.name }}</p>
-        <p><b>上映日期：</b>{{ poster.release_date }}</p>
-        <p><b>豆瓣链接：</b>{{ poster.douban_link }}</p>
-        <p><b>创建人：</b>{{ poster.author.name }}</p>
-        <p><b>时间：</b>{{ poster.timestamp }}</p>
-        <p><b>简介：</b>{{ poster.introduction }}</p>
+        <div class="poster-card" id="poster-detail">
+            <div class="poster-card">
+                <h1>{{ poster.name }}
+                    <small class="text-uppercase">{{ poster.o_name }}</small>
+                </h1>
+                <div class="poster-left">
+                    <img class="poster-image" src="/static/img/poster/{{ poster.id }}/archive.jpg"/>
+                    <a class="btn btn-primary" href="{{ url_for('movie.edit_poster', poster_id=poster.id) }}"
+                       role="button">编辑</a>
+                    <a class="btn btn-warning" href="{{ url_for('movie.edit_stills', poster_id=poster.id) }}"
+                       role="button">剧照</a>
+                    <a class="btn btn-success" href="{{ poster.douban_link }}" target="_blank" rel="nofollow"
+                       role="button">豆瓣</a>
+                    <button class="btn btn-danger" onclick="delete_poster()">删除</button>
+                </div>
+                <div class="info-wrapper">
+                    <p><b>别名：</b>{{ poster.alias }}</p>
 
-        <a class="btn btn-warning" href="{{ url_for('movie.edit_poster', poster_id=poster.id) }}" role="button">编辑</a>
-        <a class="btn btn-danger" href="{{ url_for('movie.delete_poster', poster_id=poster.id) }}" role="button">删除</a>
-        <a class="btn btn-info" href="{{ url_for('movie.edit_stills', poster_id=poster.id) }}" role="button">编辑图片</a>
+                    <p><b>导演：</b>{{ poster.director }}</p>
 
-        <hr>
+                    <p><b>编剧：</b>{{ poster.screenwriter }}</p>
 
-        {{ wtf.quick_form(form_new, action=url_for('movie.add_still', poster_id=poster.id)) }}
+                    <p><b>主演：</b>{{ poster.performers }}</p>
 
-        {% for still in stills %}
-        <div id="stills">
-            <img src="{{ url_for('static', filename='img/poster/{0}/{1}.jpg'.format(poster.id, still.id)) }}" style="width: 600px;" />
-            <h3>{{ still.comment }}</h3>
-            <hr>
+                    <p><b>时长：</b>{{ poster.length }}</p>
+
+                    <p><b>类型：</b>{{ poster.type.name }}</p>
+
+                    <p><b>地区：</b>{{ poster.country }}</p>
+
+                    <p><b>上映日期：</b>{{ poster.release_date }}</p>
+
+                    <p><b>编辑时间：</b>{{ poster.timestamp }}</p>
+
+                    <p><b>电影简介：</b>{{ poster.introduction }}</p>
+                </div>
+                <div class="clearfix"></div>
+            </div>
         </div>
-        {% endfor %}
+        <div id="new-still">
+            {{ wtf.quick_form(form_new, action=url_for('movie.add_still', poster_id=poster.id)) }}
+
+            <form action="{{ url_for('movie.add_still', poster_id=poster.id) }}" , method="post">
+                {{ form_new.hidden_tag() }}
+                File {{ form_new.snapshot }}
+                Time {{ form_new.timeline }}
+                Comment {{ form_new.comment(class='form-control', id='wangkui') }}
+                {{ form_new.submt }}
+                <label class="radio-inline"><input type="radio" name="xx" value="o1"> 1</label>
+                <label class="radio-inline"><input type="radio" name="xx" value="o1"> 2</label>
+                <label class="radio-inline"><input type="radio" name="xx" value="o1"> 3</label>
+            </form>
+
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">时间轴</label>
+
+                    <div class="col-sm-4">
+                        <div class="input-group">
+                            <div class="input-group-addon"><span class="glyphicon glyphicon-time"
+                                                                 aria-hidden="true"></span></div>
+                            <input type="text" class="form-control text-right" placeholder="00">
+
+                            <div class="input-group-addon" style="border-left:0; border-right:0;">分</div>
+                            <input type="text" class="form-control text-right" placeholder="00">
+
+                            <div class="input-group-addon">秒</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">上传电影剧照</label>
+
+                    <div class="col-sm-10">
+                        <select class="form-control" onchange="update_upload_method(index)"
+                                style="width:110px; float: left;">
+                            <option>本地图片</option>
+                            <option>网络图片</option>
+                        </select>
+
+                        <div style="width: 100%; padding-left: 120px;">
+                            <input id="new-still-file" type="file" class="form-control"/>
+                            <input id="new-still-url" type="text" class="form-control hidden" placeholder="http://"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="new-still-comment" class="col-sm-2 control-label">要说的话</label>
+
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="new-still-comment" placeholder="说点什么吧 ......">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <button type="submit" class="btn btn-default">添加此剧照</button>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+        <div id="still-list">
+            {% for still in stills %}
+                <div class="still-detail">
+                    <img src="{{ url_for('static', filename='img/poster/{0}/{1}.jpg'.format(poster.id, still.id)) }}"
+                         style="width: 600px;"/>
+
+                    <h3>{{ still.comment }}</h3>
+                    <hr>
+                </div>
+            {% endfor %}
+        </div>
         {% if pagination %}
         <div class="pagination">
-            {{ macros.pagination_widget(pagination, 'movie.poster', fragment='#stills', poster_id=poster.id) }}
+            {{ macros.pagination_widget(pagination, 'movie.poster', fragment='#still-list', poster_id=poster.id) }}
         </div>
         {% endif %}
     {% endblock %}
 
 {% block scripts %}
     {{ super() }}
+    <script type="text/javascript">
+        function delete_poster() {
+            if (confirm("确定删除这条海报吗？")) {
+                window.location.href = "{{ url_for('movie.delete_poster', poster_id=poster.id) }}";
+            }
+        }
+        function update_upload_method(index) {
+
+        }
+    </script>
 {% endblock %}

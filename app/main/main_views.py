@@ -208,14 +208,14 @@ def followed_by(username):
 def init_db():
     from .. import db
     from ..models.user import Role
-    from ..models.movie import Poster, MovieType
+    from ..models.movie import MovieType
 
     # db.drop_all()
     db.create_all()
     Role.insert_roles()
     MovieType.insert_types()
-    # User.generate_fake()
-    # Post.generate_fake()
+    User.generate_fake()
+    Post.generate_fake()
     # Poster.generate_fake()
     flash('init db with success.')
 

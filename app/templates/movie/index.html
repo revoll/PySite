@@ -4,91 +4,37 @@
 
 {% block title %}Movie - Index{% endblock %}
 
-{% block styles %}
-    {{ super() }}
-    <style type="text/css">
-        body {
-            font-family: "Segoe UI", "Lucida Grande", Helvetica, Arial, "Microsoft YaHei", FreeSans, Arimo,
-            "Droid Sans", "wenquanyi micro hei", "Hiragino Sans GB", "Hiragino Sans GB W3", Arial, sans-serif;
-        }
-
-        .cards-container {
-            width: 100%;
-            margin: 40px 0 40px;
-        }
-
-        .poster-card {
-            display: block;
-            position: relative;
-            overflow: hidden;
-            min-width: 720px;
-            margin: 40px 0 20px;
-            padding: 30px 20px;
-            border: 1px solid #c9ccd0;
-            background-color: #f1f1f1;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 1px 3px rgba(0, 0, 0, 0.2);
-            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
-        }
-
-        .poster-card .poster-left {
-            float: left;
-            width: 240px;
-        }
-
-        .poster-left .poster-image {
-            width: 240px;
-        }
-
-        .poster-card .info-wrapper {
-            padding-left: 280px;
-            width: 100%;
-            min-height: 260px;
-        }
-
-        .info-wrapper > h1 {
-            margin: 0 0 24px;
-        }
-
-        .info-wrapper > p {
-            margin-bottom: 10px;
-        }
-    </style>
-{% endblock %}
-
     {% block page_content %}
-        <div class="cards-container">
+        <div id="nav-tools">
             <a class="btn btn-primary" href="{{ url_for('movie.add_poster') }}">添加海报</a>
+        </div>
+        <div id="cards-container">
             {% for poster in posters %}
             <div class="poster-card">
                 <div class="poster-left">
                     <a href="{{ url_for('movie.poster', poster_id=poster.id) }}">
                         <img class="poster-image" src="/static/img/poster/{{ poster.id }}/archive.jpg"/>
                     </a>
+
+                    <div class="bg-success">2016-09-12</div>
                 </div>
                 <div class="info-wrapper">
                     <h1>
                         <a href="{{ url_for('movie.poster', poster_id=poster.id) }}" role="button">{{ poster.name }}</a>
                         <small class="text-uppercase">{{ poster.o_name }}</small>
                     </h1>
+                    <p><b>别名：</b>{{ poster.alias }}</p>
                     <p><b>导演：</b>{{ poster.director }}</p>
 
+                    <p><b>编剧：</b>{{ poster.screenwriter }}</p>
                     <p><b>主演：</b>{{ poster.performers }}</p>
-
                     <p><b>时长：</b>{{ poster.length }}</p>
-
                     <p><b>类型：</b>{{ poster.type.name }}</p>
-
                     <p><b>地区：</b>{{ poster.country }}</p>
-
                     <p><b>上映日期：</b>{{ poster.release_date }}</p>
-
-                    <p><b>豆瓣链接：</b>{{ poster.douban_link }}</p>
-
                     <p><b>编辑时间：</b>{{ poster.timestamp }}</p>
 
-                    <p><b>别名：</b>{{ poster.alias }}</p>
-
-                    <p><b>简介：</b>{{ poster.introduction }}</p>
+                    <p><b>电影简介：</b>{{ poster.introduction_cut }}</p>
                 </div>
                 <div class="clearfix"></div>
             </div>
@@ -105,7 +51,6 @@
     {{ super() }}
     <script type="text/javascript">
         $(window).load(function () {
-
         });
     </script>
 {% endblock %}

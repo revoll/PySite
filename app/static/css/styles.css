@@ -1,136 +1,356 @@
+/**
+ * Customized css configurations.
+ *
+ * 1. General
+ * 2. Blog
+ * 3. Movie
+ */
+
+/**
+ * Part 1: General (font and font size redefination)
+ */
+html, body {
+	min-height: 100%;
+}
+
+html {
+	font-size: 62.5%;
+	-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+body {
+	background-color: #fff;
+	font-family: "Segoe UI", "Lucida Grande", Helvetica, Arial, "Microsoft YaHei", FreeSans, Arimo,
+	"Droid Sans", "wenquanyi micro hei", "Hiragino Sans GB", "Hiragino Sans GB W3", Arial, sans-serif;
+	font-weight: normal;
+	font-size: 1.6rem;
+	line-height: 1.6;
+	color: #333;
+}
+
+/*
+code, kbd, pre, samp {
+	font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+}
+code {
+	padding: 2px 4px;
+	font-size: 1.3rem;
+	color: #c7254e;
+	background-color: #f8f8f8;
+	white-space: nowrap;
+	border-radius: 2px;
+}
+pre {
+	display: block;
+	padding: 1rem;
+	margin: 1rem  0;
+	font-size: 1.3rem;
+	line-height: 1.6;
+	word-break: break-all;
+	word-wrap: break-word;
+	color: #555555;
+	background-color: #f8f8f8;
+	border: 1px solid #dedede;
+	border-radius: 2px;
+	white-space: pre-wrap;
+}
+pre code {
+	padding: 0;
+	font-size: inherit;
+	color: inherit;
+	white-space: pre-wrap;
+	background-color: transparent;
+	border-radius: 0;
+}
+p, hr, ul, ol, dl, blockquote, pre, address, fieldset, figure {
+	margin: 0 0 1.6rem 0;
+}
+* + p, * + hr, * + ul, * + ol, * + dl,
+* + blockquote, * + pre, * + address, * + fieldset, * + figure {
+  margin-top: 1.6rem;
+}
+small {
+	fotn-size: 80%;
+}
+sub, sup {
+	fotn-size: 75%;
+	line-height: 0;
+	position: relative;
+	vertical-align: baseline;
+}
+sup {
+	top: -0.5em;
+}
+sub {
+	bottom: -0.25em;
+}
+h1, h2, h3, h4, h5, h6 {
+	margin: 0 0 1.6rem 0;
+	font-weight: 600;
+	font-size: 100%;
+}
+h1 {
+	font-size: 2.0em;
+}
+h2 {
+	font-size: 1.5em;
+}
+h3 {
+	font-size: 1.25em;
+}
+* + h1, * + h2, * + h3, * + h4, * + h5, * + h6 {
+	margin-top: 2em;
+}
+ul, ol {
+	padding-left: 2em;
+}
+ul > li > ul, ul > li > ol, ol > li > ol, ol > li > ul {
+	margin: 1em 0;
+}
+dt {
+	font-weight: bold;
+}
+dt + dd {
+	margin-top: .5em;
+}
+dd {
+	margin-left: 0;
+}
+dd + dt {
+	margin-top: 1em;
+}
+hr {
+	display: block;
+	padding: 0;
+	border: 0;
+	height: 0;
+	border-top: 1px solid #eeeeee;
+	-moz-box-sizing: content-box;
+	box-sizing: content-box;
+}
+address {
+	font-style: normal;
+}
+blockquote {
+	padding-top: 5px;
+	padding-bottom: 5px;
+	padding-left: 15px;
+	border-left: 4px solid #dddddd;
+	font-family: Georgia, "Times New Roman", Times, Kai, "Kaiti SC", KaiTi, BiauKai, serif;
+}
+blockquote small {
+	display: block;
+	color: #999999;
+	font-family: "Segoe UI", "Lucida Grande", Helvetica, Arial, "Microsoft YaHei", FreeSans, Arimo, "Droid Sans", "wenquanyi micro hei", "Hiragino Sans GB", "Hiragino Sans GB W3", sans-serif;
+	text-align: right;
+}
+.pre-scrollable {
+	max-height: 24rem;
+	overflow-y: scroll;
+} */
+
+.navbar {
+	border-radius: 0;
+}
+
+/**
+ * Part 2: Blog
+ */
+
 .profile-thumbnail {
     position: absolute;
 }
-
 .profile-header {
     min-height: 260px;
     margin-left: 280px;
 }
-
 div.post-tabs {
     margin-top: 16px;
 }
-
 ul.posts {
     list-style-type: none;
     padding: 0px;
     margin: 16px 0px 0px 0px;
     border-top: 1px solid #e0e0e0;
 }
-
 div.post-tabs ul.posts {
     margin: 0px;
     border-top: none;
 }
-
 ul.posts li.post {
     padding: 8px;
     border-bottom: 1px solid #e0e0e0;
 }
-
 ul.posts li.post:hover {
     background-color: #f0f0f0;
 }
-
 div.post-date {
     float: right;
 }
-
 div.post-author {
     font-weight: bold;
 }
-
 div.post-thumbnail {
     position: absolute;
 }
-
 div.post-content {
     margin-left: 48px;
     min-height: 48px;
 }
-
 div.post-footer {
     text-align: right;
 }
-
 ul.comments {
     list-style-type: none;
     padding: 0px;
     margin: 16px 0px 0px 0px;
 }
-
 ul.comments li.comment {
     margin-left: 32px;
     padding: 8px;
     border-bottom: 1px solid #e0e0e0;
 }
-
 ul.comments li.comment:nth-child(1) {
     border-top: 1px solid #e0e0e0;
 }
-
 ul.comments li.comment:hover {
     background-color: #f0f0f0;
 }
-
 div.comment-date {
     float: right;
 }
-
 div.comment-author {
     font-weight: bold;
 }
-
 div.comment-thumbnail {
     position: absolute;
 }
-
 div.comment-content {
     margin-left: 48px;
     min-height: 48px;
 }
-
 div.comment-form {
     margin: 16px 0px 16px 32px;
 }
-
 div.pagination {
     width: 100%;
     text-align: right;
     padding: 0px;
     margin: 0px;
 }
-
 div.flask-pagedown-preview {
     margin: 10px 0px 10px 0px;
     border: 1px solid #e0e0e0;
     padding: 4px;
 }
-
 div.flask-pagedown-preview h1 {
     font-size: 140%;
 }
-
 div.flask-pagedown-preview h2 {
     font-size: 130%;
 }
-
 div.flask-pagedown-preview h3 {
     font-size: 120%;
 }
-
 .post-body h1 {
     font-size: 140%;
 }
-
 .post-body h2 {
     font-size: 130%;
 }
-
 .post-body h3 {
     font-size: 120%;
 }
-
 .table.followers tr {
     border-bottom: 1px solid #e0e0e0;
 }
+
+/**
+ * Part 3: Movie
+ */
+#nav-tools {
+	width: 100%;
+	margin: 15px 0 40px;
+}
+
+#cards-container {
+	width: 100%;
+	margin: 40px 0 40px;
+}
+
+#cards-container .poster-card {
+	display: block;
+	position: relative;
+	overflow: hidden;
+	min-width: 720px;
+	margin: 40px 0 20px;
+	padding: 30px 20px;
+	border: 1px solid #c9ccd0;
+	background-color: #f1f1f1;
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 1px 3px rgba(0, 0, 0, 0.2);
+	text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+}
+
+.poster-card .poster-left {
+	float: left;
+	width: 240px;
+}
+
+.poster-left .poster-image {
+	width: 240px;
+	margin-bottom: 30px;
+}
+
+.poster-card .info-wrapper {
+	padding-left: 280px;
+	width: 100%;
+	min-height: 260px;
+}
+
+.poster-card h1 {
+	margin: 0 0 24px;
+}
+
+.poster-card p {
+	margin: 0 0 6px;
+}
+
+#poster-detail {
+	margin: 40px 0;
+}
+
+#new-still {
+	margin: 40px 0;
+	border: 1px solid #888;
+}
+
+#still-list {
+
+}
+
+.still-detail {
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

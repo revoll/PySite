@@ -37,6 +37,7 @@ class DevelopmentConfig(Config):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.getenv('MYSQL_URI_BASE') + 'flasky_dev' if os.getenv('MYSQL_URI_BASE') is not None \
         else 'sqlite:///' + os.path.join(basedir, 'data-dev.sqlite')
+    # SQLALCHEMY_DATABASE_URI = 'mysql://flasky:654321@localhost/pysite'
 
 
 class TestingConfig(Config):

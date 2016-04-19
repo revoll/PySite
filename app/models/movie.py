@@ -1,9 +1,10 @@
 # encoding: utf-8
 from datetime import datetime
+
 from flask import url_for
+
 from .. import db
 from ..models.user import User
-
 
 """
 str_country = u'中国大陆,香港,台湾,' \
@@ -16,17 +17,18 @@ str_movie_type = u'动作与历险,儿童与家庭,喜剧,剧情,爱情,恐怖�
 
 class Poster(db.Model):
     __tablename__ = 'posters'
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=1000001)
     name = db.Column(db.String(50), unique=True)
     o_name = db.Column(db.String(50))
     alias = db.Column(db.String(160))
     director = db.Column(db.String(40))
+    screenwriter = db.Column(db.String(40))
     performers = db.Column(db.String(200))
     length = db.Column(db.String(60))
     release_date = db.Column(db.String(60))
     country = db.Column(db.String(100))
     douban_link = db.Column(db.String(80))
-    type_id = db.Column(db.Integer, db.ForeignKey('movie_type.id'))
+    type_id = db.Column(db.Integer, db.ForeignKey('movie_types.id'))
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     introduction = db.Column(db.Text)
@@ -46,6 +48,7 @@ class Poster(db.Model):
             p.o_name = forgery_py.lorem_ipsum.title()
             p.alias = u'(Empty)'
             p.director = forgery_py.name.full_name()
+            p.screenwriter = forgery_py.name.full_name()
             p.performers = forgery_py.name.full_name() + u'/' + forgery_py.name.full_name() + u'/' + forgery_py.name.full_name()
             p.length = u'{}分钟'.format(randint(90, 180))
             p.release_date = forgery_py.date.date().strftime('%Y-%m-%d')
@@ -83,7 +86,7 @@ class Poster(db.Model):
 
 
 class MovieType(db.Model):
-    __tablename__ = 'movie_type'
+    __tablename__ = 'movie_types'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(40), unique=True)
     posters = db.relationship('Poster', backref='type', lazy='dynamic')
@@ -101,7 +104,7 @@ class MovieType(db.Model):
 
 class Still(db.Model):
     __tablename__ = 'stills'
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=1000001)
     timeline = db.Column(db.Integer, default=0)
     comment = db.Column(db.Text)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))

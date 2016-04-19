@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/PySite.iml" filepath="$PROJECT_DIR$/.idea/PySite.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../flasky/.idea/flasky.iml" filepath="$PROJECT_DIR$/../flasky/.idea/flasky.iml" />
     </modules>
   </component>
 </project>

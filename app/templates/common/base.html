@@ -7,6 +7,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 {% endblock %}
     <title>{% block title %}Base - PySite{% endblock title %}</title>
+
+    <!-- Set render engine for 360 browser -->
+    <meta name="renderer" content="webkit">
+
+    <!-- Add to homescreen for Chrome on Android -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="icon" sizes="192x192" href="{{ url_for('static', filename='app-icon72x72@2x.png') }}">
+
+    <!-- Add to homescreen for Safari on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Amaze UI"/>
+    <link rel="apple-touch-icon-precomposed" href="{{ url_for('static', filename='app-icon72x72@2x.png') }}">
+
+    <!-- Tile icon for Win8 (144x144 + tile color) -->
+    <meta name="msapplication-TileImage" content="{{ url_for('static', filename='app-icon72x72@2x.png') }}">
+    <meta name="msapplication-TileColor" content="#0e90d2">
+
+    <!-- SEO: If your mobile URL is different from the desktop URL, add a canonical link to the desktop page https://developers.google.com/webmasters/smartphone-sites/feature-phones -->
+    <!-- <link rel="canonical" href="http://www.example.com/"> -->
 {% block styles %}
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
@@ -36,9 +56,6 @@
                     <li><a href="{{ url_for('main.index') }}">主页</a></li>
                     <li><a href="{{ url_for('blog.index') }}">博客</a></li>
                     <li><a href="{{ url_for('movie.index') }}">电影</a></li>
-                    {% if current_user.is_authenticated %}
-                        <li><a href="{{ url_for('main.profile', username=current_user.username) }}">个人资料</a></li>
-                    {% endif %}
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     {% if current_user.can(Permission.MODERATE_COMMENTS) %}
@@ -47,17 +64,22 @@
                     {% if current_user.is_authenticated %}
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                <img src="{{ current_user.gravatar(size=18) }}" />
+                                <img src="{{ current_user.gravatar(size=18) }}"/>
                                 &nbsp;{{ current_user.username }}&nbsp;
                                 <b class="caret"></b>
                             </a>
                             <ul class="dropdown-menu">
+                                {% if current_user.is_authenticated %}
+                                    <li><a href="{{ url_for('main.profile', username=current_user.username) }}">个人资料</a>
+                                    </li>
+                                {% endif %}
                                 <li><a href="{{ url_for('auth.change_password') }}">修改密码</a></li>
                                 <li><a href="{{ url_for('auth.change_email_request') }}">更改邮箱</a></li>
                                 <li><a href="{{ url_for('auth.logout') }}">退出</a></li>
                             </ul>
                         </li>
                     {% else %}
+                        <li><a href="{{ url_for('auth.register') }}">注册</a></li>
                         <li><a href="{{ url_for('auth.login') }}">登陆</a></li>
                     {% endif %}
                 </ul>
@@ -79,6 +101,7 @@
 {% block scripts %}
     <script src="{{ url_for('static', filename='js/jquery-2.2.2.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/common.js') }}"></script>
 {% endblock %}
 </body>
 </html>

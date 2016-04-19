@@ -34,6 +34,12 @@ Changelog
 	
 	不会造成冲突: Flask会优先使用路由表,如果没有匹配项,则查询静态文件目录.
 	
-	
+2016.04.18
+	对于MySQL等数据库，设置ID从特定值开始增长（User等数据库表的ID号必须为7位）：
+	mysql> alter table users auto_increment=1000001;
+	mysql> alter table posts auto_increment=1000001;
+	mysql> alter table comments auto_increment=1000001;
+	mysql> alter table posters auto_increment=1000001;
+	mysql> alter table stills auto_increment=1000001;
 
 

@@ -1,7 +1,8 @@
 # encoding: utf-8
 from flask.ext.wtf import Form
 from wtforms import StringField, TextAreaField, SelectField, SubmitField, FileField
-from wtforms.validators import DataRequired, Length, URL, Regexp
+from wtforms.validators import DataRequired, Length, URL
+
 from ..models.movie import str_movie_type
 
 
@@ -16,6 +17,7 @@ class PosterForm(Form):
     o_name = StringField(u'原名', validators=[Length(0, 50)])
     alias = StringField(u'别名', validators=[Length(0, 160)])
     director = StringField(u'导演', validators=[Length(0, 40)])
+    screenwriter = StringField(u'编剧', validators=[Length(0, 40)])
     performers = StringField(u'主演', validators=[Length(0, 200)])
     type = SelectField(u'类型', choices=make_types_options(), validators=[])
     country = StringField(u'地区', validators=[Length(0, 100)])

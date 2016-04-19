@@ -2,8 +2,10 @@
 import os
 import shutil
 from PIL import Image
+
 from flask import request, current_app, render_template, redirect, url_for, flash
 from flask.ext.login import login_required, current_user
+
 from . import movie
 from .movie_forms import PosterForm, StillForm, StillForm2
 from .. import db
@@ -15,6 +17,7 @@ def poster_form_to_model(form, poster):
     poster.o_name = form.o_name.data
     poster.alias = form.alias.data
     poster.director = form.director.data
+    poster.screenwriter = form.screenwriter.data
     poster.performers = form.performers.data
     poster.type_id = int(form.type.data)
     poster.country = form.country.data
@@ -29,6 +32,7 @@ def poster_model_to_form(poster, form):
     form.o_name.data = poster.o_name
     form.alias.data = poster.alias
     form.director.data = poster.director
+    form.screenwriter.data = poster.screenwriter
     form.performers.data = poster.performers
     form.type.data = str(poster.type_id)
     form.country.data = poster.country
@@ -56,6 +60,11 @@ def index():
     page = request.args.get('page', 1, type=int)
     pagination = Poster.query.order_by(Poster.timestamp.desc()).paginate(
         page, per_page=current_app.config['FLASKY_POSTERS_PER_PAGE'], error_out=False)
+    for poster in pagination.items:
+        if len(poster.introduction) > 140:
+            poster.introduction_cut = poster.introduction[:140] + u' ......'
+        else:
+            poster.introduction_cut = poster.introduction
     return render_template('movie/index.html', posters=pagination.items, pagination=pagination)
 
 
@@ -78,17 +87,18 @@ def add_poster():
             the_poster = Poster(author=current_user._get_current_object())
             poster_form_to_model(form, the_poster)
             db.session.add(the_poster)
+            db.session.commit()
             the_poster = Poster.query.filter_by(name=form.name.data).first()
             assert the_poster
             f = request.files['poster']
             assert f
             path = os.path.join(current_app.static_folder, 'img/poster', str(the_poster.id))
             save_poster_image(f, path, 'archive', current_app.config['FLASKY_IMAGE_RESOLUTION_LIMIT'])
-            flash(u'添加海报成功！')
+            flash(u'海报添加成功！')
             return redirect(url_for('movie.poster', poster_id=the_poster.id))
         except Exception:
             db.session.rollback()
-            flash(u'添加海报发生了错误...')
+            flash(u'海报添加时发生了错误...')
     return render_template('movie/add_poster.html', form=form)
 
 
@@ -105,11 +115,11 @@ def edit_poster(poster_id):
             if f:
                 path = os.path.join(current_app.static_folder, 'img/poster', str(poster_id))
                 save_poster_image(f, path, 'archive', current_app.config['FLASKY_IMAGE_RESOLUTION_LIMIT'])
-            flash(u'更新海报成功！')
+            flash(u'海报更新成功！')
             return redirect(url_for('movie.poster', poster_id=the_poster.id))
         except Exception:
             db.session.rollback()
-            flash(u'更新海报发生了错误...')
+            flash(u'海报更新时发生了错误...')
     poster_model_to_form(the_poster, form)
     return render_template('movie/edit_poster.html', form=form, id=poster_id)
 
@@ -123,10 +133,10 @@ def delete_poster(poster_id):
         path = os.path.join(current_app.static_folder, 'img/poster', str(poster_id))
         if os.path.exists(path):
             shutil.rmtree(path)
-        flash(u'《' + the_poster.name.decode('utf-8') + u'》已被成功删除！')
+        flash(u'《' + the_poster.name + u'》已被成功删除！')
     except Exception:
         db.session.rollback()
-        flash(u'《' + the_poster.name.decode('utf-8') + u'》删除失败...')
+        flash(u'《' + the_poster.name + u'》删除失败...')
     return redirect(redirect_url)
 
 
@@ -141,6 +151,7 @@ def add_still(poster_id):
                               comment=form.comment.data, poster=the_poster,
                               author=current_user._get_current_object())
             db.session.add(the_still)
+            db.session.commit()
             the_still = Still.query.filter_by(
                 poster_id=poster_id, timeline=the_still.timeline).order_by(Still.timestamp.desc()).first()
             assert the_still
@@ -148,10 +159,10 @@ def add_still(poster_id):
             assert f
             path = os.path.join(current_app.static_folder, 'img/poster', str(poster_id))
             save_poster_image(f, path, str(the_still.id), current_app.config['FLASKY_IMAGE_RESOLUTION_LIMIT'])
-            flash(u'添加剧照成功！')
+            flash(u'剧照添加成功！')
         except Exception:
             db.session.rollback()
-            flash(u'添加剧照发生了错误...')
+            flash(u'剧照添加时发生了错误...')
     return redirect(redirect_url)
 
 
@@ -181,10 +192,10 @@ def edit_still(still_id):
             the_still.timeline = Still.timeline_str_to_int(form.timeline.data)
             the_still.comment = form.comment.data
             db.session.add(the_still)
-            flash(u'更新剧照成功！')
+            flash(u'剧照更新成功！')
         except Exception:
             db.session.rollback()
-            flash(u'更新剧照发生了错误...')
+            flash(u'剧照更新时发生了错误...')
     return redirect(url_for('movie.edit_stills', poster_id=the_still.poster_id))
 
 
@@ -202,5 +213,5 @@ def delete_still(still_id):
         flash(u'剧照已被成功删除！')
     except Exception:
         db.session.rollback()
-        flash(u'删除剧照失败...')
+        flash(u'剧照删除失败...')
     return redirect(url_for('movie.edit_stills', poster_id=the_still.poster_id))
