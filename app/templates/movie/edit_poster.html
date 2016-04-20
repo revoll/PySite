@@ -106,8 +106,8 @@
 
         function update_upload_method(index) {
 
-            var i_file = document.getElementById('new-still-file');
-            var i_url = document.getElementById('new-still-url');
+            var i_file = document.getElementById('poster-file');
+            var i_url = document.getElementById('poster-url');
             var css_class = 'hidden';
 
             if (! hasClass(i_file, css_class)) {
@@ -118,6 +118,7 @@
             }
             if (index == 'file') {
                 removeClass(i_file, css_class)
+                i_url.value = ''
             } else {
                 removeClass(i_url, css_class)
             }

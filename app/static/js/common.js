@@ -89,3 +89,16 @@ var scroll_to_top = {
 	}
 };
 scroll_to_top.init();
+
+
+/**
+ * 跳转到对应的URL地址，在跳转前给予提示信息警告。
+ * @param url
+ * @param msg
+ */
+function head_url(url, msg) {
+
+	if (confirm(msg)) {
+		window.location.href = url;
+	}
+}

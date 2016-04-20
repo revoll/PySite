@@ -92,10 +92,18 @@ def add_poster():
             db.session.commit()
             the_poster = Poster.query.filter_by(name=form.name.data).first()
             assert the_poster
-            f = request.files['img_file']
-            assert f
+            method = form.method.data
+            if method == u'file':
+                img = request.files['img_file']
+                assert img
+            elif method == u'url':
+                url = form.img_url.data
+                img = StringIO(urllib2.urlopen(url).read())
+                img.seek(0)
+            else:
+                raise ValueError
             path = os.path.join(current_app.static_folder, 'img/poster', str(the_poster.id))
-            save_poster_image(f, path, 'archive', current_app.config['FLASKY_IMAGE_RESOLUTION_LIMIT'])
+            save_poster_image(img, path, 'archive', current_app.config['FLASKY_IMAGE_RESOLUTION_LIMIT'])
             flash(u'海报添加成功！')
             return redirect(url_for('movie.poster', poster_id=the_poster.id))
         except Exception:
@@ -113,10 +121,21 @@ def edit_poster(poster_id):
         try:
             poster_form_to_model(form, the_poster)
             db.session.add(the_poster)
-            f = request.files['img_file']
-            if f:
+            method = form.method.data
+            if method == u'file':
+                img = request.files['img_file']
+            elif method == u'url':
+                url = form.img_url.data
+                if url == u'':
+                    img = None
+                else:
+                    img = StringIO(urllib2.urlopen(url).read())
+                    img.seek(0)
+            else:
+                raise ValueError
+            if img:
                 path = os.path.join(current_app.static_folder, 'img/poster', str(poster_id))
-                save_poster_image(f, path, 'archive', current_app.config['FLASKY_IMAGE_RESOLUTION_LIMIT'])
+                save_poster_image(img, path, 'archive', current_app.config['FLASKY_IMAGE_RESOLUTION_LIMIT'])
             flash(u'海报更新成功！')
             return redirect(url_for('movie.poster', poster_id=the_poster.id))
         except Exception:
@@ -158,7 +177,6 @@ def add_still(poster_id):
                 poster_id=poster_id, timeline=the_still.timeline).order_by(Still.timestamp.desc()).first()
             assert the_still
             method = form.method.data
-            path = os.path.join(current_app.static_folder, 'img/poster', str(poster_id))
             if method == u'file':
                 img = request.files['img_file']
                 assert img
@@ -168,6 +186,7 @@ def add_still(poster_id):
                 img.seek(0)
             else:
                 raise ValueError
+            path = os.path.join(current_app.static_folder, 'img/poster', str(poster_id))
             save_poster_image(img, path, str(the_still.id), current_app.config['FLASKY_IMAGE_RESOLUTION_LIMIT'])
             flash(u'剧照添加成功！')
         except Exception:

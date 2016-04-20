@@ -8,6 +8,7 @@
             <div class="poster-card">
                 <h1>{{ poster.name }}
                     <small class="text-uppercase">{{ poster.o_name }}</small>
+                    <button class="btn btn-default">进入赏图模式</button>
                 </h1>
                 <div class="poster-left">
                     <a href="{{ url_for('static', filename='img/poster/{0}/archive_raw.jpg'.format(poster.id)) }}" target="_blank">
@@ -19,7 +20,7 @@
                        role="button">剧照</a>
                     <a class="btn btn-success" href="{{ poster.douban_link }}" target="_blank" rel="nofollow"
                        role="button">豆瓣</a>
-                    <button class="btn btn-danger" onclick="delete_poster()">删除</button>
+                    <button class="btn btn-danger" onclick="head_url('{{ url_for('movie.delete_poster', poster_id=poster.id) }}', '确定删除这条海报吗？');">删除</button>
                 </div>
                 <div class="info-wrapper">
                     <p><b>别名：</b>{{ poster.alias }}</p>
@@ -81,13 +82,17 @@
             <div class="header">电影剧照</div>
             <div class="content">
             {% for still in stills %}
-                <div class="still-card">
-                    <a href="{{ url_for('static', filename='img/poster/{0}/{1}_raw.jpg'.format(poster.id, still.id)) }}" target="_blank">
-                        <img src="{{ url_for('static', filename='img/poster/{0}/{1}.jpg'.format(poster.id, still.id)) }}" />
-                    </a>
-                    <p>{{ still.comment }}</p>
-                    <hr>
+                <div class="row">
+                    <div class="col-sm-10">
+                        <div class="still-card">
+                            <a href="{{ url_for('static', filename='img/poster/{0}/{1}_raw.jpg'.format(poster.id, still.id)) }}" target="_blank">
+                                <img src="{{ url_for('static', filename='img/poster/{0}/{1}.jpg'.format(poster.id, still.id)) }}" />
+                            </a>
+                            <p>{{ still.comment }}</p>
+                        </div>
+                    </div>
                 </div>
+                <hr>
             {% endfor %}
             {% if pagination %}
                 <div class="pagination">
@@ -101,13 +106,6 @@
 {% block scripts %}
     {{ super() }}
     <script type="text/javascript">
-
-        function delete_poster() {
-
-            if (confirm("确定删除这条海报吗？")) {
-                window.location.href = "{{ url_for('movie.delete_poster', poster_id=poster.id) }}";
-            }
-        }
 
         function update_upload_method(index) {
 
@@ -123,6 +121,7 @@
             }
             if (index == 'file') {
                 removeClass(i_file, css_class)
+                i_url.value = ''
             } else {
                 removeClass(i_url, css_class)
             }
