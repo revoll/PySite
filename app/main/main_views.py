@@ -214,8 +214,8 @@ def init_db():
     db.create_all()
     Role.insert_roles()
     MovieType.insert_types()
-    User.generate_fake()
-    Post.generate_fake()
+    # User.generate_fake()
+    # Post.generate_fake()
     # Poster.generate_fake()
     flash('init db with success.')
 

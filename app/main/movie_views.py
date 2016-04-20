@@ -1,6 +1,8 @@
 # encoding: utf-8
 import os
 import shutil
+import urllib2
+from StringIO import StringIO
 from PIL import Image
 
 from flask import request, current_app, render_template, redirect, url_for, flash
@@ -90,7 +92,7 @@ def add_poster():
             db.session.commit()
             the_poster = Poster.query.filter_by(name=form.name.data).first()
             assert the_poster
-            f = request.files['poster']
+            f = request.files['img_file']
             assert f
             path = os.path.join(current_app.static_folder, 'img/poster', str(the_poster.id))
             save_poster_image(f, path, 'archive', current_app.config['FLASKY_IMAGE_RESOLUTION_LIMIT'])
@@ -99,7 +101,7 @@ def add_poster():
         except Exception:
             db.session.rollback()
             flash(u'海报添加时发生了错误...')
-    return render_template('movie/add_poster.html', form=form)
+    return render_template('movie/edit_poster.html', form=form, id=None)
 
 
 @movie.route('/edit/<int:poster_id>', methods=['GET', 'POST'])
@@ -111,7 +113,7 @@ def edit_poster(poster_id):
         try:
             poster_form_to_model(form, the_poster)
             db.session.add(the_poster)
-            f = request.files['poster']
+            f = request.files['img_file']
             if f:
                 path = os.path.join(current_app.static_folder, 'img/poster', str(poster_id))
                 save_poster_image(f, path, 'archive', current_app.config['FLASKY_IMAGE_RESOLUTION_LIMIT'])
@@ -147,7 +149,7 @@ def add_still(poster_id):
     form = StillForm()
     if form.validate_on_submit():
         try:
-            the_still = Still(timeline=Still.timeline_str_to_int(form.timeline.data),
+            the_still = Still(timeline=Still.timeline_str_to_int(form.time_min.data, form.time_sec.data),
                               comment=form.comment.data, poster=the_poster,
                               author=current_user._get_current_object())
             db.session.add(the_still)
@@ -155,10 +157,18 @@ def add_still(poster_id):
             the_still = Still.query.filter_by(
                 poster_id=poster_id, timeline=the_still.timeline).order_by(Still.timestamp.desc()).first()
             assert the_still
-            f = request.files['snapshot']
-            assert f
+            method = form.method.data
             path = os.path.join(current_app.static_folder, 'img/poster', str(poster_id))
-            save_poster_image(f, path, str(the_still.id), current_app.config['FLASKY_IMAGE_RESOLUTION_LIMIT'])
+            if method == u'file':
+                img = request.files['img_file']
+                assert img
+            elif method == u'url':
+                url = form.img_url.data
+                img = StringIO(urllib2.urlopen(url).read())
+                img.seek(0)
+            else:
+                raise ValueError
+            save_poster_image(img, path, str(the_still.id), current_app.config['FLASKY_IMAGE_RESOLUTION_LIMIT'])
             flash(u'剧照添加成功！')
         except Exception:
             db.session.rollback()
@@ -176,7 +186,7 @@ def edit_stills(poster_id):
     for still in pagination.items:
         form = StillForm2()
         form.id = still.id
-        form.timeline.data = Still.timeline_int_to_str(still.timeline)
+        form.time_min.data, form.time_sec.data = Still.timeline_int_to_str(still.timeline)
         form.comment.data = still.comment
         forms.append(form)
     return render_template('movie/edit_stills.html', poster_id=poster_id,
@@ -189,7 +199,7 @@ def edit_still(still_id):
     form = StillForm2()
     if form.validate_on_submit():
         try:
-            the_still.timeline = Still.timeline_str_to_int(form.timeline.data)
+            the_still.timeline = Still.timeline_str_to_int(form.time_min.data, form.time_sec.data)
             the_still.comment = form.comment.data
             db.session.add(the_still)
             flash(u'剧照更新成功！')

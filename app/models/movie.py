@@ -12,7 +12,7 @@ str_country = u'中国大陆,香港,台湾,' \
               u'瑞典,巴西,波兰,丹麦,捷克,阿根廷,比利时,墨西哥,奥地利,荷兰,新西兰,土耳其,匈牙利,以色列,新加坡'
 """
 
-str_movie_type = u'动作与历险,儿童与家庭,喜剧,剧情,爱情,恐怖与惊悚,科幻与奇幻,记录与传记,动画,情色,其他'
+str_movie_type = u'未定义,动作与历险,儿童与家庭,喜剧,剧情,爱情,恐怖与惊悚,科幻与奇幻,记录与传记,动画,情色,其他'
 
 
 class Poster(db.Model):
@@ -122,19 +122,21 @@ class Still(db.Model):
         return json_still
 
     @staticmethod
-    def timeline_str_to_int(str_time):
-        m, s = str_time.split(':')
+    def timeline_str_to_int(str_min, str_sec):
+        if str_min == u'':
+            str_min = u'0'
+        if str_sec == u'':
+            str_sec = u'0'
         try:
-            time = int(m) * 60 + int(s)
+            time = int(str_min) * 60 + int(str_sec)
         except ValueError:
             return 0
-            # raise ValueError('Value Error while processing ' + str_time)
         return time
 
     @staticmethod
     def timeline_int_to_str(int_time):
         if int_time < 0:
             int_time = 0
-        s = int_time % 60
-        m = int_time / 60
-        return '{0}:{1}'.format(m, s)
+        sec = int_time % 60
+        min = int_time / 60
+        return str(min), str(sec)

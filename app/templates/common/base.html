@@ -56,6 +56,9 @@
                     <li><a href="{{ url_for('main.index') }}">主页</a></li>
                     <li><a href="{{ url_for('blog.index') }}">博客</a></li>
                     <li><a href="{{ url_for('movie.index') }}">电影</a></li>
+                    <li><a href="#">音乐</a></li>
+                    <li><a href="#">作品</a></li>
+                    <li><a href="#">资源</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     {% if current_user.can(Permission.MODERATE_COMMENTS) %}
@@ -96,6 +99,13 @@
             </div>
         {% endfor %}
         {% block page_content %}{% endblock %}
+    </div>
+{% endblock %}
+{% block footer %}
+    <div class="footer panel-footer" style="margin-top: 60px; padding: 24px 0;">
+        <div class="container" style="min-height: 120px;">
+            <b>&copy;Copyright by<i> Kui Wang, </i>All rights reserved.</b>
+        </div>
     </div>
 {% endblock %}
 {% block scripts %}

@@ -1,8 +1,0 @@
-{% extends "common/base.html" %}
-{% import "common/wtf.html" as wtf %}
-
-{% block title %}Add Poster{% endblock %}
-
-    {% block page_content %}
-        {{ wtf.quick_form(form, action=url_for('movie.add_poster')) }}
-    {% endblock %}

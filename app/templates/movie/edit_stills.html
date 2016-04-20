@@ -5,7 +5,45 @@
 {% block title %}Edit Stills{% endblock %}
 
     {% block page_content %}
-        {{ wtf.quick_form(form_new, action=url_for('movie.add_still', poster_id=poster_id, redirect=url_for('movie.edit_stills', poster_id=poster_id))) }}
+        <div id="new-still">
+            <form class="form-horizontal" action="{{ url_for('movie.add_still', poster_id=poster_id) }}" method="post" enctype="multipart/form-data" role="form">
+                {{ form_new.hidden_tag() }}
+                <div class="form-group">
+                    <label for="new-still-min" class="col-sm-2 control-label">时间轴</label>
+                    <div class="col-sm-4">
+                        <div class="input-group">
+                            <div class="input-group-addon"><span class="glyphicon glyphicon-time" aria-hidden="true"></span></div>
+                            {{ form_new.time_min(id='new-still-min', class='form-control text-right', placeholder='00') }}
+                            <div class="input-group-addon" style="border-left:0; border-right:0;">分</div>
+                            {{ form_new.time_sec(id='new-still-sec', class='form-control text-right', placeholder='00') }}
+                            <div class="input-group-addon">秒</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="new-still-method" class="col-sm-2 control-label">上传电影剧照</label>
+                    <div class="col-sm-7">
+                        {{ form_new.method(id='new-still-method', class='form-control', onchange='update_upload_method(this.value)', style='width:110px; float: left;') }}
+                        <div style="width: 100%; padding-left: 120px;">
+                            {{ form_new.img_file(id='new-still-file', class='form-control') }}
+                            {{ form_new.img_url(id='new-still-url', class='form-control hidden', placeholder='http://') }}
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="new-still-comment" class="col-sm-2 control-label">要说的话</label>
+                    <div class="col-sm-9">
+                        {{ form_new.comment(class='form-control', id='new-still-comment', placeholder='说点什么吧 ......') }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-9">
+                        {{ form_new.submit(value='添加此剧照', class='btn btn-default') }}
+                    </div>
+                </div>
+            </form>
+        </div>
+
         {% for form in forms %}
         <div>
             <img src="{{ '/static/img/poster/{0}/{1}.jpg'.format(poster_id, form.id) }}" style="height: 240px;" />
@@ -19,3 +57,28 @@
         </div>
         {% endif %}
     {% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script type="text/javascript">
+
+        function update_upload_method(index) {
+
+            var i_file = document.getElementById('new-still-file');
+            var i_url = document.getElementById('new-still-url');
+            var css_class = 'hidden';
+
+            if (! hasClass(i_file, css_class)) {
+                addClass(i_file, css_class)
+            }
+            if (! hasClass(i_url, css_class)) {
+                addClass(i_url, css_class)
+            }
+            if (index == 'file') {
+                removeClass(i_file, css_class)
+            } else {
+                removeClass(i_url, css_class)
+            }
+        }
+    </script>
+{% endblock %}
