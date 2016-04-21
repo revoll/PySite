@@ -9,9 +9,25 @@
                 <form class="form-horizontal" action="{% if id == None %}{{ url_for('movie.add_poster') }}{% else %}{{ url_for('movie.edit_poster', poster_id=id) }}{% endif %}" method="post" enctype="multipart/form-data" role="form">
                     {{ form.hidden_tag() }}
                     <div class="form-group">
-                        <label for="poster-name" class="col-sm-2 control-label">电影名</label>
+                        <label for="poster-name" class="col-sm-2 control-label">*电影名</label>
                         <div class="col-sm-3">
-                            {{ form.name(id="poster-name", class="form-control", placeholder="(*) 电影名必须唯一") }}
+                            {{ form.name(id="poster-name", class="form-control", placeholder="电影名必须唯一") }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="poster-douban" class="col-sm-2 control-label">*豆瓣链接</label>
+                        <div class="col-sm-6">
+                            {{ form.douban_link(id="poster-douban", class="form-control", placeholder="http://") }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="poster-method" class="col-sm-2 control-label">*上传电影海报</label>
+                        <div class="col-sm-6">
+                            {{ form.method(id="poster-method", class="form-control", onchange="switch_upload_method(this.value, 'poster-file', 'poster-url');") }}
+                            <div>
+                                {{ form.img_file(id="poster-file", class="form-control") }}
+                                {{ form.img_url(id="poster-url", class="form-control hidden", placeholder="http://") }}
+                            </div>
                         </div>
                     </div>
                     <div class="form-group">
@@ -24,22 +40,6 @@
                         <label for="poster-alias" class="col-sm-2 control-label">别名</label>
                         <div class="col-sm-6">
                             {{ form.alias(id="poster-alias", class="form-control", placeholder="电影的其他名字") }}
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="poster-douban" class="col-sm-2 control-label">豆瓣链接</label>
-                        <div class="col-sm-6">
-                            {{ form.douban_link(id="poster-douban", class="form-control", placeholder="http://") }}
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="poster-method" class="col-sm-2 control-label">上传电影海报</label>
-                        <div class="col-sm-6">
-                            {{ form.method(id="poster-method", class="form-control", onchange="switch_upload_method(this.value, 'poster-file', 'poster-url');") }}
-                            <div>
-                                {{ form.img_file(id="poster-file", class="form-control") }}
-                                {{ form.img_url(id="poster-url", class="form-control hidden", placeholder="http://") }}
-                            </div>
                         </div>
                     </div>
                     <div class="form-group">
@@ -87,7 +87,7 @@
                     <div class="form-group">
                         <label for="poster-introduction" class="col-sm-2 control-label">电影简介</label>
                         <div class="col-sm-9">
-                            {{ form.introduction(id="poster-introduction", class="form-control", rows="16", placeholder="（简单描述下......）") }}
+                            {{ form.introduction(id="poster-introduction", class="form-control", rows="16", placeholder="简单介绍下......") }}
                         </div>
                     </div>
                     <div class="form-group">

@@ -75,7 +75,7 @@
                     <label for="new-still-method" class="col-sm-2 control-label">上传电影剧照</label>
 
                     <div class="col-sm-7">
-                        {{ form_new.method(id='new-still-method', class='form-control', onchange='switch_upload_method(this.value, "new_still_file", "new_still_url");') }}
+                        {{ form_new.method(id='new-still-method', class='form-control', onchange='switch_upload_method(this.value, "new-still-file", "new-still-url");') }}
                         <div>
                             {{ form_new.img_file(id='new-still-file', class='form-control') }}
                             {{ form_new.img_url(id='new-still-url', class='form-control hidden', placeholder='http://') }}

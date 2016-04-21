@@ -90,6 +90,11 @@
         </div>
     </div>
 {% endblock %}
+{% block navbar2 %}
+    <div class="container">
+        {% block navbar2_inner %}{% endblock %}
+    </div>
+{% endblock %}
 {% block content %}
     <div class="container">
         {% for message in get_flashed_messages() %}
@@ -104,7 +109,7 @@
 {% block footer %}
     <div class="footer panel-footer" style="margin-top: 60px; padding: 24px 0;">
         <div class="container" style="min-height: 120px;">
-            <b>&copy;Copyright by<i> Kui Wang, </i>All rights reserved.</b>
+            <b>&copy;Copyright</b> by<b> Kui Wang</b>. All rights reserved.
         </div>
     </div>
 {% endblock %}
