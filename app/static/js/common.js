@@ -99,6 +99,34 @@ scroll_to_top.init();
 function head_url(url, msg) {
 
 	if (confirm(msg)) {
+		console.log(url);
 		window.location.href = url;
+	}
+}
+
+
+/**
+ * 更改图片上传方式：使用本地上传 / URL拷贝
+ * @param index
+ * @param img_file_id
+ * @param img_url_id
+ */
+function switch_upload_method(index, img_file_id, img_url_id) {
+
+	var i_file = document.getElementById(img_file_id);
+	var i_url = document.getElementById(img_url_id);
+	var css_class = 'hidden';
+
+	if (!hasClass(i_file, css_class)) {
+		addClass(i_file, css_class)
+	}
+	if (!hasClass(i_url, css_class)) {
+		addClass(i_url, css_class)
+	}
+	if (index == 'file') {
+		removeClass(i_file, css_class);
+		i_url.value = ''
+	} else {
+		removeClass(i_url, css_class)
 	}
 }

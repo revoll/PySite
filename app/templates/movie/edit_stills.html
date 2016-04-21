@@ -25,7 +25,7 @@
                     <div class="form-group">
                         <label for="new-still-method" class="col-sm-2 control-label">上传电影剧照</label>
                         <div class="col-sm-7">
-                            {{ form_new.method(id='new-still-method', class='form-control', onchange='update_upload_method(this.value);') }}
+                            {{ form_new.method(id='new-still-method', class='form-control', onchange='switch_upload_method(this.value, "new-still-file", "new-still-url");') }}
                             <div>
                                 {{ form_new.img_file(id='new-still-file', class='form-control') }}
                                 {{ form_new.img_url(id='new-still-url', class='form-control hidden', placeholder='http://') }}
@@ -56,6 +56,7 @@
                     </div>
                     <div class="col-sm-6">
                         <form class="form" action="{{ url_for('movie.edit_still', still_id=form.id) }}" method="post">
+                            {{ form_new.hidden_tag() }}
                             <div class="form-group">
                                 <label>时间轴</label>
                                 <div class="input-group">
@@ -71,10 +72,13 @@
                                 {{ form.comment(class="form-control", placeholder="说点什么吧......") }}
                             </div>
                             <div class="form-group">
-                                <button class="btn btn-danger" onclick="head_url('{{ url_for('movie.delete_still', still_id=form.id) }}', '确定删除此剧照吗？')">删除此图</button>
                                 {{ form.submit(value="提交更新", class="btn btn-primary") }}
                             </div>
                         </form>
+                        <button class="btn btn-danger"
+                                onclick="head_url('{{ url_for('movie.delete_still', still_id=form.id) }}', '确定删除此剧照吗？');">
+                            删除此图
+                        </button>
                     </div>
                 </div>
                 <hr>
@@ -90,25 +94,4 @@
 
 {% block scripts %}
     {{ super() }}
-    <script type="text/javascript">
-
-        function update_upload_method(index) {
-
-            var i_file = document.getElementById('new-still-file');
-            var i_url = document.getElementById('new-still-url');
-            var css_class = 'hidden';
-
-            if (! hasClass(i_file, css_class)) {
-                addClass(i_file, css_class)
-            }
-            if (! hasClass(i_url, css_class)) {
-                addClass(i_url, css_class)
-            }
-            if (index == 'file') {
-                removeClass(i_file, css_class)
-            } else {
-                removeClass(i_url, css_class)
-            }
-        }
-    </script>
 {% endblock %}

@@ -86,12 +86,6 @@ def add_poster():
     form = PosterForm()
     if form.validate_on_submit():
         try:
-            the_poster = Poster(author=current_user._get_current_object())
-            poster_form_to_model(form, the_poster)
-            db.session.add(the_poster)
-            db.session.commit()
-            the_poster = Poster.query.filter_by(name=form.name.data).first()
-            assert the_poster
             method = form.method.data
             if method == u'file':
                 img = request.files['img_file']
@@ -102,12 +96,17 @@ def add_poster():
                 img.seek(0)
             else:
                 raise ValueError
+            the_poster = Poster(author=current_user._get_current_object())
+            poster_form_to_model(form, the_poster)
+            db.session.add(the_poster)
+            db.session.commit()
+            the_poster = Poster.query.filter_by(the_poster.name).first()
+            assert the_poster
             path = os.path.join(current_app.static_folder, 'img/poster', str(the_poster.id))
             save_poster_image(img, path, 'archive', current_app.config['FLASKY_IMAGE_RESOLUTION_LIMIT'])
             flash(u'海报添加成功！')
             return redirect(url_for('movie.poster', poster_id=the_poster.id))
         except Exception:
-            db.session.rollback()
             flash(u'海报添加时发生了错误...')
     return render_template('movie/edit_poster.html', form=form, id=None)
 
@@ -119,8 +118,6 @@ def edit_poster(poster_id):
     form = PosterForm()
     if form.validate_on_submit():
         try:
-            poster_form_to_model(form, the_poster)
-            db.session.add(the_poster)
             method = form.method.data
             if method == u'file':
                 img = request.files['img_file']
@@ -133,13 +130,19 @@ def edit_poster(poster_id):
                     img.seek(0)
             else:
                 raise ValueError
+            try:
+                poster_form_to_model(form, the_poster)
+                db.session.add(the_poster)
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                raise Exception
             if img:
                 path = os.path.join(current_app.static_folder, 'img/poster', str(poster_id))
                 save_poster_image(img, path, 'archive', current_app.config['FLASKY_IMAGE_RESOLUTION_LIMIT'])
             flash(u'海报更新成功！')
             return redirect(url_for('movie.poster', poster_id=the_poster.id))
         except Exception:
-            db.session.rollback()
             flash(u'海报更新时发生了错误...')
     poster_model_to_form(the_poster, form)
     return render_template('movie/edit_poster.html', form=form, id=poster_id)
@@ -151,6 +154,7 @@ def delete_poster(poster_id):
     redirect_url = request.args.get('redirect', url_for('movie.index'))
     try:
         db.session.delete(the_poster)
+        db.session.commit()
         path = os.path.join(current_app.static_folder, 'img/poster', str(poster_id))
         if os.path.exists(path):
             shutil.rmtree(path)
@@ -168,14 +172,6 @@ def add_still(poster_id):
     form = StillForm()
     if form.validate_on_submit():
         try:
-            the_still = Still(timeline=Still.timeline_str_to_int(form.time_min.data, form.time_sec.data),
-                              comment=form.comment.data, poster=the_poster,
-                              author=current_user._get_current_object())
-            db.session.add(the_still)
-            db.session.commit()
-            the_still = Still.query.filter_by(
-                poster_id=poster_id, timeline=the_still.timeline).order_by(Still.timestamp.desc()).first()
-            assert the_still
             method = form.method.data
             if method == u'file':
                 img = request.files['img_file']
@@ -186,6 +182,18 @@ def add_still(poster_id):
                 img.seek(0)
             else:
                 raise ValueError
+            try:
+                the_still = Still(timeline=Still.timeline_str_to_int(form.time_min.data, form.time_sec.data),
+                                  comment=form.comment.data, poster=the_poster,
+                                  author=current_user._get_current_object())
+                db.session.add(the_still)
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                raise Exception
+            the_still = Still.query.filter_by(
+                poster_id=poster_id, timeline=the_still.timeline).order_by(Still.timestamp.desc()).first()
+            assert the_still
             path = os.path.join(current_app.static_folder, 'img/poster', str(poster_id))
             save_poster_image(img, path, str(the_still.id), current_app.config['FLASKY_IMAGE_RESOLUTION_LIMIT'])
             flash(u'剧照添加成功！')
@@ -221,6 +229,7 @@ def edit_still(still_id):
             the_still.timeline = Still.timeline_str_to_int(form.time_min.data, form.time_sec.data)
             the_still.comment = form.comment.data
             db.session.add(the_still)
+            db.session.commit()
             flash(u'剧照更新成功！')
         except Exception:
             db.session.rollback()
@@ -233,6 +242,7 @@ def delete_still(still_id):
     the_still = Still.query.get_or_404(still_id)
     try:
         db.session.delete(the_still)
+        db.session.commit()
         path = os.path.join(current_app.static_folder, 'img/poster', str(the_still.poster_id))
         img_prefix = os.path.join(path, str(still_id))
         if os.path.exists(img_prefix + '.jpg'):

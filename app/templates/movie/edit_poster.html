@@ -35,7 +35,7 @@
                     <div class="form-group">
                         <label for="poster-method" class="col-sm-2 control-label">上传电影海报</label>
                         <div class="col-sm-6">
-                            {{ form.method(id="poster-method", class="form-control", onchange="update_upload_method(this.value);") }}
+                            {{ form.method(id="poster-method", class="form-control", onchange="switch_upload_method(this.value, 'poster-file', 'poster-url');") }}
                             <div>
                                 {{ form.img_file(id="poster-file", class="form-control") }}
                                 {{ form.img_url(id="poster-url", class="form-control hidden", placeholder="http://") }}
@@ -102,26 +102,4 @@
 
 {% block scripts %}
     {{ super() }}
-    <script type="text/javascript">
-
-        function update_upload_method(index) {
-
-            var i_file = document.getElementById('poster-file');
-            var i_url = document.getElementById('poster-url');
-            var css_class = 'hidden';
-
-            if (! hasClass(i_file, css_class)) {
-                addClass(i_file, css_class)
-            }
-            if (! hasClass(i_url, css_class)) {
-                addClass(i_url, css_class)
-            }
-            if (index == 'file') {
-                removeClass(i_file, css_class)
-                i_url.value = ''
-            } else {
-                removeClass(i_url, css_class)
-            }
-        }
-    </script>
 {% endblock %}
