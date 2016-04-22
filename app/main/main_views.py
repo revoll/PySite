@@ -1,6 +1,5 @@
 # encoding: utf-8
-from flask import render_template, redirect, abort, url_for, flash, request, \
-    current_app, jsonify
+from flask import render_template, redirect, abort, url_for, flash, request, current_app, jsonify
 from flask.ext.sqlalchemy import get_debug_queries
 from flask.ext.login import login_required, current_user
 

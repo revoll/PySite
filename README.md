@@ -42,4 +42,5 @@ Changelog
 	mysql> alter table posters auto_increment=1000001;
 	mysql> alter table stills auto_increment=1000001;
 
-
+2016-04-22
+	初步完成Movie板块的开发及调试。下一步工作为：修改User模块（取消关注等功能）及Blog模块（添加标签等归档管理功能）。
