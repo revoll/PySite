@@ -9,7 +9,7 @@ from flask import request, current_app, render_template, redirect, url_for, flas
 from flask.ext.login import login_required, current_user
 
 from . import movie
-from .movie_forms import PosterForm, StillForm, StillForm2
+from .movie_forms import PosterForm, AddStillForm, EditStillForm
 from .. import db
 from ..models.movie import Poster, Still
 
@@ -88,7 +88,7 @@ def poster(poster_id):
         page, per_page=current_app.config['FLASKY_POSTER_STILLS_PER_PAGE'],
         error_out=False)
 
-    return render_template('movie/poster.html', poster=the_poster, form_new=StillForm(),
+    return render_template('movie/poster.html', poster=the_poster, form_new=AddStillForm(),
                            stills=pagination.items, pagination=pagination)
 
 
@@ -222,7 +222,7 @@ def add_still(poster_id):
 
     the_poster = Poster.query.get_or_404(poster_id)
     redirect_url = request.args.get('redirect', url_for('movie.poster', poster_id=poster_id))
-    form = StillForm()
+    form = AddStillForm()
 
     if form.validate_on_submit():
         flag = True
@@ -279,13 +279,13 @@ def edit_stills(poster_id):
         page, per_page=current_app.config['FLASKY_POSTER_STILLS_PER_PAGE'], error_out=False)
     forms = []
     for still in pagination.items:
-        form = StillForm2()
+        form = EditStillForm()
         form.id = still.id
         form.time_min.data, form.time_sec.data = Still.timeline_int_to_str(still.timeline)
         form.comment.data = still.comment
         forms.append(form)
     return render_template('movie/edit_stills.html', poster_id=poster_id,
-                           form_new=StillForm(), forms=forms, pagination=pagination)
+                           form_new=AddStillForm(), forms=forms, pagination=pagination)
 
 
 @movie.route('/edit-still/<int:still_id>/', methods=['POST'])
@@ -293,7 +293,7 @@ def edit_stills(poster_id):
 def edit_still(still_id):
 
     the_still = Still.query.get_or_404(still_id)
-    form = StillForm2()
+    form = EditStillForm()
 
     if form.validate_on_submit():
         flag = True

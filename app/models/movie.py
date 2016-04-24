@@ -64,6 +64,9 @@ class Poster(db.Model):
         except IntegrityError:
             db.session.rollback()
 
+    def permission_check(self):
+        pass
+
     def to_json(self):
         json_poster = {
             'url': '',  # url_for('movie.poster', poster_id=self.id, _external=True),

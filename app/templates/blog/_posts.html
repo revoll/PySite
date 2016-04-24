@@ -23,7 +23,7 @@
                         <a href="{{ url_for('blog.edit', id=post.id) }}">
                             <span class="label label-primary">Edit</span>
                         </a>
-                    {% elif current_user.is_administrator() %}
+                    {% elif current_user.can(Permission.ADMIN_BLOG) %}
                         <a href="{{ url_for('blog.edit', id=post.id) }}">
                             <span class="label label-danger">Edit [Admin]</span>
                         </a>

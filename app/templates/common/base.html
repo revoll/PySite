@@ -61,9 +61,6 @@
                     <li><a href="#">资源</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
-                    {% if current_user.can(Permission.MODERATE_COMMENTS) %}
-                        <li><a href="{{ url_for('blog.moderate') }}">评论管理</a></li>
-                    {% endif %}
                     {% if current_user.is_authenticated %}
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
@@ -91,9 +88,6 @@
     </div>
 {% endblock %}
 {% block navbar2 %}
-    <div class="container">
-        {% block navbar2_inner %}{% endblock %}
-    </div>
 {% endblock %}
 {% block content %}
     <div class="container">

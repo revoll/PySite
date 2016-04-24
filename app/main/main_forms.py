@@ -1,8 +1,8 @@
 from flask.ext.wtf import Form
-from wtforms import StringField, TextAreaField, BooleanField, SelectField, SubmitField, ValidationError
+from wtforms import StringField, TextAreaField, BooleanField, SelectMultipleField, SubmitField, ValidationError
 from wtforms.validators import Required, Length, Email, Regexp
 
-from ..models.user import User, Role
+from ..models.user import User, permission_detail
 
 
 class EditProfileForm(Form):
@@ -18,7 +18,7 @@ class EditProfileAdminForm(Form):
         Required(), Length(1, 64), Regexp(
             '^[A-Za-z][A-Za-z0-9_.]*$', 0, 'Usernames must have only letters, numbers, dots or underscores')])
     confirmed = BooleanField('Confirmed')
-    role = SelectField('Role', coerce=int)
+    permission = SelectMultipleField('Permission', coerce=int)
     name = StringField('Real name', validators=[Length(0, 64)])
     location = StringField('Location', validators=[Length(0, 64)])
     about_me = TextAreaField('About me')
@@ -26,7 +26,7 @@ class EditProfileAdminForm(Form):
 
     def __init__(self, user, *args, **kwargs):
         super(EditProfileAdminForm, self).__init__(*args, **kwargs)
-        self.role.choices = [(role.id, role.name) for role in Role.query.order_by(Role.name).all()]
+        self.permission.choices = [(permission[0], permission[1]) for permission in permission_detail]
         self.user = user
 
     def validate_email(self, field):

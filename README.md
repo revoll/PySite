@@ -44,3 +44,8 @@ Changelog
 
 2016-04-22
 	初步完成Movie板块的开发及调试。下一步工作为：修改User模块（取消关注等功能）及Blog模块（添加标签等归档管理功能）。
+
+	WTForms使用笔记：
+	* 表单域类型：SelectField, SelectMultipleField, BooleanField, ...
+	* 表单类中validate开头的函数（validate_xxx）用于验证相应的表单域
+	* coerce关键字用于类型约束

@@ -13,7 +13,7 @@ from ..tools.decorators import permission_required
 @blog.route('/', methods=['GET', 'POST'])
 def index():
     form = PostForm()
-    if current_user.can(Permission.WRITE_ARTICLES) and \
+    if current_user.can(Permission.CREATE_BLOG) and \
             form.validate_on_submit():
         post = Post(body=form.body.data,
                     author=current_user._get_current_object())
@@ -79,7 +79,7 @@ def post(id):
 def edit(id):
     post = Post.query.get_or_404(id)
     if current_user != post.author and \
-            not current_user.can(Permission.ADMINISTER):
+            not current_user.can(Permission.MODIFY_BLOG):
         abort(403)
     form = PostForm()
     if form.validate_on_submit():
@@ -97,7 +97,7 @@ def delete(id):
     post = Post.query.get_or_404(id)
     user = current_user._get_current_object()
     redirect_url = request.args.get('redirect', url_for('main.profile', username=user.username))
-    if user.id == post.author_id or user.can(Permission.DELETE_POST):
+    if user.id == post.author_id or user.can(Permission.ADMIN_BLOG):
         db.session.delete(post)
         flash('Post ({0}) is deleted.'.format(str(id)))
     return redirect(redirect_url)
@@ -120,7 +120,6 @@ def delete_comment(id):
 
 @blog.route('/moderate')
 @login_required
-@permission_required(Permission.MODERATE_COMMENTS)
 def moderate():
     page = request.args.get('page', 1, type=int)
     pagination = Comment.query.order_by(Comment.timestamp.desc()).paginate(
@@ -133,7 +132,6 @@ def moderate():
 
 @blog.route('/moderate/enable/<int:id>')
 @login_required
-@permission_required(Permission.MODERATE_COMMENTS)
 def moderate_enable(id):
     comment = Comment.query.get_or_404(id)
     comment.disabled = False
@@ -144,7 +142,7 @@ def moderate_enable(id):
 
 @blog.route('/moderate/disable/<int:id>')
 @login_required
-@permission_required(Permission.MODERATE_COMMENTS)
+@permission_required(Permission.MODIFY_COMMENT)
 def moderate_disable(id):
     comment = Comment.query.get_or_404(id)
     comment.disabled = True

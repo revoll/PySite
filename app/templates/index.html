@@ -1,0 +1,11 @@
+{% extends "common/base.html" %}
+
+{% block title %}Index - PySite{% endblock %}
+
+    {% block page_content %}
+        <h1>Hello, {% if current_user.is_authenticated %}{{ current_user.username }}{% else %}Stranger{% endif %}!</h1>
+    {% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+{% endblock %}

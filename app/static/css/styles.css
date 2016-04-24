@@ -151,6 +151,10 @@ blockquote small {
 	overflow-y: scroll;
 } */
 
+body > .container {
+	min-height: 600px;
+}
+
 .navbar {
 	border-radius: 0;
 }

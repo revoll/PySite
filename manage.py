@@ -6,7 +6,7 @@ from flask.ext.script import Manager, Shell
 from flask.ext.migrate import Migrate, MigrateCommand
 
 from app import create_app, db
-from app.models.user import User, Follow, Role, Permission
+from app.models.user import User, Permission
 from app.models.blog import Post, Comment
 from app.models.movie import Poster, Still, MovieType
 
@@ -40,8 +40,8 @@ migrate = Migrate(app, db)
 
 
 def make_shell_context():
-    return dict(app=app, db=db, User=User, Follow=Follow, Role=Role,
-                Permission=Permission, Post=Post, Comment=Comment,
+    return dict(app=app, db=db, User=User, Permission=Permission,
+                Post=Post, Comment=Comment,
                 Poster=Poster, MovieType=MovieType, Still=Still)
 
 
