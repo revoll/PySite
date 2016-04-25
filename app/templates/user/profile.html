@@ -5,9 +5,9 @@
 
 {% block page_content %}
     <div class="page-header">
-        <a href="{{ url_for('main.upload_avatar') }}"><img class="img-rounded profile-thumbnail"
-                                                           src="{{ user.gravatar(size=256) }}"></a>
-
+        <a href="{{ url_for('main.upload_avatar') }}">
+            <img class="img-rounded profile-thumbnail" src="{{ user.gravatar(size=256) }}">
+        </a>
         <div class="profile-header">
             <h1>{{ user.username }}</h1>
             {% if user.name or user.location %}
@@ -18,7 +18,7 @@
                     {% endif %}
                 </p>
             {% endif %}
-            {% if current_user.is_super_admin() %}
+            {% if current_user.is_admin() %}
                 <p><a href="mailto:{{ user.email }}">{{ user.email }}</a></p>
             {% endif %}
             {% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %}
@@ -29,10 +29,10 @@
 
             <p>
                 {% if user == current_user %}
-                    <a class="btn btn-default" href="{{ url_for('main.edit_profile') }}">Edit Profile</a>
+                    <a class="btn btn-default" href="{{ url_for('user.edit_profile') }}">Edit Profile</a>
                 {% endif %}
-                {% if current_user.is_super_admin() %}
-                    <a class="btn btn-danger" href="{{ url_for('main.edit_profile_admin', id=user.id) }}">Edit Profile
+                {% if current_user.is_admin() %}
+                    <a class="btn btn-danger" href="{{ url_for('user.edit_profile_admin', id=user.id) }}">Edit Profile
                         [Admin]</a>
                 {% endif %}
             </p>
@@ -42,7 +42,7 @@
     {% include 'blog/_posts.html' %}
     {% if pagination %}
         <div class="pagination">
-            {{ macros.pagination_widget(pagination, 'main.profile', username=user.username) }}
+            {{ macros.pagination_widget(pagination, 'user.profile', username=user.username) }}
         </div>
     {% endif %}
 {% endblock %}

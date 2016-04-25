@@ -22,108 +22,45 @@ class Permission:
         自定义权限： e.g. BLOG_MODIFY | BLOG_DELETE | ...
         完全地公开： 0x00
     """
+    # 电影剧照
+    CREATE_STILLS = 1 << 0
+    BROWSE_STILLS = 1 << 1
+    MODIFY_STILLS = 1 << 2
+    DELETE_STILLS = 1 << 3
+    # 电影海报
+    CREATE_POSTER = 1 << 4
+    BROWSE_POSTER = 1 << 5
+    MODIFY_POSTER = 1 << 6
+    DELETE_POSTER = 1 << 7
+    # 资源
+    UPLOAD_FILES = 1 << 8
+    BROWSE_FILES = 1 << 9
+
+    # 各个权限标志位的说明，可用于表单展示
+    detail = [
+        (0, 'Poster - Create'),
+        (1, 'Poster - Browse'),
+        (2, 'Poster - Modify'),
+        (3, 'Poster - Delete'),
+
+        (4, 'Stills - Create'),
+        (5, 'Stills - Browse'),
+        (6, 'Stills - Modify'),
+        (7, 'Stills - Delete'),
+
+        (8, 'Files - Upload'),
+        (9, 'Files - Browse'),
+    ]
+
+    roles = {
+        # 开放最基本的权限，仅能一般性地浏览网站公开的内容
+        'administrator': 0x7FFFFFFFFFFFFFFF,
+        'anonymous': (1 << BROWSE_POSTER) | (1 << BROWSE_STILLS),
+        'default': (1 << BROWSE_STILLS) | (1 << CREATE_STILLS) | (1 << BROWSE_POSTER) | (1 << BROWSE_FILES),
+    }
+
     def __init__(self):
         pass
-
-    # 评论
-    CREATE_COMMENT = 0
-    BROWSE_COMMENT = 1
-    MODIFY_COMMENT = 2
-    DELETE_COMMENT = 3
-
-    # 博客
-    CREATE_BLOG = 4
-    BROWSE_BLOG = 5
-    MODIFY_BLOG = 6
-    DELETE_BLOG = 7
-
-    # 电影海报
-    CREATE_POSTER = 8
-    BROWSE_POSTER = 9
-    MODIFY_POSTER = 10
-    DELETE_POSTER = 11
-
-    # 电影剧照
-    CREATE_STILLS = 12
-    BROWSE_STILLS = 13
-    MODIFY_STILLS = 14
-    DELETE_STILLS = 15
-
-    # 管理所有用户的对应板块的内容
-    ADMIN_COMMENT = 56
-    ADMIN_BLOG = 57
-    ADMIN_POSTER = 58
-    ADMIN_STILLS = 59
-    ADMIN_SUPER = 62  # 最高位不使用，因为数据库使用64位有符号长整形类型
-
-    @staticmethod
-    def index_to_value(index):
-        if (index >= 0) and (index < 64):
-            return 1 << index
-        else:
-            raise ValueError
-
-    @staticmethod
-    def value_to_index(value):
-        index = 0
-        while value > 1:
-            index += 1
-            value >>= 1
-        return index
-
-    @staticmethod
-    def index_array_to_value(index_array):
-        value = 0
-        for index in index_array:
-            value |= Permission.index_to_value(index)
-        return value
-
-    @staticmethod
-    def value_to_index_array(value):
-        index_array = []
-        counter = 0
-        while value > 0:
-            if value & 1:
-                index_array.append(counter)
-            value >>= 1
-            counter += 1
-        return index_array
-
-    # 开放最基本的权限，仅能一般性地浏览网站公开的内容
-    BASIC = (1 << CREATE_COMMENT) | (1 << BROWSE_COMMENT) | \
-            (1 << BROWSE_BLOG) | (1 << BROWSE_POSTER) | (1 << BROWSE_STILLS)
-    ANONYMOUS = BASIC
-    SUPER_ADMIN = 0x7FFFFFFFFFFFFFFF | (1 << ADMIN_SUPER)
-
-
-permission_detail = [
-
-    (Permission.CREATE_COMMENT, 'Comment - Create'),
-    (Permission.BROWSE_COMMENT, 'Comment - Browse'),
-    (Permission.MODIFY_COMMENT, 'Comment - Modify'),
-    (Permission.DELETE_COMMENT, 'Comment - Delete'),
-
-    (Permission.CREATE_BLOG, 'Blog - Create'),
-    (Permission.BROWSE_BLOG, 'Blog - Browse'),
-    (Permission.MODIFY_BLOG, 'Blog - Modify'),
-    (Permission.DELETE_BLOG, 'Blog - Delete'),
-
-    (Permission.CREATE_POSTER, 'Poster - Create'),
-    (Permission.BROWSE_POSTER, 'Poster - Browse'),
-    (Permission.MODIFY_POSTER, 'Poster - Modify'),
-    (Permission.DELETE_POSTER, 'Poster - Delete'),
-
-    (Permission.CREATE_STILLS, 'Stills - Create'),
-    (Permission.BROWSE_STILLS, 'Stills - Browse'),
-    (Permission.MODIFY_STILLS, 'Stills - Modify'),
-    (Permission.DELETE_STILLS, 'Stills - Delete'),
-
-    (Permission.ADMIN_COMMENT, 'Admin - Comment'),
-    (Permission.ADMIN_BLOG, 'Admin - Blog'),
-    (Permission.ADMIN_POSTER, 'Admin - Poster'),
-    (Permission.ADMIN_STILLS, 'Admin - Stills'),
-    (Permission.ADMIN_SUPER, 'Admin - Super!'),
-]
 
 
 class User(UserMixin, db.Model):
@@ -131,7 +68,7 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=1000001)  # autoincrement takes no effect here.
     email = db.Column(db.String(64), unique=True, index=True)
     username = db.Column(db.String(64), unique=True, index=True)
-    permission = db.Column(db.BigInteger, default=Permission.BASIC)  # 64bit ?
+    permission = db.Column(db.BigInteger, default=Permission.roles['default'])  # 64bit ?
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
     name = db.Column(db.String(64))
@@ -153,7 +90,7 @@ class User(UserMixin, db.Model):
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
         if self.permission is None and self.email == current_app.config['FLASKY_SUPER_ADMIN']:
-            self.permission = -1
+            self.permission = Permission.roles['super_admin']
 
     @property
     def password(self):
@@ -225,19 +162,18 @@ class User(UserMixin, db.Model):
         #    url = 'https://secure.gravatar.com/avatar'
         # else:
         #    url = 'http://www.gravatar.com/avata'
-        hash = self.avatar or hashlib.md5(self.email.encode('utf-8')).hexdigest()
-        return '{url}?s={size}'.format(url=url_for('main.get_avatar', ava_hash=hash), size=size)
+        ava_hash = self.avatar or hashlib.md5(self.email.encode('utf-8')).hexdigest()
+        return '{url}?s={size}'.format(url=url_for('main.get_avatar', ava_hash=ava_hash), size=size)
 
     def ping(self):
         self.last_seen = datetime.utcnow()
         db.session.add(self)
 
-    def can(self, permissions):
-        check = 1 << permissions
-        return (self.permission & check) == check
+    def can(self, permission):
+        return (self.permission & permission) == permission
 
-    def is_super_admin(self):
-        return self.permission & Permission.ADMIN_SUPER
+    def is_admin(self):
+        return self.permission == Permission.roles['administrator']
 
     """
     def to_json(self):
@@ -296,10 +232,10 @@ db.event.listen(User.email, 'set', User.on_changed_email)
 
 
 class AnonymousUser(AnonymousUserMixin):
-    def can(self, permissions):
-        return (Permission.ANONYMOUS & permissions) == permissions
+    def can(self, permission):
+        return (Permission.roles['anonymous'] & permission) == permission
 
-    def is_administrator(self):
+    def is_admin(self):
         return False
 
 

@@ -1,17 +1,15 @@
 {% extends "common/base.html" %}
 {% import "common/macros.html" as macros %}
-{% import "bootstrap/wtf.html" as wtf %}
+{% import "common/wtf.html" as wtf %}
 
 {% block title %}Blog - Post{% endblock %}
 
 {% block page_content %}
     {% include 'blog/_posts.html' %}
     <h4 id="comments">Comments</h4>
-    {% if current_user.can(Permission.CREATE_COMMENT) %}
         <div class="comment-form">
             {{ wtf.quick_form(form) }}
         </div>
-    {% endif %}
     {% include 'blog/_comments.html' %}
     {% if pagination %}
         <div class="pagination">

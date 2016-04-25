@@ -51,6 +51,7 @@
             <div class="clearfix"></div>
         </div>
     </div>
+    {% if current_user.can(Permission.CREATE_STILLS) %}
     <div id="new-still" class="boxed-group">
         <div class="header">添加剧照</div>
         <div class="content">
@@ -97,6 +98,7 @@
             </form>
         </div>
     </div>
+    {% endif %}
     <div id="still-list" class="boxed-group">
         <div class="header">电影剧照</div>
         <div class="content">

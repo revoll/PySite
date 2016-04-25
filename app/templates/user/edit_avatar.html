@@ -14,7 +14,7 @@
             xiuxiu.setUploadType(2);
             xiuxiu.setUploadDataFieldName("avatar");
             xiuxiu.onInit = function () {
-                xiuxiu.loadPhoto('{{ url_for('main.get_avatar', _external=True, ava_hash=current_user.avatar_hash) }}');
+                xiuxiu.loadPhoto('{{ url_for('main.get_avatar', _external=True, ava_hash=current_user.avatar) }}');
             };
             xiuxiu.onUploadResponse = function (data) {
                 // 上传完成的返回消息,可以开启调试

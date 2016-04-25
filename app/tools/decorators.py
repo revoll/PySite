@@ -20,4 +20,4 @@ def permission_required(permission):
 
 
 def admin_required(f):
-    return permission_required(Permission.ADMIN_SUPER)(f)
+    return permission_required(Permission.roles['administrator'])(f)

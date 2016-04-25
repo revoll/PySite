@@ -5,6 +5,7 @@
 {% block title %}Edit Stills{% endblock %}
 
     {% block page_content %}
+        {% if current_user.can(Permission.CREATE_STILLS) %}
         <div id="new-still" class="boxed-group">
             <div class="header">添加剧照</div>
             <div class="content">
@@ -46,6 +47,7 @@
                 </form>
             </div>
         </div>
+        {% endif %}
         <div id="edit-stills" class="boxed-group">
             <div class="header">编辑剧照</div>
             <div class="content">

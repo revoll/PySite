@@ -70,7 +70,7 @@
                             </a>
                             <ul class="dropdown-menu">
                                 {% if current_user.is_authenticated %}
-                                    <li><a href="{{ url_for('main.profile', username=current_user.username) }}">个人资料</a>
+                                    <li><a href="{{ url_for('user.profile', username=current_user.username) }}">个人资料</a>
                                     </li>
                                 {% endif %}
                                 <li><a href="{{ url_for('auth.change_password') }}">修改密码</a></li>

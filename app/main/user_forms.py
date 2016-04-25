@@ -2,7 +2,7 @@ from flask.ext.wtf import Form
 from wtforms import StringField, TextAreaField, BooleanField, SelectMultipleField, SubmitField, ValidationError
 from wtforms.validators import Required, Length, Email, Regexp
 
-from ..models.user import User, permission_detail
+from ..models.user import User, Permission
 
 
 class EditProfileForm(Form):
@@ -26,7 +26,7 @@ class EditProfileAdminForm(Form):
 
     def __init__(self, user, *args, **kwargs):
         super(EditProfileAdminForm, self).__init__(*args, **kwargs)
-        self.permission.choices = [(permission[0], permission[1]) for permission in permission_detail]
+        self.permission.choices = [(permission[0], permission[1]) for permission in Permission.detail]
         self.user = user
 
     def validate_email(self, field):

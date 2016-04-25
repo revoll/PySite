@@ -38,9 +38,10 @@ def create_app(config_name):
         from flask.ext.sslify import SSLify
         sslify = SSLify(app)
 
-    from .main import main as main_blueprint, auth as auth_blueprint, \
+    from .main import main as main_blueprint, user as user_blueprint, auth as auth_blueprint, \
         blog as blog_blueprint, movie as movie_blueprint
     app.register_blueprint(main_blueprint)
+    app.register_blueprint(user_blueprint, url_prefix='/user')
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
     app.register_blueprint(blog_blueprint, url_prefix='/blog')
     app.register_blueprint(movie_blueprint, url_prefix='/movie')

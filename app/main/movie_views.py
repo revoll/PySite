@@ -6,12 +6,15 @@ from StringIO import StringIO
 from PIL import Image
 
 from flask import request, current_app, render_template, redirect, url_for, flash
-from flask.ext.login import login_required, current_user
+
+from flask.ext.login import current_user
 
 from . import movie
 from .movie_forms import PosterForm, AddStillForm, EditStillForm
 from .. import db
 from ..models.movie import Poster, Still
+from ..models.user import Permission
+from ..tools.decorators import permission_required
 
 
 def poster_form_to_model(form, poster):
@@ -64,22 +67,22 @@ def save_poster_image(f, path, name, limit):
 
 
 @movie.route('/')
+@permission_required(Permission.BROWSE_POSTER)
 def index():
 
     page = request.args.get('page', 1, type=int)
     pagination = Poster.query.order_by(Poster.timestamp.desc()).paginate(
         page, per_page=current_app.config['FLASKY_POSTERS_PER_PAGE'], error_out=False)
+    posters = pagination.items
+    for i in range(0, len(posters)):
+        if len(posters[i].introduction) > 140:
+            posters[i].introduction = posters[i].introduction[:140] + u' ......'
 
-    for poster in pagination.items:
-        if len(poster.introduction) > 140:
-            poster.introduction_cut = poster.introduction[:140] + u' ......'
-        else:
-            poster.introduction_cut = poster.introduction
-
-    return render_template('movie/index.html', posters=pagination.items, pagination=pagination)
+    return render_template('movie/index.html', posters=posters, pagination=pagination)
 
 
 @movie.route('/poster/<int:poster_id>/')
+@permission_required(Permission.BROWSE_POSTER)
 def poster(poster_id):
 
     the_poster = Poster.query.get_or_404(poster_id)
@@ -87,13 +90,14 @@ def poster(poster_id):
     pagination = the_poster.stills.order_by(Still.timeline.asc()).paginate(
         page, per_page=current_app.config['FLASKY_POSTER_STILLS_PER_PAGE'],
         error_out=False)
+    stills = pagination.items if current_user.can(Permission.BROWSE_STILLS) else []
 
     return render_template('movie/poster.html', poster=the_poster, form_new=AddStillForm(),
-                           stills=pagination.items, pagination=pagination)
+                           stills=stills, pagination=pagination)
 
 
 @movie.route('/add/', methods=['GET', 'POST'])
-@login_required
+@permission_required(Permission.CREATE_POSTER)
 def add_poster():
 
     form = PosterForm()
@@ -143,7 +147,7 @@ def add_poster():
 
 
 @movie.route('/edit/<int:poster_id>/', methods=['GET', 'POST'])
-@login_required
+@permission_required(Permission.MODIFY_POSTER)
 def edit_poster(poster_id):
 
     the_poster = Poster.query.get_or_404(poster_id)
@@ -190,7 +194,7 @@ def edit_poster(poster_id):
 
 
 @movie.route('/delete/<int:poster_id>/')
-@login_required
+@permission_required(Permission.DELETE_POSTER)
 def delete_poster(poster_id):
 
     the_poster = Poster.query.get_or_404(poster_id)
@@ -217,7 +221,7 @@ def delete_poster(poster_id):
 
 
 @movie.route('/poster/<int:poster_id>/add-still/', methods=['GET', 'POST'])
-@login_required
+@permission_required(Permission.CREATE_STILLS)
 def add_still(poster_id):
 
     the_poster = Poster.query.get_or_404(poster_id)
@@ -270,7 +274,7 @@ def add_still(poster_id):
 
 
 @movie.route('/poster/<int:poster_id>/edit-stills/', methods=['GET'])
-@login_required
+# @permission_required(Permission.MODIFY_STILLS)
 def edit_stills(poster_id):
 
     the_poster = Poster.query.get_or_404(poster_id)
@@ -279,23 +283,25 @@ def edit_stills(poster_id):
         page, per_page=current_app.config['FLASKY_POSTER_STILLS_PER_PAGE'], error_out=False)
     forms = []
     for still in pagination.items:
-        form = EditStillForm()
-        form.id = still.id
-        form.time_min.data, form.time_sec.data = Still.timeline_int_to_str(still.timeline)
-        form.comment.data = still.comment
-        forms.append(form)
+        if current_user.can(Permission.MODIFY_STILLS) or still.author_id == current_user.id:
+            form = EditStillForm()
+            form.id = still.id
+            form.time_min.data, form.time_sec.data = Still.timeline_int_to_str(still.timeline)
+            form.comment.data = still.comment
+            forms.append(form)
     return render_template('movie/edit_stills.html', poster_id=poster_id,
                            form_new=AddStillForm(), forms=forms, pagination=pagination)
 
 
 @movie.route('/edit-still/<int:still_id>/', methods=['POST'])
-@login_required
+# @permission_required(Permission.MODIFY_STILLS)
 def edit_still(still_id):
 
     the_still = Still.query.get_or_404(still_id)
     form = EditStillForm()
 
-    if form.validate_on_submit():
+    if form.validate_on_submit() and \
+            (current_user.can(Permission.MODIFY_STILLS) or the_still.author_id == current_user.id):
         flag = True
         the_still.timeline = Still.timeline_str_to_int(form.time_min.data, form.time_sec.data)
         the_still.comment = form.comment.data
@@ -316,20 +322,24 @@ def edit_still(still_id):
 
 
 @movie.route('/delete-still/<int:still_id>/')
-@login_required
+# @permission_required(Permission.DELETE_STILLS)
 def delete_still(still_id):
 
     the_still = Still.query.get_or_404(still_id)
-    flag = True
+    flag = False
     path = os.path.join(current_app.static_folder, 'img/poster', str(the_still.poster_id))
     img_prefix = os.path.join(path, str(still_id))
 
-    try:
-        db.session.delete(the_still)
-        db.session.commit()
-    except Exception:
-        flag = False
-        db.session.rollback()
+    if current_user.can(Permission.DELETE_STILLS) or the_still.author_id == current_user.id:
+        flag = True
+
+    if flag:
+        try:
+            db.session.delete(the_still)
+            db.session.commit()
+        except Exception:
+            flag = False
+            db.session.rollback()
 
     if flag:
         if os.path.exists(img_prefix + '.jpg'):
