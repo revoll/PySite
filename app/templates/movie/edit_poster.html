@@ -2,105 +2,102 @@
 
 {% block title %}{% if id == None %}Add Poster{% else %}Edit Poster{% endif %}{% endblock %}
 
-    {% block page_content %}
-        <div id="edit-poster" class="boxed-group">
-            <div class="header">{% if id == None %}新建海报{% else %}编辑海报{% endif %}</div>
-            <div class="content">
-                <form class="form-horizontal" action="{% if id == None %}{{ url_for('movie.add_poster') }}{% else %}{{ url_for('movie.edit_poster', poster_id=id) }}{% endif %}" method="post" enctype="multipart/form-data" role="form">
-                    {{ form.hidden_tag() }}
-                    <div class="form-group">
-                        <label for="poster-name" class="col-sm-2 control-label">*电影名</label>
-                        <div class="col-sm-3">
-                            {{ form.name(id="poster-name", class="form-control", placeholder="电影名必须唯一") }}
-                        </div>
-                        <div>{{ form.private(id="poster-private", class="form-control") }}</div>
+{% block page_content %}
+    <div id="edit-poster" class="boxed-group">
+        <div class="header">{% if id == None %}新建海报{% else %}编辑海报{% endif %}</div>
+        <div class="content">
+            <form class="form-horizontal" action="{% if id == None %}{{ url_for('movie.add_poster') }}{% else %}{{ url_for('movie.edit_poster', poster_id=id) }}{% endif %}" method="post" enctype="multipart/form-data" role="form">
+                {{ form.hidden_tag() }}
+                <div class="form-group {% if form.name.errors %}has-error{% endif %}">
+                    <label for="poster-name" class="col-sm-2 control-label">*电影名</label>
+                    <div class="col-sm-3">
+                        {{ form.name(id="poster-name", class="form-control", placeholder="电影名必须唯一") }}
+                        {% if form.name.errors %}<p class="help-block">{{ form.name.errors[0] }}</p>{% endif %}
                     </div>
-                    <div class="form-group">
-                        <label for="poster-douban" class="col-sm-2 control-label">*豆瓣链接</label>
-                        <div class="col-sm-6">
-                            {{ form.douban_link(id="poster-douban", class="form-control", placeholder="http://") }}
-                        </div>
+                    <div>{{ form.private(id="poster-private", class="form-control") }}</div>
+                </div>
+                <div class="form-group">
+                    <label for="poster-douban" class="col-sm-2 control-label">*豆瓣链接</label>
+                    <div class="col-sm-6">
+                        {{ form.douban_link(id="poster-douban", class="form-control", placeholder="http://") }}
                     </div>
-                    <div class="form-group">
-                        <label for="poster-method" class="col-sm-2 control-label">*上传电影海报</label>
-                        <div class="col-sm-6">
-                            {{ form.method(id="poster-method", class="form-control", onchange="switch_upload_method(this.value, 'poster-file', 'poster-url');") }}
-                            <div>
-                                {{ form.img_file(id="poster-file", class="form-control") }}
-                                {{ form.img_url(id="poster-url", class="form-control hidden", placeholder="http://") }}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="poster-original" class="col-sm-2 control-label">原名</label>
-                        <div class="col-sm-3">
-                            {{ form.o_name(id="poster-original", class="form-control", placeholder="原版电影名") }}
+                </div>
+                <div class="form-group">
+                    <label for="poster-method" class="col-sm-2 control-label">*上传电影海报</label>
+                    <div class="col-sm-6">
+                        {{ form.method(id="poster-method", class="form-control", onchange="switch_upload_method(this.value, 'poster-file', 'poster-url');") }}
+                        <div>
+                            {{ form.img_file(id="poster-file", class="form-control") }}
+                            {{ form.img_url(id="poster-url", class="form-control hidden", placeholder="http://") }}
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="poster-alias" class="col-sm-2 control-label">别名</label>
-                        <div class="col-sm-6">
-                            {{ form.alias(id="poster-alias", class="form-control", placeholder="电影的其他名字") }}
-                        </div>
+                </div>
+                <div class="form-group">
+                    <label for="poster-original" class="col-sm-2 control-label">原名</label>
+                    <div class="col-sm-3">
+                        {{ form.o_name(id="poster-original", class="form-control", placeholder="原版电影名") }}
                     </div>
-                    <div class="form-group">
-                        <label for="poster-director" class="col-sm-2 control-label">导演</label>
-                        <div class="col-sm-3">
-                            {{ form.director(id="poster-director", class="form-control", placeholder="") }}
-                        </div>
+                </div>
+                <div class="form-group">
+                    <label for="poster-alias" class="col-sm-2 control-label">别名</label>
+                    <div class="col-sm-6">
+                        {{ form.alias(id="poster-alias", class="form-control", placeholder="电影的其他名字") }}
                     </div>
-                    <div class="form-group">
-                        <label for="poster-screenwriter" class="col-sm-2 control-label">编剧</label>
-                        <div class="col-sm-3">
-                            {{ form.screenwriter(id="poster-screenwriter", class="form-control", placeholder="") }}
-                        </div>
+                </div>
+                <div class="form-group">
+                    <label for="poster-director" class="col-sm-2 control-label">导演</label>
+                    <div class="col-sm-3">
+                        {{ form.director(id="poster-director", class="form-control", placeholder="") }}
                     </div>
-                    <div class="form-group">
-                        <label for="poster-performers" class="col-sm-2 control-label">主演</label>
-                        <div class="col-sm-9">
-                            {{ form.performers(id="poster-performers", class="form-control", placeholder="") }}
-                        </div>
+                </div>
+                <div class="form-group">
+                    <label for="poster-screenwriter" class="col-sm-2 control-label">编剧</label>
+                    <div class="col-sm-3">
+                        {{ form.screenwriter(id="poster-screenwriter", class="form-control", placeholder="") }}
                     </div>
-                    <div class="form-group">
-                        <label for="poster-type" class="col-sm-2 control-label">类型</label>
-                        <div class="col-sm-3">
-                            {{ form.type(id="poster-type", class="form-control") }}
-                        </div>
+                </div>
+                <div class="form-group">
+                    <label for="poster-performers" class="col-sm-2 control-label">主演</label>
+                    <div class="col-sm-9">
+                        {{ form.performers(id="poster-performers", class="form-control", placeholder="") }}
                     </div>
-                    <div class="form-group">
-                        <label for="poster-country" class="col-sm-2 control-label">地区</label>
-                        <div class="col-sm-3">
-                            {{ form.country(id="poster-country", class="form-control", placeholder="") }}
-                        </div>
+                </div>
+                <div class="form-group">
+                    <label for="poster-type" class="col-sm-2 control-label">类型</label>
+                    <div class="col-sm-3">
+                        {{ form.type(id="poster-type", class="form-control") }}
                     </div>
-                    <div class="form-group">
-                        <label for="poster-length" class="col-sm-2 control-label">时长</label>
-                        <div class="col-sm-3">
-                            {{ form.length(id="poster-length", class="form-control", placeholder="XX 分钟") }}
-                        </div>
+                </div>
+                <div class="form-group">
+                    <label for="poster-country" class="col-sm-2 control-label">地区</label>
+                    <div class="col-sm-3">
+                        {{ form.country(id="poster-country", class="form-control", placeholder="") }}
                     </div>
-                    <div class="form-group">
-                        <label for="poster-release" class="col-sm-2 control-label">上映日期</label>
-                        <div class="col-sm-3">
-                            {{ form.release_date(id="poster-release", class="form-control", placeholder="年-月-日") }}
-                        </div>
+                </div>
+                <div class="form-group">
+                    <label for="poster-length" class="col-sm-2 control-label">时长</label>
+                    <div class="col-sm-3">
+                        {{ form.length(id="poster-length", class="form-control", placeholder="XX 分钟") }}
                     </div>
-                    <div class="form-group">
-                        <label for="poster-introduction" class="col-sm-2 control-label">电影简介</label>
-                        <div class="col-sm-9">
-                            {{ form.introduction(id="poster-introduction", class="form-control", rows="14", placeholder="简单介绍下......") }}
-                        </div>
+                </div>
+                <div class="form-group">
+                    <label for="poster-release" class="col-sm-2 control-label">上映日期</label>
+                    <div class="col-sm-3">
+                        {{ form.release_date(id="poster-release", class="form-control", placeholder="年-月-日") }}
                     </div>
-                    <div class="form-group">
-                        <div class="col-sm-offset-2 col-sm-10">
-                            {{ form.submit(value="提交", class="btn btn-default") }}
-                        </div>
+                </div>
+                <div class="form-group">
+                    <label for="poster-introduction" class="col-sm-2 control-label">电影简介</label>
+                    <div class="col-sm-9">
+                        {{ form.introduction(id="poster-introduction", class="form-control", rows="14", placeholder="简单介绍下......") }}
                     </div>
-                </form>
-            </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        {{ form.submit(value="提交", class="btn btn-default") }}
+                    </div>
+                </div>
+            </form>
         </div>
-    {% endblock %}
-
-{% block scripts %}
-    {{ super() }}
+    </div>
 {% endblock %}

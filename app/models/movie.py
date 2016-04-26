@@ -6,6 +6,7 @@ from flask import url_for
 from .. import db
 from ..models.user import User
 
+
 """
 str_country = u'中国大陆,香港,台湾,' \
               u'美国,日本,英国,法国,韩国,德国,意大利,印度,泰国,西班牙,欧洲,加拿大,澳大利亚,俄罗斯,伊朗,爱尔兰,' \

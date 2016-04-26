@@ -168,7 +168,7 @@ body > .container {
 
 .boxed-group {
 	position: relative;
-	margin-bottom: 30px;
+	margin: 40px 0 40px;
 }
 .boxed-group > .header {
 	display: block;
@@ -306,9 +306,11 @@ div.flask-pagedown-preview h3 {
 /**
  * Part 3: Movie
  */
-#nav-tools {
+.navbar2 {
 	width: 100%;
-	margin: 15px 0 40px;
+	margin-top: -20px;
+	padding: 20px 0 20px;
+	background-color: #eee;
 }
 
 .poster-card {
@@ -357,7 +359,7 @@ div.flask-pagedown-preview h3 {
 	max-height: 800px;
 }
 
-.still-card p {
+.still-card h2 {
 	font-size: 30px;
 	font-weight: 800;
 	margin: 16px 0 10px;
@@ -391,11 +393,6 @@ div.flask-pagedown-preview h3 {
 #poster-detail > .poster-card > .info-wrapper {
 	padding-left: 275px;
 	width: 100%;
-}
-
-#new-still {
-	margin: 40px 0 40px;
-	padding: 0;
 }
 
 #new-still[class="boxed-group"] > .content {

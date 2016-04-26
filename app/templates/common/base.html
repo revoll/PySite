@@ -61,43 +61,42 @@
                     <li><a href="#">资源</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
-                    {% if current_user.is_authenticated %}
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                <img src="{{ current_user.gravatar(size=18) }}"/>
-                                &nbsp;{{ current_user.username }}&nbsp;
-                                <b class="caret"></b>
-                            </a>
-                            <ul class="dropdown-menu">
-                                {% if current_user.is_authenticated %}
-                                    <li><a href="{{ url_for('user.profile', username=current_user.username) }}">个人资料</a>
-                                    </li>
-                                {% endif %}
-                                <li><a href="{{ url_for('auth.change_password') }}">修改密码</a></li>
-                                <li><a href="{{ url_for('auth.change_email_request') }}">更改邮箱</a></li>
-                                <li><a href="{{ url_for('auth.logout') }}">退出</a></li>
-                            </ul>
-                        </li>
-                    {% else %}
-                        <li><a href="{{ url_for('auth.register') }}">注册</a></li>
-                        <li><a href="{{ url_for('auth.login') }}">登陆</a></li>
-                    {% endif %}
+                {% if current_user.is_authenticated %}
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            <img src="{{ current_user.gravatar(size=18) }}"/>
+                            &nbsp;{{ current_user.username }}&nbsp;
+                            <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                        {% if current_user.is_authenticated %}
+                            <li><a href="{{ url_for('user.profile', username=current_user.username) }}">个人资料</a>
+                            </li>
+                        {% endif %}
+                            <li><a href="{{ url_for('auth.change_password') }}">修改密码</a></li>
+                            <li><a href="{{ url_for('auth.change_email_request') }}">更改邮箱</a></li>
+                            <li><a href="{{ url_for('auth.logout') }}">退出</a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li><a href="{{ url_for('auth.register') }}">注册</a></li>
+                    <li><a href="{{ url_for('auth.login') }}">登陆</a></li>
+                {% endif %}
                 </ul>
             </div>
         </div>
     </div>
 {% endblock %}
-{% block navbar2 %}
-{% endblock %}
+{% block navbar2 %}{% endblock %}
 {% block content %}
     <div class="container">
-        {% for message in get_flashed_messages() %}
-            <div class="alert alert-warning">
-                <button type="button" class="close" data-dismiss="alert">&times;</button>
-                {{ message }}
-            </div>
-        {% endfor %}
-        {% block page_content %}{% endblock %}
+    {% for message in get_flashed_messages() %}
+        <div class="alert alert-warning">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            {{ message }}
+        </div>
+    {% endfor %}
+    {% block page_content %}{% endblock %}
     </div>
 {% endblock %}
 {% block footer %}

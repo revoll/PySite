@@ -18,7 +18,7 @@ class AddPosterForm(Form):
     director = StringField(u'导演', validators=[Length(0, 40)])
     screenwriter = StringField(u'编剧', validators=[Length(0, 40)])
     performers = StringField(u'主演', validators=[Length(0, 200)])
-    type = SelectField(u'类型', validators=[Regexp(u'^\d+$')])
+    type = SelectField(u'类型', coerce=int)
     country = StringField(u'地区', validators=[Length(0, 100)])
     length = StringField(u'片长', validators=[Length(0, 60)])
     release_date = StringField(u'上映日期', validators=[Length(0, 60)])
@@ -28,7 +28,7 @@ class AddPosterForm(Form):
     def __init__(self, *args, **kwargs):
         super(AddPosterForm, self).__init__(*args, **kwargs)
         types_list = str_movie_type.split(u',')
-        self.type.choices = [(str(i).decode('utf-8'), types_list[i]) for i in range(0, len(types_list))]
+        self.type.choices = [(i+1, types_list[i]) for i in range(0, len(types_list))]
 
     def validate_name(self, field):
         if Poster.query.filter_by(name=field.data).first():
@@ -47,7 +47,7 @@ class EditPosterForm(Form):
     director = StringField(u'导演', validators=[Length(0, 40)])
     screenwriter = StringField(u'编剧', validators=[Length(0, 40)])
     performers = StringField(u'主演', validators=[Length(0, 200)])
-    type = SelectField(u'类型', validators=[Regexp(u'^\d+$')])
+    type = SelectField(u'类型', coerce=int)
     country = StringField(u'地区', validators=[Length(0, 100)])
     length = StringField(u'片长', validators=[Length(0, 60)])
     release_date = StringField(u'上映日期', validators=[Length(0, 60)])
@@ -57,7 +57,7 @@ class EditPosterForm(Form):
     def __init__(self, *args, **kwargs):
         super(EditPosterForm, self).__init__(*args, **kwargs)
         types_list = str_movie_type.split(u',')
-        self.type.choices = [(str(i).decode('utf-8'), types_list[i]) for i in range(0, len(types_list))]
+        self.type.choices = [(i+1, types_list[i]) for i in range(0, len(types_list))]
 
 
 class AddStillForm(Form):

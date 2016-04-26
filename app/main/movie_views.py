@@ -6,7 +6,6 @@ from StringIO import StringIO
 from PIL import Image
 
 from flask import request, current_app, render_template, redirect, abort, url_for, flash
-
 from flask.ext.login import current_user, login_required
 
 from . import movie
@@ -26,7 +25,7 @@ def poster_form_to_model(form, poster):
     poster.director = form.director.data
     poster.screenwriter = form.screenwriter.data
     poster.performers = form.performers.data
-    poster.type_id = int(form.type.data)
+    poster.type_id = form.type.data
     poster.country = form.country.data
     poster.length = form.length.data
     poster.release_date = form.release_date.data
@@ -43,7 +42,7 @@ def poster_model_to_form(poster, form):
     form.director.data = poster.director
     form.screenwriter.data = poster.screenwriter
     form.performers.data = poster.performers
-    form.type.data = str(poster.type_id)
+    form.type.data = poster.type_id
     form.country.data = poster.country
     form.length.data = poster.length
     form.release_date.data = poster.release_date
@@ -78,7 +77,7 @@ def save_poster_image(f, path, name, limit):
 @movie.route('/')
 def index():
     """
-    访问权限: 无
+    访问权限：无
     :return:
     """
     page = request.args.get('page', 1, type=int)
@@ -101,7 +100,7 @@ def index():
 @movie.route('/poster/<int:poster_id>/')
 def get_poster(poster_id):
     """
-    访问权限: 登陆, 海报为公开访问或自己创建时才可访问, 剧照为公开或自己创建时才能看到.
+    访问权限：登陆, 海报为公开访问或自己创建时才可访问, 剧照为公开或自己创建时才能看到.
     :param poster_id:
     :return:
     """
@@ -117,14 +116,18 @@ def get_poster(poster_id):
     pagination = query.order_by(Still.timeline.asc()).paginate(
         page, per_page=current_app.config['FLASKY_POSTER_STILLS_PER_PAGE'], error_out=False)
 
-    return render_template('movie/poster.html', poster=poster, form_new=AddStillForm(),
-                           stills=pagination.items, pagination=pagination, admin=admin)
+    return render_template('movie/poster.html', poster=poster, stills=pagination.items,
+                           pagination=pagination, form_new=AddStillForm(), admin=admin)
 
 
 @movie.route('/add/', methods=['GET', 'POST'])
 @login_required
 @permission_required(Permission.ADMIN_POSTER)
 def add_poster():
+    """
+    访问权限：
+    :return:
+    """
     form = AddPosterForm()
 
     if form.validate_on_submit():
@@ -175,6 +178,11 @@ def add_poster():
 @login_required
 @permission_required(Permission.ADMIN_POSTER)
 def edit_poster(poster_id):
+    """
+    访问权限：
+    :param poster_id:
+    :return:
+    """
     poster = Poster.query.get_or_404(poster_id)
     form = EditPosterForm()
 
@@ -222,12 +230,19 @@ def edit_poster(poster_id):
 @login_required
 @permission_required(Permission.ADMIN_POSTER)
 def delete_poster(poster_id):
+    """
+    访问权限：
+    :param poster_id:
+    :return:
+    """
     poster = Poster.query.get_or_404(poster_id)
     redirect_url = request.args.get('redirect', url_for('movie.index'))
     flag = True
     path = os.path.join(current_app.static_folder, 'img/poster', str(poster_id))
 
     try:
+        for still in poster.stills:
+            db.session.delete(still)
         db.session.delete(poster)
         db.session.commit()
     except Exception:
@@ -249,6 +264,11 @@ def delete_poster(poster_id):
 @login_required
 # @permission_required(Permission.ADMIN_POSTER)
 def add_still(poster_id):
+    """
+    访问权限：所有已登陆的用户可以访问
+    :param poster_id:
+    :return:
+    """
     poster = Poster.query.get_or_404(poster_id)
     redirect_url = request.args.get('redirect', url_for('movie.get_poster', poster_id=poster_id))
     form = AddStillForm()
@@ -302,7 +322,11 @@ def add_still(poster_id):
 @login_required
 @permission_required(Permission.ADMIN_POSTER)
 def edit_stills(poster_id):
-
+    """
+    访问权限：
+    :param poster_id:
+    :return:
+    """
     page = request.args.get('page', 1, type=int)
     poster = Poster.query.get_or_404(poster_id)
     pagination = poster.stills.order_by(Still.timeline.asc()).paginate(
@@ -323,10 +347,15 @@ def edit_stills(poster_id):
 @login_required
 @permission_required(Permission.ADMIN_POSTER)
 def edit_still(still_id):
+    """
+    访问权限：
+    :param still_id:
+    :return:
+    """
     still = Still.query.get_or_404(still_id)
     form = EditStillForm()
 
-    if form.validate_on_submit() and ():
+    if form.validate_on_submit():
         flag = True
         still.private = True if form.private.data else False
         still.timeline = Still.timeline_str_to_int(form.time_min.data, form.time_sec.data)
@@ -351,6 +380,11 @@ def edit_still(still_id):
 @login_required
 @permission_required(Permission.ADMIN_POSTER)
 def delete_still(still_id):
+    """
+    访问权限：
+    :param still_id:
+    :return:
+    """
     still = Still.query.get_or_404(still_id)
     flag = True
     path = os.path.join(current_app.static_folder, 'img/poster', str(still.poster_id))

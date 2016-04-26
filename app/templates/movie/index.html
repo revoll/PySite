@@ -4,55 +4,57 @@
 
 {% block title %}Movie - Index{% endblock %}
 
-    {% block page_content %}
-        <div id="nav-tools">
-            <a class="btn btn-primary" href="{{ url_for('movie.add_poster') }}">添加海报</a>
-        </div>
-        <div id="cards-container">
-            {% for poster in posters %}
-            <div class="poster-card">
-                <div class="poster-left">
-                    <a href="{{ url_for('movie.get_poster', poster_id=poster.id) }}"><img class="poster-image"
-                                                                                          src="/static/img/poster/{{ poster.id }}/archive.jpg"/></a>
-                    <a class="btn btn-primary" href="{{ url_for('movie.edit_poster', poster_id=poster.id) }}"
-                       role="button" {% if not admin %}{{ 'disabled' }}{% endif %}>编辑</a>
-                    <a class="btn btn-primary" href="{{ url_for('movie.get_poster', poster_id=poster.id) }}#still-list"
-                       role="button">剧照</a>
-                    <a class="btn btn-success" href="{{ poster.douban_link }}" target="_blank" rel="nofollow"
-                       role="button">豆瓣</a>
-                    <button class="btn btn-danger" {% if not admin %}{{ 'disabled' }}{% endif %}
-                            onclick="head_url('{{ url_for('movie.delete_poster', poster_id=poster.id) }}', '确定删除这条海报吗？');">
-                        删除
-                    </button>
-                </div>
-                <div class="info-wrapper">
-                    <h1>
-                        <a href="{{ url_for('movie.get_poster', poster_id=poster.id) }}"
-                           role="button">{{ poster.name }}</a>
-                        <small class="text-uppercase">{{ poster.o_name }}</small>
-                    </h1>
-                    <p><b>别名：</b>{{ poster.alias }}</p>
-                    <p><b>导演：</b>{{ poster.director }}</p>
-                    <p><b>编剧：</b>{{ poster.screenwriter }}</p>
-                    <p><b>主演：</b>{{ poster.performers }}</p>
-                    <p><b>时长：</b>{{ poster.length }}</p>
-                    <p><b>类型：</b>{{ poster.type.name }}</p>
-                    <p><b>地区：</b>{{ poster.country }}</p>
-                    <p><b>上映日期：</b>{{ poster.release_date }}</p>
-                    <p><b>编辑时间：</b>{{ poster.timestamp }}</p>
-                    <p><b>电影简介：</b>{{ poster.introduction_cut }}</p>
-                </div>
-                <div class="clearfix"></div>
+{% block navbar2 %}
+    <div class="navbar2" role="navigation">
+        <div class="container">
+            <div style="min-height: 60px">
+                {% if admin %}<a class="btn btn-primary" href="{{ url_for('movie.add_poster') }}">添加海报</a>{% endif %}
             </div>
-            {% endfor %}
         </div>
-        {% if pagination %}
-        <div class="pagination">
-            {{ macros.pagination_widget(pagination, 'movie.index') }}
-        </div>
-        {% endif %}
-    {% endblock %}
+    </div>
+{% endblock %}
 
-{% block scripts %}
-    {{ super() }}
+{% block page_content %}
+    <div id="cards-container">
+    {% for poster in posters %}
+        <div class="poster-card">
+            <div class="poster-left">
+                <a href="{{ url_for('movie.get_poster', poster_id=poster.id) }}">
+                    <img class="poster-image" src="/static/img/poster/{{ poster.id }}/archive.jpg"/>
+                </a>
+            {% if admin %}
+                <a class="btn btn-primary" href="{{ url_for('movie.edit_poster', poster_id=poster.id) }}">编辑</a>
+                <button class="btn btn-danger" onclick="head_url('{{ url_for('movie.delete_poster', poster_id=poster.id) }}', '确定删除这条海报吗？');">删除</button>
+                <a class="btn btn-warning" href="{{ url_for('movie.get_poster', poster_id=poster.id) }}#still-list">{% if admin %}剧照{% else %}查看剧照{% endif %}</a>
+            {% else %}
+                <a class="btn btn-warning" href="{{ url_for('movie.get_poster', poster_id=poster.id) }}#still-list">{% if admin %}剧照{% else %}查看剧照{% endif %}</a>
+            {% endif %}
+                <a class="btn btn-success" href="{{ poster.douban_link }}" target="_blank" rel="nofollow">{% if admin %}豆瓣{% else %}前往豆瓣{% endif %}</a>
+            </div>
+            <div class="info-wrapper">
+                <h1>
+                    {% if poster.private %}<small><span class="glyphicon glyphicon-eye-close"></span></small>{% endif %}
+                    <a href="{{ url_for('movie.get_poster', poster_id=poster.id) }}">{{ poster.name }}</a>
+                    <small class="text-uppercase">{{ poster.o_name }}</small>
+                </h1>
+                <p><b>别名：</b>{{ poster.alias }}</p>
+                <p><b>导演：</b>{{ poster.director }}</p>
+                <p><b>编剧：</b>{{ poster.screenwriter }}</p>
+                <p><b>主演：</b>{{ poster.performers }}</p>
+                <p><b>时长：</b>{{ poster.length }}</p>
+                <p><b>类型：</b>{{ poster.type.name }}</p>
+                <p><b>地区：</b>{{ poster.country }}</p>
+                <p><b>上映日期：</b>{{ poster.release_date }}</p>
+                <p><b>编辑时间：</b>{{ poster.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                <p><b>电影简介：</b>{{ poster.introduction_cut }}</p>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+    {% endfor %}
+    </div>
+{% if pagination %}
+    <div class="pagination">
+        {{ macros.pagination_widget(pagination, 'movie.index') }}
+    </div>
+{% endif %}
 {% endblock %}
