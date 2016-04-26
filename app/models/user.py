@@ -17,46 +17,27 @@ class Permission:
         XXX_BROWSE - 查看板块中的内容
         XXX_MODIFY - 修改其它用户的内容
         XXX_DELETE - 删除其它用户的内容
-    * 内容访问权限设置说明（以博客为例）：
-        仅自己可见： ADMIN_SUPER
-        自定义权限： e.g. BLOG_MODIFY | BLOG_DELETE | ...
-        完全地公开： 0x00
     """
-    # 电影剧照
-    CREATE_STILLS = 1 << 0
-    BROWSE_STILLS = 1 << 1
-    MODIFY_STILLS = 1 << 2
-    DELETE_STILLS = 1 << 3
-    # 电影海报
-    CREATE_POSTER = 1 << 4
-    BROWSE_POSTER = 1 << 5
-    MODIFY_POSTER = 1 << 6
-    DELETE_POSTER = 1 << 7
-    # 资源
-    UPLOAD_FILES = 1 << 8
-    BROWSE_FILES = 1 << 9
+    ADMIN_BLOG = 1 << 0
+    ADMIN_PHOTO = 1 << 1
+    ADMIN_MUSIC = 1 << 2
+    ADMIN_VIDEO = 1 << 3
+    ADMIN_IMAGE = 1 << 4
+    ADMIN_FILES = 1 << 5
+    ADMIN_POSTER = 1 << 10
 
     # 各个权限标志位的说明，可用于表单展示
     detail = [
-        (0, 'Poster - Create'),
-        (1, 'Poster - Browse'),
-        (2, 'Poster - Modify'),
-        (3, 'Poster - Delete'),
-
-        (4, 'Stills - Create'),
-        (5, 'Stills - Browse'),
-        (6, 'Stills - Modify'),
-        (7, 'Stills - Delete'),
-
-        (8, 'Files - Upload'),
-        (9, 'Files - Browse'),
+        (0, 'Admin of Blog'),
+        (5, 'Admin of Files'),
+        (10, 'Admin of Poster'),
     ]
 
     roles = {
         # 开放最基本的权限，仅能一般性地浏览网站公开的内容
         'administrator': 0x7FFFFFFFFFFFFFFF,
-        'anonymous': (1 << BROWSE_POSTER) | (1 << BROWSE_STILLS),
-        'default': (1 << BROWSE_STILLS) | (1 << CREATE_STILLS) | (1 << BROWSE_POSTER) | (1 << BROWSE_FILES),
+        'anonymous': 0,
+        'default': 0,
     }
 
     def __init__(self):

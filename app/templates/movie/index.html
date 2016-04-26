@@ -12,26 +12,27 @@
             {% for poster in posters %}
             <div class="poster-card">
                 <div class="poster-left">
-                    <a href="{{ url_for('movie.poster', poster_id=poster.id) }}">
-                        <img class="poster-image" src="/static/img/poster/{{ poster.id }}/archive.jpg"/>
-                    </a>
+                    <a href="{{ url_for('movie.get_poster', poster_id=poster.id) }}"><img class="poster-image"
+                                                                                          src="/static/img/poster/{{ poster.id }}/archive.jpg"/></a>
                     <a class="btn btn-primary" href="{{ url_for('movie.edit_poster', poster_id=poster.id) }}"
-                       role="button">编辑</a>
+                       role="button" {% if not admin %}{{ 'disabled' }}{% endif %}>编辑</a>
+                    <a class="btn btn-primary" href="{{ url_for('movie.get_poster', poster_id=poster.id) }}#still-list"
+                       role="button">剧照</a>
                     <a class="btn btn-success" href="{{ poster.douban_link }}" target="_blank" rel="nofollow"
                        role="button">豆瓣</a>
-                    <button class="btn btn-danger"
+                    <button class="btn btn-danger" {% if not admin %}{{ 'disabled' }}{% endif %}
                             onclick="head_url('{{ url_for('movie.delete_poster', poster_id=poster.id) }}', '确定删除这条海报吗？');">
                         删除
                     </button>
                 </div>
                 <div class="info-wrapper">
                     <h1>
-                        <a href="{{ url_for('movie.poster', poster_id=poster.id) }}" role="button">{{ poster.name }}</a>
+                        <a href="{{ url_for('movie.get_poster', poster_id=poster.id) }}"
+                           role="button">{{ poster.name }}</a>
                         <small class="text-uppercase">{{ poster.o_name }}</small>
                     </h1>
                     <p><b>别名：</b>{{ poster.alias }}</p>
                     <p><b>导演：</b>{{ poster.director }}</p>
-
                     <p><b>编剧：</b>{{ poster.screenwriter }}</p>
                     <p><b>主演：</b>{{ poster.performers }}</p>
                     <p><b>时长：</b>{{ poster.length }}</p>
@@ -39,7 +40,6 @@
                     <p><b>地区：</b>{{ poster.country }}</p>
                     <p><b>上映日期：</b>{{ poster.release_date }}</p>
                     <p><b>编辑时间：</b>{{ poster.timestamp }}</p>
-
                     <p><b>电影简介：</b>{{ poster.introduction_cut }}</p>
                 </div>
                 <div class="clearfix"></div>
@@ -55,8 +55,4 @@
 
 {% block scripts %}
     {{ super() }}
-    <script type="text/javascript">
-        $(window).load(function () {
-        });
-    </script>
 {% endblock %}

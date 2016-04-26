@@ -30,6 +30,13 @@ body {
 	color: #333;
 }
 
+/* fix: bootstrap.css */
+.input-group-addon:not(:first-child):not(:last-child),
+.input-group-btn:not(:first-child):not(:last-child) {
+	border-left: 0;
+	border-right: 0;
+}
+
 /*
 code, kbd, pre, samp {
 	font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
@@ -396,6 +403,10 @@ div.flask-pagedown-preview h3 {
 	padding-bottom: 15px;
 }
 
+#new-still #new-still-private, #edit-poster #poster-private {
+	width: 120px;
+}
+
 #new-still #new-still-method, #edit-poster #poster-method {
 	float: left;
 	width:110px;
@@ -417,7 +428,11 @@ div.flask-pagedown-preview h3 {
 }
 
 #edit-stills .form-group > .input-group {
-	width: 60%;
+	max-width: 450px;
+}
+
+#edit-stills #private {
+	width: 120px;
 }
 
 

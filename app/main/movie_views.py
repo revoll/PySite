@@ -5,12 +5,12 @@ import urllib2
 from StringIO import StringIO
 from PIL import Image
 
-from flask import request, current_app, render_template, redirect, url_for, flash
+from flask import request, current_app, render_template, redirect, abort, url_for, flash
 
-from flask.ext.login import current_user
+from flask.ext.login import current_user, login_required
 
 from . import movie
-from .movie_forms import PosterForm, AddStillForm, EditStillForm
+from .movie_forms import AddPosterForm, EditPosterForm, AddStillForm, EditStillForm
 from .. import db
 from ..models.movie import Poster, Still
 from ..models.user import Permission
@@ -20,6 +20,7 @@ from ..tools.decorators import permission_required
 def poster_form_to_model(form, poster):
 
     poster.name = form.name.data
+    poster.private = True if form.private.data else False
     poster.o_name = form.o_name.data
     poster.alias = form.alias.data
     poster.director = form.director.data
@@ -36,6 +37,7 @@ def poster_form_to_model(form, poster):
 def poster_model_to_form(poster, form):
 
     form.name.data = poster.name
+    form.private.data = 1 if poster.private else 0
     form.o_name.data = poster.o_name
     form.alias.data = poster.alias
     form.director.data = poster.director
@@ -50,7 +52,14 @@ def poster_model_to_form(poster, form):
 
 
 def save_poster_image(f, path, name, limit):
-
+    """
+    将图片分别保存为原图,以及最大分辨率不超过规定值(1200px)的裁剪图
+    :param f:
+    :param path:
+    :param name:
+    :param limit:
+    :return:
+    """
     if not os.path.exists(path):
         os.mkdir(path)
 
@@ -67,45 +76,61 @@ def save_poster_image(f, path, name, limit):
 
 
 @movie.route('/')
-@permission_required(Permission.BROWSE_POSTER)
 def index():
-
+    """
+    访问权限: 无
+    :return:
+    """
     page = request.args.get('page', 1, type=int)
-    pagination = Poster.query.order_by(Poster.timestamp.desc()).paginate(
+    admin = current_user.can(Permission.ADMIN_POSTER)
+    if admin:
+        query = Poster.query
+    else:
+        query = Poster.query.filter_by(private=False)
+    pagination = query.order_by(Poster.timestamp.desc()).paginate(
         page, per_page=current_app.config['FLASKY_POSTERS_PER_PAGE'], error_out=False)
-    posters = pagination.items
-    for i in range(0, len(posters)):
-        if len(posters[i].introduction) > 140:
-            posters[i].introduction = posters[i].introduction[:140] + u' ......'
+    for poster in pagination.items:
+        if len(poster.introduction) > 140:
+            poster.introduction_cut = poster.introduction[:140] + u' ......'
+        else:
+            poster.introduction_cut = poster.introduction
 
-    return render_template('movie/index.html', posters=posters, pagination=pagination)
+    return render_template('movie/index.html', posters=pagination.items, pagination=pagination, admin=admin)
 
 
 @movie.route('/poster/<int:poster_id>/')
-@permission_required(Permission.BROWSE_POSTER)
-def poster(poster_id):
-
-    the_poster = Poster.query.get_or_404(poster_id)
+def get_poster(poster_id):
+    """
+    访问权限: 登陆, 海报为公开访问或自己创建时才可访问, 剧照为公开或自己创建时才能看到.
+    :param poster_id:
+    :return:
+    """
     page = request.args.get('page', 1, type=int)
-    pagination = the_poster.stills.order_by(Still.timeline.asc()).paginate(
-        page, per_page=current_app.config['FLASKY_POSTER_STILLS_PER_PAGE'],
-        error_out=False)
-    stills = pagination.items if current_user.can(Permission.BROWSE_STILLS) else []
+    poster = Poster.query.get_or_404(poster_id)
+    admin = current_user.can(Permission.ADMIN_POSTER)
+    if poster.private and not admin:
+        abort(403)
+    if admin:
+        query = poster.stills
+    else:
+        query = poster.stills.filter_by(private=False)
+    pagination = query.order_by(Still.timeline.asc()).paginate(
+        page, per_page=current_app.config['FLASKY_POSTER_STILLS_PER_PAGE'], error_out=False)
 
-    return render_template('movie/poster.html', poster=the_poster, form_new=AddStillForm(),
-                           stills=stills, pagination=pagination)
+    return render_template('movie/poster.html', poster=poster, form_new=AddStillForm(),
+                           stills=pagination.items, pagination=pagination, admin=admin)
 
 
 @movie.route('/add/', methods=['GET', 'POST'])
-@permission_required(Permission.CREATE_POSTER)
+@login_required
+@permission_required(Permission.ADMIN_POSTER)
 def add_poster():
-
-    form = PosterForm()
+    form = AddPosterForm()
 
     if form.validate_on_submit():
         flag = True
         img = None
-        the_poster = None
+        poster = None
         method = form.method.data
 
         if method == u'file':
@@ -122,23 +147,23 @@ def add_poster():
             flag = False
 
         if flag:
-            the_poster = Poster(author=current_user._get_current_object())
-            poster_form_to_model(form, the_poster)
+            poster = Poster(author=current_user)
+            poster_form_to_model(form, poster)
             try:
-                db.session.add(the_poster)
+                db.session.add(poster)
                 db.session.commit()
-                the_poster = Poster.query.filter_by(name=the_poster.name).first()
+                poster = Poster.query.filter_by(name=poster.name).first()
             except Exception:
                 flag = False
                 db.session.rollback()
 
-        if flag and the_poster:
-            path = os.path.join(current_app.static_folder, 'img/poster', str(the_poster.id))
+        if flag and poster:
+            path = os.path.join(current_app.static_folder, 'img/poster', str(poster.id))
             save_poster_image(img, path, 'archive', current_app.config['FLASKY_IMAGE_RESOLUTION_LIMIT'])
 
         if flag:
             flash(u'海报添加成功！')
-            return redirect(url_for('movie.poster', poster_id=the_poster.id))
+            return redirect(url_for('movie.get_poster', poster_id=poster.id))
         else:
             flash(u'海报添加时发生了错误...')
 
@@ -147,11 +172,11 @@ def add_poster():
 
 
 @movie.route('/edit/<int:poster_id>/', methods=['GET', 'POST'])
-@permission_required(Permission.MODIFY_POSTER)
+@login_required
+@permission_required(Permission.ADMIN_POSTER)
 def edit_poster(poster_id):
-
-    the_poster = Poster.query.get_or_404(poster_id)
-    form = PosterForm()
+    poster = Poster.query.get_or_404(poster_id)
+    form = EditPosterForm()
 
     if form.validate_on_submit():
         flag = True
@@ -159,8 +184,8 @@ def edit_poster(poster_id):
         method = form.method.data
 
         try:
-            poster_form_to_model(form, the_poster)
-            db.session.add(the_poster)
+            poster_form_to_model(form, poster)
+            db.session.add(poster)
             db.session.commit()
         except Exception:
             flag = False
@@ -184,26 +209,26 @@ def edit_poster(poster_id):
 
         if flag:
             flash(u'海报更新成功！')
-            return redirect(url_for('movie.poster', poster_id=the_poster.id))
+            return redirect(url_for('movie.get_poster', poster_id=poster.id))
         else:
             flash(u'海报更新时发生了错误...')
 
-    poster_model_to_form(the_poster, form)
+    poster_model_to_form(poster, form)
     form.method.data = u'file'
     return render_template('movie/edit_poster.html', form=form, id=poster_id)
 
 
 @movie.route('/delete/<int:poster_id>/')
-@permission_required(Permission.DELETE_POSTER)
+@login_required
+@permission_required(Permission.ADMIN_POSTER)
 def delete_poster(poster_id):
-
-    the_poster = Poster.query.get_or_404(poster_id)
+    poster = Poster.query.get_or_404(poster_id)
     redirect_url = request.args.get('redirect', url_for('movie.index'))
     flag = True
     path = os.path.join(current_app.static_folder, 'img/poster', str(poster_id))
 
     try:
-        db.session.delete(the_poster)
+        db.session.delete(poster)
         db.session.commit()
     except Exception:
         flag = False
@@ -213,25 +238,25 @@ def delete_poster(poster_id):
         shutil.rmtree(path)
 
     if flag:
-        flash(u'《' + the_poster.name + u'》已被成功删除！')
+        flash(u'《' + poster.name + u'》已被成功删除！')
     else:
-        flash(u'《' + the_poster.name + u'》删除失败...')
+        flash(u'《' + poster.name + u'》删除失败...')
 
     return redirect(redirect_url)
 
 
 @movie.route('/poster/<int:poster_id>/add-still/', methods=['GET', 'POST'])
-@permission_required(Permission.CREATE_STILLS)
+@login_required
+# @permission_required(Permission.ADMIN_POSTER)
 def add_still(poster_id):
-
-    the_poster = Poster.query.get_or_404(poster_id)
-    redirect_url = request.args.get('redirect', url_for('movie.poster', poster_id=poster_id))
+    poster = Poster.query.get_or_404(poster_id)
+    redirect_url = request.args.get('redirect', url_for('movie.get_poster', poster_id=poster_id))
     form = AddStillForm()
 
     if form.validate_on_submit():
         flag = True
         img = None
-        the_still = None
+        still = None
         method = form.method.data
 
         if method == u'file':
@@ -248,21 +273,21 @@ def add_still(poster_id):
             flag = False
 
         if flag:
-            the_still = Still(timeline=Still.timeline_str_to_int(form.time_min.data, form.time_sec.data),
-                              comment=form.comment.data, poster=the_poster,
-                              author=current_user._get_current_object())
+            still = Still(timeline=Still.timeline_str_to_int(form.time_min.data, form.time_sec.data),
+                          comment=form.comment.data, poster=poster,
+                          private=True if form.private.data else False, author=current_user)
             try:
-                db.session.add(the_still)
+                db.session.add(still)
                 db.session.commit()
-                the_still = Still.query.filter_by(
-                    poster_id=poster_id, timeline=the_still.timeline).order_by(Still.timestamp.desc()).first()
+                still = Still.query.filter_by(
+                    poster_id=poster_id, timeline=still.timeline).order_by(Still.timestamp.desc()).first()
             except Exception:
                 flag = False
                 db.session.rollback()
 
-        if flag and the_still:
+        if flag and still:
             path = os.path.join(current_app.static_folder, 'img/poster', str(poster_id))
-            save_poster_image(img, path, str(the_still.id), current_app.config['FLASKY_IMAGE_RESOLUTION_LIMIT'])
+            save_poster_image(img, path, str(still.id), current_app.config['FLASKY_IMAGE_RESOLUTION_LIMIT'])
 
         if flag:
             flash(u'剧照添加成功！')
@@ -274,40 +299,41 @@ def add_still(poster_id):
 
 
 @movie.route('/poster/<int:poster_id>/edit-stills/', methods=['GET'])
-# @permission_required(Permission.MODIFY_STILLS)
+@login_required
+@permission_required(Permission.ADMIN_POSTER)
 def edit_stills(poster_id):
 
-    the_poster = Poster.query.get_or_404(poster_id)
     page = request.args.get('page', 1, type=int)
-    pagination = the_poster.stills.order_by(Still.timeline.asc()).paginate(
+    poster = Poster.query.get_or_404(poster_id)
+    pagination = poster.stills.order_by(Still.timeline.asc()).paginate(
         page, per_page=current_app.config['FLASKY_POSTER_STILLS_PER_PAGE'], error_out=False)
     forms = []
     for still in pagination.items:
-        if current_user.can(Permission.MODIFY_STILLS) or still.author_id == current_user.id:
-            form = EditStillForm()
-            form.id = still.id
-            form.time_min.data, form.time_sec.data = Still.timeline_int_to_str(still.timeline)
-            form.comment.data = still.comment
-            forms.append(form)
+        form = EditStillForm()
+        form.id = still.id
+        form.private.data = 1 if still.private else 0
+        form.time_min.data, form.time_sec.data = Still.timeline_int_to_str(still.timeline)
+        form.comment.data = still.comment
+        forms.append(form)
     return render_template('movie/edit_stills.html', poster_id=poster_id,
                            form_new=AddStillForm(), forms=forms, pagination=pagination)
 
 
 @movie.route('/edit-still/<int:still_id>/', methods=['POST'])
-# @permission_required(Permission.MODIFY_STILLS)
+@login_required
+@permission_required(Permission.ADMIN_POSTER)
 def edit_still(still_id):
-
-    the_still = Still.query.get_or_404(still_id)
+    still = Still.query.get_or_404(still_id)
     form = EditStillForm()
 
-    if form.validate_on_submit() and \
-            (current_user.can(Permission.MODIFY_STILLS) or the_still.author_id == current_user.id):
+    if form.validate_on_submit() and ():
         flag = True
-        the_still.timeline = Still.timeline_str_to_int(form.time_min.data, form.time_sec.data)
-        the_still.comment = form.comment.data
+        still.private = True if form.private.data else False
+        still.timeline = Still.timeline_str_to_int(form.time_min.data, form.time_sec.data)
+        still.comment = form.comment.data
 
         try:
-            db.session.add(the_still)
+            db.session.add(still)
             db.session.commit()
         except Exception:
             flag = False
@@ -318,28 +344,24 @@ def edit_still(still_id):
         else:
             flash(u'剧照更新时发生了错误...')
 
-    return redirect(url_for('movie.edit_stills', poster_id=the_still.poster_id))
+    return redirect(url_for('movie.edit_stills', poster_id=still.poster_id))
 
 
 @movie.route('/delete-still/<int:still_id>/')
-# @permission_required(Permission.DELETE_STILLS)
+@login_required
+@permission_required(Permission.ADMIN_POSTER)
 def delete_still(still_id):
-
-    the_still = Still.query.get_or_404(still_id)
-    flag = False
-    path = os.path.join(current_app.static_folder, 'img/poster', str(the_still.poster_id))
+    still = Still.query.get_or_404(still_id)
+    flag = True
+    path = os.path.join(current_app.static_folder, 'img/poster', str(still.poster_id))
     img_prefix = os.path.join(path, str(still_id))
 
-    if current_user.can(Permission.DELETE_STILLS) or the_still.author_id == current_user.id:
-        flag = True
-
-    if flag:
-        try:
-            db.session.delete(the_still)
-            db.session.commit()
-        except Exception:
-            flag = False
-            db.session.rollback()
+    try:
+        db.session.delete(still)
+        db.session.commit()
+    except Exception:
+        flag = False
+        db.session.rollback()
 
     if flag:
         if os.path.exists(img_prefix + '.jpg'):
@@ -352,4 +374,4 @@ def delete_still(still_id):
     else:
         flash(u'剧照删除失败...')
 
-    return redirect(url_for('movie.edit_stills', poster_id=the_still.poster_id))
+    return redirect(url_for('movie.edit_stills', poster_id=still.poster_id))

@@ -30,6 +30,7 @@ class Poster(db.Model):
     douban_link = db.Column(db.String(80))
     type_id = db.Column(db.Integer, db.ForeignKey('movie_types.id'))
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    private = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     introduction = db.Column(db.Text)
     stills = db.relationship('Still', backref='poster', lazy='dynamic')
@@ -112,6 +113,7 @@ class Still(db.Model):
     comment = db.Column(db.Text)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     poster_id = db.Column(db.Integer, db.ForeignKey('posters.id'))
+    private = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
     def to_json(self):

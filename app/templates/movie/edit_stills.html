@@ -5,7 +5,6 @@
 {% block title %}Edit Stills{% endblock %}
 
     {% block page_content %}
-        {% if current_user.can(Permission.CREATE_STILLS) %}
         <div id="new-still" class="boxed-group">
             <div class="header">添加剧照</div>
             <div class="content">
@@ -17,11 +16,12 @@
                             <div class="input-group">
                                 <div class="input-group-addon"><span class="glyphicon glyphicon-time" aria-hidden="true"></span></div>
                                 {{ form_new.time_min(id='new-still-min', class='form-control text-right', placeholder='00') }}
-                                <div class="input-group-addon" style="border-left:0; border-right:0;">分</div>
+                                <div class="input-group-addon">分</div>
                                 {{ form_new.time_sec(id='new-still-sec', class='form-control text-right', placeholder='00') }}
                                 <div class="input-group-addon">秒</div>
                             </div>
                         </div>
+                        <div>{{ form_new.private(id="new-still-private", class="form-control") }}</div>
                     </div>
                     <div class="form-group">
                         <label for="new-still-method" class="col-sm-2 control-label">上传电影剧照</label>
@@ -47,7 +47,6 @@
                 </form>
             </div>
         </div>
-        {% endif %}
         <div id="edit-stills" class="boxed-group">
             <div class="header">编辑剧照</div>
             <div class="content">
@@ -56,7 +55,7 @@
                     <div class="col-sm-4">
                         <img src="{{ url_for('static', filename='img/poster/{0}/{1}.jpg'.format(poster_id, form.id)) }}" />
                     </div>
-                    <div class="col-sm-6">
+                    <div class="col-sm-7">
                         <form class="form" action="{{ url_for('movie.edit_still', still_id=form.id) }}" method="post">
                             {{ form_new.hidden_tag() }}
                             <div class="form-group">
@@ -64,9 +63,10 @@
                                 <div class="input-group">
                                     <div class="input-group-addon"><span class="glyphicon glyphicon-time" aria-hidden="true"></span></div>
                                     {{ form.time_min(class="form-control text-right", placeholder="00") }}
-                                    <div class="input-group-addon" style="border-left:0; border-right:0;">分</div>
+                                    <div class="input-group-addon">分</div>
                                     {{ form.time_sec(class="form-control text-right", placeholder="00") }}
                                     <div class="input-group-addon">秒</div>
+                                    {{ form_new.private(class="form-control") }}
                                 </div>
                             </div>
                             <div class="form-group">

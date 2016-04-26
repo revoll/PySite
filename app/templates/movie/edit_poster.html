@@ -13,6 +13,7 @@
                         <div class="col-sm-3">
                             {{ form.name(id="poster-name", class="form-control", placeholder="电影名必须唯一") }}
                         </div>
+                        <div>{{ form.private(id="poster-private", class="form-control") }}</div>
                     </div>
                     <div class="form-group">
                         <label for="poster-douban" class="col-sm-2 control-label">*豆瓣链接</label>
@@ -87,7 +88,7 @@
                     <div class="form-group">
                         <label for="poster-introduction" class="col-sm-2 control-label">电影简介</label>
                         <div class="col-sm-9">
-                            {{ form.introduction(id="poster-introduction", class="form-control", rows="16", placeholder="简单介绍下......") }}
+                            {{ form.introduction(id="poster-introduction", class="form-control", rows="14", placeholder="简单介绍下......") }}
                         </div>
                     </div>
                     <div class="form-group">
