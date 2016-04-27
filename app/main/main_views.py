@@ -1,5 +1,7 @@
 # encoding: utf-8
-from flask import render_template, redirect, abort, url_for, flash, request, current_app, jsonify
+import os
+
+from flask import render_template, redirect, url_for, send_file, abort, flash, request, current_app, jsonify
 from flask.ext.sqlalchemy import get_debug_queries
 
 from . import main
@@ -55,6 +57,11 @@ def internal_server_error(e):
 @main.route('/', methods=['GET', 'POST'])
 def index():
     return render_template('index.html')
+
+
+@main.route('/crossdomain.xml')
+def get_crossdomain():
+    return send_file(os.path.join(current_app.static_folder, 'crossdomain.xml'))
 
 
 @main.route('/shutdown')

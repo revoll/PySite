@@ -1,3 +1,4 @@
+# encoding: utf-8
 import unittest
 import json
 import re
@@ -6,7 +7,8 @@ from base64 import b64encode
 from flask import url_for
 
 from app import create_app, db
-from app.database.models import User, Role, Post, Comment
+from app.models.user import User, Role
+from app.models.blog import Post, Comment
 
 
 class APITestCase(unittest.TestCase):

@@ -1,8 +1,9 @@
+# encoding: utf-8
 from datetime import datetime
 
-from markdown import markdown
 import bleach
 from flask import url_for
+from markdown import markdown
 
 from ..tools.exceptions import ValidationError
 from .. import db

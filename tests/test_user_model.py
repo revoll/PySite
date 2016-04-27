@@ -3,7 +3,7 @@ import time
 from datetime import datetime
 
 from app import create_app, db
-from app.database.models import User, AnonymousUser, Role, Permission, Follow
+from app.models.user import User, AnonymousUser, Role, Permission, Follow
 
 
 class UserModelTestCase(unittest.TestCase):

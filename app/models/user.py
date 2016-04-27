@@ -26,11 +26,14 @@ class Permission:
     ADMIN_FILES = 1 << 5
     ADMIN_POSTER = 1 << 10
 
+    ADMIN_SUPER = 1 << 62  # 超级管理员,可以分配其他用户的权限
+
     # 各个权限标志位的说明，可用于表单展示
     detail = [
         (0, 'Admin of Blog'),
         (5, 'Admin of Files'),
         (10, 'Admin of Poster'),
+        (62, '[Super Admin !]')
     ]
 
     roles = {
@@ -142,9 +145,14 @@ class User(UserMixin, db.Model):
         # if request.is_secure:
         #    url = 'https://secure.gravatar.com/avatar'
         # else:
-        #    url = 'http://www.gravatar.com/avata'
-        ava_hash = self.avatar or hashlib.md5(self.email.encode('utf-8')).hexdigest()
-        return '{url}?s={size}'.format(url=url_for('main.get_avatar', ava_hash=ava_hash), size=size)
+        #    url = 'http://www.gravatar.com/avatar'
+        avatar = self.avatar or hashlib.md5(self.email.encode('utf-8')).hexdigest()
+        # if '.jpg' == avatar[-4:]:
+        #     url = url_for('static', filename='img/avatar/' + avatar)
+        # else:
+        #     url = url_for('user.get_avatar', ava_hash=avatar)
+        # return '{url}?s={size}'.format(url=url, size=size)
+        return '{0}?s={1}'.format(url_for('user.get_avatar', ava_hash=avatar), size)
 
     def ping(self):
         self.last_seen = datetime.utcnow()

@@ -4,7 +4,7 @@ import unittest
 from flask import url_for
 
 from app import create_app, db
-from app.database.models import User, Role
+from app.models.user import User, Role
 
 
 class FlaskClientTestCase(unittest.TestCase):

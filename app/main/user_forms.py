@@ -1,3 +1,4 @@
+# encoding: utf-8
 from flask.ext.wtf import Form
 from wtforms import StringField, TextAreaField, BooleanField, SelectMultipleField, SubmitField, ValidationError
 from wtforms.validators import Required, Length, Email, Regexp

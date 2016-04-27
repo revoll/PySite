@@ -5,34 +5,30 @@
 
 {% block page_content %}
     <div class="page-header">
-        <a href="{{ url_for('main.upload_avatar') }}">
-            <img class="img-rounded profile-thumbnail" src="{{ user.gravatar(size=256) }}">
-        </a>
+        <img class="img-rounded profile-thumbnail" src="{{ user.gravatar(size=256) }}">
         <div class="profile-header">
             <h1>{{ user.username }}</h1>
             {% if user.name or user.location %}
                 <p>
                     {% if user.name %}{{ user.name }}<br>{% endif %}
-                    {% if user.location %}
-                        From <a href="http://maps.google.com/?q={{ user.location }}">{{ user.location }}</a><br>
-                    {% endif %}
+                    {% if user.location %}来自
+                        <a href="http://maps.google.com/?q={{ user.location }}">{{ user.location }}</a><br>{% endif %}
                 </p>
             {% endif %}
             {% if current_user.is_admin() %}
                 <p><a href="mailto:{{ user.email }}">{{ user.email }}</a></p>
             {% endif %}
             {% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %}
-            <p>Member since {{ moment(user.member_since).format('L') }}. Last
-                seen {{ moment(user.last_seen).fromNow() }}.</p>
+            <p>注册时间为 {{ moment(user.member_since).format('L') }}， 最近访问于 {{ moment(user.last_seen).fromNow() }}。</p>
 
-            <p>{{ user.posts.count() }} blog posts. {{ user.comments.count() }} comments.</p>
-
+            <p>发表了 {{ user.posts.count() }} 条博客， {{ user.comments.count() }} 条评论。</p>
             <p>
-                {% if user == current_user %}
-                    <a class="btn btn-default" href="{{ url_for('user.edit_profile') }}">Edit Profile</a>
+                {% if user.id == current_user.id %}
+                    <a class="btn btn-primary" href="{{ url_for('user.edit_profile') }}">修改个人资料</a>
+                    <a class="btn btn-success" href="{{ url_for('user.upload_avatar') }}">修改头像</a>
                 {% endif %}
                 {% if current_user.is_admin() %}
-                    <a class="btn btn-danger" href="{{ url_for('user.edit_profile_admin', id=user.id) }}">Edit Profile
+                    <a class="btn btn-danger" href="{{ url_for('user.edit_profile_admin', user_id=user.id) }}">修改信息
                         [Admin]</a>
                 {% endif %}
             </p>

@@ -6,7 +6,8 @@ import unittest
 from selenium import webdriver
 
 from app import create_app, db
-from app.database.models import Role, User, Post
+from app.models.user import Role, User
+from app.models.blog import Post
 
 
 class SeleniumTestCase(unittest.TestCase):
