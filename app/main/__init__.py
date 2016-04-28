@@ -10,6 +10,13 @@ auth = Blueprint('auth', __name__)
 
 blog = Blueprint('blog', __name__)
 
+pages = Blueprint('pages', __name__)
+
+files = Blueprint('files', __name__)
+
 movie = Blueprint('movie', __name__)
 
-from . import main_views, user_views, auth_views, blog_views, movie_views, misc_views
+music = Blueprint('music', __name__)
+
+from . import main_views, user_views, auth_views, blog_views, pages_views, resource_views, \
+    movie_views, music_views

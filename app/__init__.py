@@ -41,12 +41,16 @@ def create_app(config_name):
         sslify = SSLify(app)
 
     from .main import main as main_blueprint, user as user_blueprint, auth as auth_blueprint, \
-        blog as blog_blueprint, movie as movie_blueprint
+        blog as blog_blueprint, pages as pages_blueprint, files as files_blueprint, \
+        movie as movie_blueprint, music as music_blueprint
     app.register_blueprint(main_blueprint)
     app.register_blueprint(user_blueprint, url_prefix='/user')
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
     app.register_blueprint(blog_blueprint, url_prefix='/blog')
+    app.register_blueprint(pages_blueprint, url_prefix='/page')
+    app.register_blueprint(files_blueprint, url_prefix='/files')
     app.register_blueprint(movie_blueprint, url_prefix='/movie')
+    app.register_blueprint(music_blueprint, url_prefix='/music')
 
     # from .api_1_0 import api as api_1_0_blueprint
     # app.register_blueprint(api_1_0_blueprint, url_prefix='/api/v1.0')

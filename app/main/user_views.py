@@ -43,7 +43,7 @@ def list_users():
     users = pagination.items
     for i in range(0, len(users)):
         users[i].permission_bin = bin(users[i].permission | 1 << 63)[-16:]
-    return render_template('user/users.html', users=pagination.items, pagination=pagination)
+    return render_template('user/manage.html', users=pagination.items, pagination=pagination)
 
 
 @user.route('/p/<username>/')

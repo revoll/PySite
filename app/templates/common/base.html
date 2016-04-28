@@ -53,12 +53,12 @@
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li><a href="{{ url_for('main.index') }}">主页</a></li>
                     <li><a href="{{ url_for('blog.index') }}">博客</a></li>
+                    <li><a href="{{ url_for('music.index') }}">音乐</a></li>
                     <li><a href="{{ url_for('movie.index') }}">电影</a></li>
-                    <li><a href="#">音乐</a></li>
-                    <li><a href="#">作品</a></li>
-                    <li><a href="#">资源</a></li>
+                    <li><a href="{{ url_for('pages.index') }}">专题</a></li>
+                    <li><a href="{{ url_for('pages.index', subject='design') }}">设计</a></li>
+                    <li><a href="{{ url_for('files.index') }}">资源</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     {% if current_user.is_admin() %}
