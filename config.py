@@ -7,9 +7,11 @@ class Config:
     """ Application Configurations """
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess string'
     SSL_DISABLE = True
+
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_RECORD_QUERIES = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
+
     MAIL_SERVER = os.environ.get('MAIL_SERVER')
     MAIL_PORT = int(os.environ.get('MAIL_PORT', 25))
     MAIL_USE_TLS = True
@@ -17,8 +19,8 @@ class Config:
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
 
     FLASKY_SUPER_ADMIN = '17717529317@163.com'
-    FLASKY_MAIL_SUBJECT_PREFIX = ''
-    FLASKY_MAIL_SENDER = 'Flasky Admin <17717529317@163.com>'
+    FLASKY_MAIL_SUBJECT_PREFIX = '[PySite]'
+    FLASKY_MAIL_SENDER = 'PySite Admin <17717529317@163.com>'
     FLASKY_MAIL_NOTIFICATION = os.environ.get('FLASKY_MAIL_NOTIFICATION')
     FLASKY_SLOW_DB_QUERY_TIME = 0.5
 
