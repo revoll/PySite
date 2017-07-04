@@ -1,0 +1,116 @@
+{% extends "photo/photo_base.html" %}
+
+
+{% block title %}{% if post_id %}编辑《{{ form.title.data }}》{% else %}添加新的图册{% endif %}{% endblock %}
+
+
+{% block photo_main %}
+    {% if current_user.is_authenticated and post_id %}
+    <a href="{{ url_for('.get_post', post_id=post_id) }}" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-off text-muted"></span></a>
+    {% endif %}
+
+    <h1 class="docs-page-title docs-text-photo">{% if post_id %}{{ form.title.data }}{% else %}添加新的图册{% endif %}</h1>
+
+    <div class="panel panel-warning">
+        <div class="panel-heading">
+            <h3 class="panel-title">编辑图册信息</h3>
+        </div>
+        <div class="panel-body">
+            <br>
+            <form class="form-horizontal" action="{% if post_id == None %}{{ url_for('.add_post') }}{% else %}{{ url_for('.edit_post', post_id=post_id) }}{% endif %}" method="post" role="form">
+                {{ form.hidden_tag() }}
+                <div class="form-group{% if form.title.errors or form.private.errors %} has-error{% endif %}">
+                    <label for="post-title" class="col-sm-3 control-label">图册标题</label>
+                    <div class="col-sm-6">
+                        {{ form.title(id="post-title", class="form-control", placeholder="同一天内的图册名必须唯一") }}
+                        {% if form.title.errors %}<p class="help-block">{{ form.title.errors[0] }}</p>{% endif %}
+                    </div>
+                    <div class="col-sm-3 col-lg-2">
+                        {{ form.private(id="post-private", class="form-control") }}
+                        {% if form.private.errors %}<p class="help-block">{{ form.private.errors[0] }}</p>{% endif %}
+                    </div>
+                </div>
+                <div class="form-group{% if form.category.errors %} has-error{% endif %}">
+                    <label for="post-category" class="col-sm-3 control-label">分类</label>
+                    <div class="col-sm-4">
+                        {{ form.category(id="post-category", class="form-control") }}
+                        {% if form.category.errors %}<p class="help-block">{{ form.category.errors[0] }}</p>{% endif %}
+                    </div>
+                </div>
+                <div class="form-group{% if form.persons.errors %} has-error{% endif %}">
+                    <label for="post-persons" class="col-sm-3 control-label">参与人员</label>
+                    <div class="col-sm-6">
+                        {{ form.persons(id="post-persons", class="form-control", placeholder="") }}
+                        {% if form.persons.errors %}<p class="help-block">{{ form.persons.errors[0] }}</p>{% endif %}
+                    </div>
+                </div>
+                <div class="form-group{% if form.address.errors %} has-error{% endif %}">
+                    <label for="post-address" class="col-sm-3 control-label">地点</label>
+                    <div class="col-sm-9 col-md-8">
+                        {{ form.address(id="post-address", class="form-control", placeholder="") }}
+                        {% if form.address.errors %}<p class="help-block">{{ form.address.errors[0] }}</p>{% endif %}
+                    </div>
+                </div>
+                <div class="form-group{% if form.introduction.errors %} has-error{% endif %}">
+                    <label for="post-introduction" class="col-sm-3 control-label">图册简介</label>
+                    <div class="col-sm-9 col-md-8">
+                        {{ form.introduction(id="post-introduction", class="form-control", rows="12", placeholder="简单介绍下......") }}
+                        {% if form.introduction.errors %}<p class="help-block">{{ form.introduction.errors[0] }}</p>{% endif %}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-3 col-sm-9">
+                        {{ form.submit(value="提交", class="btn btn-default") }}
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if post_id %}
+    <div class="panel panel-warning">
+        <div class="panel-heading">
+            <h3 class="panel-title">编辑图片信息</h3>
+        </div>
+        <ul class="list-group">
+            {% for form in forms %}
+            <li class="photo-ei-item list-group-item">
+                <div class="row">
+                    <div class="col-sm-4">
+                        <img src="{{ url_for('.serve_image', post_id=post_id, filename=form.filename) }}"/>
+                    </div>
+                    <div class="col-sm-8">
+                        <form action="{{ url_for('.edit_image', image_id=form.id) }}" method="post">
+                            {{ form.hidden_tag() }}
+                            <div class="form-group">
+                                <label>想说的话</label>
+                                {{ form.comment(class="form-control", placeholder="说点什么吧......") }}
+                            </div>
+                            <div class="form-group">
+                                <label>隐私</label>
+                                {{ form.private(class="form-control") }}
+                            </div>
+                            <div class="form-group">
+                                {{ form.submit(value="提交更新", class="btn btn-primary") }}
+                                <a class="btn btn-danger pull-right" href="javascript:delete_image({{ form.id }});">删除图片</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+{% endblock %}
+
+
+{% block scripts %}
+    {{ super() }}
+    <script type="text/javascript">
+        function delete_image(image_id) {
+            notification_init('提示', '确定删除这张图片？', '<button class="btn btn-success" data-dismiss="modal">取消</button><a class="btn btn-danger" role="button" href="' + "{{ url_for('.delete_image', image_id=0) }}".replace(/0/, image_id.toString()) + '">删除</a>');
+            notification_show();
+        }
+    </script>
+{% endblock %}

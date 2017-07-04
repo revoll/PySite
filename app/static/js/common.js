@@ -1,34 +1,4 @@
 /**
- * 元素class属性操作：添加、删除、翻转、判断是否存在。
- * @param obj
- * @param cls
- * @returns {Array|{index: number, input: string}}
- */
-function hasClass(obj, cls) {
-    return obj.className.match(new RegExp('(\\s|^)' + cls + '(\\s|$)'));
-}
-
-function addClass(obj, cls) {
-    if (!this.hasClass(obj, cls)) obj.className += " " + cls;
-}
-
-function removeClass(obj, cls) {
-    if (hasClass(obj, cls)) {
-        var reg = new RegExp('(\\s|^)' + cls + '(\\s|$)');
-        obj.className = obj.className.replace(reg, ' ');
-    }
-}
-
-function toggleClass(obj, cls) {
-    if (hasClass(obj, cls)) {
-        removeClass(obj, cls);
-    } else {
-        addClass(obj, cls);
-    }
-}
-
-
-/**
  * 返回顶部控件: 调用 scroll_to_top.init();
  * @type:
  */
@@ -39,7 +9,7 @@ var scroll_to_top = {
 		scrollduration:400, //滚动过渡时间
 		fadeduration:[500,100] //淡出淡现消失
 	},
-	controlHTML: '<img src="/static/topback.gif" style="width:54px; height:54px; border:0;" />', //返回顶部按钮
+	controlHTML: '<img src="/static/img/topback.gif" style="width:54px; height:54px; border:0;" />', //返回顶部按钮
 	controlattrs:{offsetx:30,offsety:80},//返回按钮固定位置
 	anchorkeyword:"#top",
 	state:{
@@ -88,7 +58,7 @@ var scroll_to_top = {
 		});
 	}
 };
-scroll_to_top.init();
+// scroll_to_top.init();
 
 
 /**
@@ -113,20 +83,77 @@ function head_url(url, msg) {
  */
 function switch_upload_method(index, img_file_id, img_url_id) {
 
-	var i_file = document.getElementById(img_file_id);
-	var i_url = document.getElementById(img_url_id);
+	var e_file = $(img_file_id);
+	var e_url = $(img_url_id);
 	var css_class = 'hidden';
 
-	if (!hasClass(i_file, css_class)) {
-		addClass(i_file, css_class)
-	}
-	if (!hasClass(i_url, css_class)) {
-		addClass(i_url, css_class)
-	}
 	if (index == 'file') {
-		removeClass(i_file, css_class);
-		i_url.value = ''
+		e_file.removeClass(css_class);
+		e_url.addClass(css_class);
 	} else {
-		removeClass(i_url, css_class)
+		e_file.addClass(css_class);
+		e_url.removeClass(css_class);
 	}
 }
+
+
+/**
+ * flask-moment组件代码
+ */
+function flask_moment_render(elem) {
+	$(elem).text(eval('moment("' + $(elem).data('timestamp') + '").' + $(elem).data('format') + ';'));
+	$(elem).removeClass('flask-moment');
+}
+function flask_moment_render_all() {
+	$('.flask-moment').each(function() {
+		flask_moment_render(this);
+		if ($(this).data('refresh')) {
+			(function(elem, interval) { setInterval(function() { flask_moment_render(elem) }, interval); })(this, $(this).data('refresh'));
+		}
+	})
+}
+
+
+/**
+ * 设置与呼出notification模态对话框
+ */
+function notification_init(header, body, footer) {
+	if (header == null) {
+		$("#myModalTitle").html('');
+	} else {
+		$("#myModalTitle").html(header || '提示：');
+	}
+	if (body == null) {
+		$("#myModalBody").html('');
+	} else {
+		$("#myModalBody").html(body || '请在此处添加提示信息......');
+	}
+	if (footer == null) {
+		$("#myModalFooter").html('');
+	} else {
+		$("#myModalFooter").html(footer || '<button type="button" class="btn btn-default" data-dismiss="modal">好的</button>');
+	}
+}
+function notification_show() {
+	//
+	// $('#myModal').modal(options); /** or **/ <button type="button" class="btn btn-primary" data-toggle="modal" data-target="myModal">Launch Model</button>
+	//
+	$("#myModal").modal();
+}
+
+
+/**
+ * 页面加载完成初始化代码
+ */
+$(document).ready(function() {
+	//
+	// Open popup menu on hover
+	//
+	// $(document).off('click.bs.dropdown.data-api');
+	// $('.dropdown').mouseover(function(){$(this).addClass('open')}).mouseout(function(){$(this).removeClass('open')});
+
+	//
+	// flask moment timestamp
+	//
+	flask_moment_render_all();
+});

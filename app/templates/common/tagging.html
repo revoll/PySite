@@ -1,0 +1,240 @@
+{% extends "common/common_base.html" %}
+
+
+{% block title %}分类与标签管理{% endblock %}
+
+
+{% block common_main %}
+	<div class="common-tagging-nav">
+        <div class="btn-group btn-group-justified" role="group" aria-label="分类与标签管理栏目导航">
+            {% for m in ['blog', 'movie', 'photo'] %}
+            <a type="button" class="btn btn-primary{% if module == m %} disabled{% endif %}" href="{{ url_for('.ctm', module=m) }}">{{ m.upper() }}</a>
+            {% endfor %}
+        </div>
+	</div>
+    <h1 class="docs-page-title docs-text-common">分类与标签管理：{{ module.upper() }}</h1>
+	<div class="common-tagging-nav">
+		<ul class="nav nav-tabs">
+			<li{% if not show_disabled %} class="active"{% endif %}><a href="{{ url_for('.show_available', module=module) }}">可用分类</a></li>
+			<li{% if show_disabled %} class="active"{% endif %}><a href="{{ url_for('.show_deleted', module=module) }}">冻结分类</a></li>
+		</ul>
+	</div>
+    {% if not show_disabled %}
+	<div class="common-tagging-acw well">
+		<div class="form-inline">
+			<label for="add_category_name">添加分类：</label>
+			<input type="text" class="form-control" id="add_category_name" placeholder="输入分类名称">
+			<button type="button" class="btn btn-default" onclick="add_category()">添加分类</button>
+		</div>
+	</div>
+    {% endif %}
+
+    <div class="common-tagging-list">
+        {% for c in categories %}
+        <div class="common-tagging-ciw panel panel-default">
+            <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-{% if c.private %}close{% else %}open{% endif %}" aria-hidden="true"></span>
+                <strong>【 {{ c.name }} 】</strong>
+                {% if show_disabled %}
+                <a href="javascript:recycle_category({{ c.id }})" class="tagging-tool pull-right"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></a>
+                {% else %}
+                <a href="javascript:delete_category({{ c.id }})" class="tagging-tool pull-right"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>
+                {% endif %}
+                <a href="javascript:$('#edit_{{ c.id }}_wrapper').toggleClass('hidden')" class="tagging-tool pull-right"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a>
+            </div>
+            <div class="panel-body">
+                {% for t in c.tags %}
+                <div class="tagging-tag pull-left" id="tag_{{ t.id }}">
+                    <span>{{ t.name }}</span>
+                    {% if not show_disabled %}
+                    <button class="close" onclick="delete_tag({{ c.id }}, {{ t.id }})"><span class="glyphicon glyphicon-remove-circle"></span></button>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                {% if not show_disabled %}
+                <div class="tagging-add pull-left" id="add_{{ c.id }}_tag">
+                    <button class="close" onclick="add_tag({{ c.id }})"><span class="glyphicon glyphicon-plus-sign"></span></button>
+                    <input type="text" name="name" id="add_{{ c.id }}_tag_name" placeholder="新建标签">
+                </div>
+                {% endif %}
+                <div class="clearfix"></div>
+            </div>
+            <div class="panel-footer hidden" id="edit_{{ c.id }}_wrapper">
+                <div class="form-inline">
+                    <div id="edit_category_{{ c.id }}">
+                        <label for="edit_{{ c.id }}_name">编辑分类：</label>
+                        <input type="text" class="form-control" id="edit_{{ c.id }}_name" placeholder="输入新的分类名" value="{{ c.name }}">
+                        <label for="edit_{{ c.id }}_private" class="sr-only">隐藏分类</label>
+                        <select class="form-control" id="edit_{{ c.id }}_private">
+                            <option value=0{% if not c.private %} selected{% endif %}>所有人可见</option>
+                            <option value=1{% if c.private %} selected{% endif %}>仅自己可见</option>
+                        </select>
+                        <button type="button" class="btn btn-default" onclick="edit_category({{ c.id }})">保存分类</button>
+                    </div>
+                    <div id="edit_{{ c.id }}_tag">
+                        <label for="select_{{ c.id }}_tag">修改标签：</label>
+                        <select class="form-control" id="select_{{ c.id }}_tag">{% for t in c.tags %}
+                            <option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}
+                        </select>
+                        <label for="edit_{{ c.id }}_tag_name" class="sr-only">新的标签名</label>
+                        <input type="text" class="form-control" id="edit_{{ c.id }}_tag_name" placeholder="输入新的标签名">
+                        <button type="button" class="btn btn-default" onclick="edit_tag({{ c.id }})">保存标签</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+
+{% block scripts %}
+	{{ super() }}
+	<script type="text/javascript">
+		function refresh_tag_list(category_id) {
+			$.ajax({
+				url: "{{ url_for('.query_category', module=module, category_id=0) }}".replace('0', category_id),
+				success: function (param) {
+					if (param.status == "success") {
+						var select = $("#select_" + category_id + "_tag");
+						var text = '';
+						for(var i in param.data.tags) {
+							var t = param.data.tags[i];
+							text += '<option value="' + t.id + '">' + t.name + '</option>';
+						}
+						select.html(text);
+					} else {
+						notification_init('', param.detail, '');
+                        notification_show();
+					}
+				}
+			});
+		}
+		function add_category() {
+			$.ajax({
+				url: "{{ url_for('.add_category', module=module) }}",
+				type: "POST",
+				contentType: "application/json",
+				dataType: "json",
+				data: JSON.stringify({
+					"name": $("#add_category_name:text").val()
+				}),
+				success: function (param) {
+					if (param.status == "success") {
+						window.location.reload();
+					} else {
+						notification_init('', param.detail, '');
+                        notification_show();
+					}
+				}
+			});
+		}
+		function edit_category(category_id) {
+			$.ajax({
+				url: "{{ url_for('.edit_category', module=module, category_id=0) }}".replace("0", category_id),
+				type: "POST",
+				contentType: "application/json",
+				dataType: "json",
+				data: JSON.stringify({
+					"name": $("#edit_" + category_id + "_name:text").val(),
+					"private": $("#edit_" + category_id + "_private").val()
+				}),
+				success: function (param) {
+					if (param.status == "success") {
+						window.location.reload();
+					} else {
+						notification_init('', param.detail, '');
+                        notification_show();
+					}
+				}
+			});
+		}
+		function delete_category(category_id) {
+			if (confirm("确定删除整个分类？")) {
+				$.ajax({
+					url: "{{ url_for('.delete_category', module=module, category_id=0) }}".replace("0", category_id),
+					success: function (param) {
+						if (param.status == "success") {
+							window.location.reload();
+						} else {
+						    notification_init('', param.detail, '');
+                            notification_show();
+						}
+					}
+				});
+			}
+		}
+		function recycle_category(category_id) {
+			if (confirm("恢复使用这个分类？")) {
+				$.ajax({
+					url: "{{ url_for('.recycle_category', module=module, category_id=0) }}".replace("0", category_id),
+					success: function (param) {
+						if (param.status == "success") {
+							window.location.reload();
+						} else {
+						    notification_init('', param.detail, '');
+                            notification_show();
+						}
+					}
+				});
+			}
+		}
+		function add_tag(category_id) {
+			$.ajax({
+				url: "{{ url_for('.add_tag', module=module, category_id=0) }}".replace("0", category_id),
+				type: "POST",
+				contentType: "application/json",
+				dataType: "json",
+				data: JSON.stringify({
+					"name": $("#add_" + category_id + "_tag_name:text").val()
+				}),
+				success: function (param) {
+					$("#add_" + category_id + "_tag_name").val("");
+					if (param.status == "success") {
+						var t = param.data;
+						var html = "<div class=\"tagging-tag pull-left\" id=\"tag_" + t.id + "\"><span>" + t.name + "</span><button class=\"close\" onclick=\"delete_tag(" + category_id + "," + t.id + ")\"><span class=\"glyphicon glyphicon-remove-circle\"></span></button></div>";
+						$("#add_" + category_id + "_tag").before(html);
+						refresh_tag_list(category_id);
+					} else {
+						notification_init('', param.detail, '');
+                        notification_show();
+					}
+				}
+			});
+		}
+		function edit_tag(category_id) {
+			var tag_id = $("#select_" + category_id + "_tag").val();
+			$.ajax({
+				url: "{{ url_for('.edit_tag', module=module, tag_id=0) }}".replace('0', tag_id),
+				type: "POST",
+				contentType: "application/json",
+				dataType: "json",
+				data: JSON.stringify({
+					"name": $("#edit_" + category_id + "_tag_name:text").val()
+				}),
+				success: function (param) {
+					if (param.status == "success") {
+						window.location.reload();
+					} else {
+						notification_init('', param.detail, '');
+                        notification_show();
+					}
+				}
+			});
+		}
+		function delete_tag(category_id, tag_id) {
+			$.ajax({
+				url: "{{ url_for('.delete_tag', module=module, tag_id=0) }}".replace('0', tag_id),
+				success: function (param) {
+					if (param.status == "success") {
+						$("#tag_" + tag_id).remove();
+						refresh_tag_list(category_id);
+					} else {
+						notification_init('', param.detail, '');
+                        notification_show();
+					}
+				}
+			});
+		}
+	</script>
+{% endblock %}

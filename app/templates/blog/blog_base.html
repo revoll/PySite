@@ -1,0 +1,48 @@
+{% extends "common/base.html" %}
+
+
+{% block header %}{{ super() }}{% endblock %}
+
+{% block header2 %}
+    <header>
+        <div class="docs-bg-frame docs-bg-frame-blog"></div>
+    </header>
+{% endblock %}
+
+{% block content %}
+    <section class="container">
+        <div class="docs-page-wrapper docs-page-blog">
+            <div class="docs-page-header">
+            {% block docs_page_header %}{% endblock %}
+            </div>
+            <div class="row">
+                <div class="col-md-3 blog-sidebar-wrapper">
+                {% block blog_sidebar %}
+                    <div class="panel panel-success">
+                        <div class="panel-heading">
+                            <b>所有分类</b>
+                        </div>
+                        <div class="panel-body">
+                          xalsdfjaskd
+                        </div>
+                    </div>
+                    <div class="panel panel-success">
+                        <div class="panel-heading">
+                            <b>按时间归档</b>
+                        </div>
+                        <div class="panel-body">
+                          xalsdfjaskd
+                        </div>
+                    </div>
+                {% endblock %}
+                </div>
+                <div class="col-md-9 blog-main-wrapper">
+                {% block blog_main %}{% endblock %}
+                </div>
+            </div>
+            <div class="docs-page-footer">
+            {% block docs_page_footer %}{% endblock %}
+            </div>
+        </div>
+    </section>
+{% endblock content %}

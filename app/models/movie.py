@@ -1,10 +1,8 @@
-# encoding: utf-8
+# -*- coding: utf-8 -*-
+import os
 from datetime import datetime
-
-from flask import url_for
-
+from flask import current_app
 from .. import db
-from ..models.user import User
 
 
 """
@@ -13,119 +11,115 @@ str_country = u'中国大陆,香港,台湾,' \
               u'瑞典,巴西,波兰,丹麦,捷克,阿根廷,比利时,墨西哥,奥地利,荷兰,新西兰,土耳其,匈牙利,以色列,新加坡'
 """
 
-str_movie_type = u'未定义,动作与历险,儿童与家庭,喜剧,剧情,爱情,恐怖与惊悚,科幻与奇幻,记录与传记,动画,情色,其他'
 
+class MovieCategory(db.Model):
+    """ 类型（目录） """
+    __tablename__ = u'movie_category'
 
-class Poster(db.Model):
-    __tablename__ = 'posters'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=1000001)
-    name = db.Column(db.String(50), unique=True)
-    o_name = db.Column(db.String(50))
-    alias = db.Column(db.String(160))
-    director = db.Column(db.String(40))
-    screenwriter = db.Column(db.String(40))
-    performers = db.Column(db.String(200))
-    length = db.Column(db.String(60))
-    release_date = db.Column(db.String(60))
-    country = db.Column(db.String(100))
-    douban_link = db.Column(db.String(80))
-    type_id = db.Column(db.Integer, db.ForeignKey('movie_types.id'))
-    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    private = db.Column(db.Boolean, default=False)
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    introduction = db.Column(db.Text)
-    stills = db.relationship('Still', backref='poster', lazy='dynamic')
-
-    @staticmethod
-    def generate_fake(count=100):
-        from sqlalchemy.exc import IntegrityError
-        from random import seed, randint
-        import forgery_py
-        seed()
-        num_type = MovieType.query.count()
-        num_author = User.query.count()
-        for i in range(count):
-            p = Poster()
-            p.name = forgery_py.lorem_ipsum.title()
-            p.o_name = forgery_py.lorem_ipsum.title()
-            p.alias = u'(Empty)'
-            p.director = forgery_py.name.full_name()
-            p.screenwriter = forgery_py.name.full_name()
-            p.performers = forgery_py.name.full_name() + u'/' + forgery_py.name.full_name() + u'/' + forgery_py.name.full_name()
-            p.length = u'{}分钟'.format(randint(90, 180))
-            p.release_date = forgery_py.date.date().strftime('%Y-%m-%d')
-            p.douban_link = u'http://movie.douban.com/' + forgery_py.internet.domain_name()
-            p.type_id = randint(0, num_type)
-            p.country = forgery_py.address.country()
-            p.author_id = randint(0, num_author)
-            p.timestamp = forgery_py.date.date(True)
-            p.introduction = forgery_py.lorem_ipsum.sentences(randint(1, 5))
-            db.session.add(p)
-        try:
-            db.session.commit()
-        except IntegrityError:
-            db.session.rollback()
-
-    def permission_check(self):
-        pass
-
-    def to_json(self):
-        json_poster = {
-            'url': '',  # url_for('movie.poster', poster_id=self.id, _external=True),
-            'name': self.name,
-            'original': self.o_name,
-            'alias': self.alias,
-            'director': self.director,
-            'performers': self.performers,
-            'length': self.length,
-            'release_date': self.release_date,
-            'douban_link': self.douban_link,
-            'type': self.type.name,
-            'country': self.country,
-            'author': url_for('api.get_user', id=self.author_id, _external=True),
-            'introduction': self.introduction,
-            'stills': '',  # url_for('movie.poster_stills', poster_id=self.id, _external=True),
-            'timestamp': self.timestamp
-        }
-        return json_poster
-
-
-class MovieType(db.Model):
-    __tablename__ = 'movie_types'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(40), unique=True)
-    posters = db.relationship('Poster', backref='type', lazy='dynamic')
-
-    @staticmethod
-    def insert_types():
-        types = str_movie_type.split(u',')
-        for t in types:
-            type = MovieType.query.filter_by(name=t).first()
-            if type is None:
-                type = MovieType(name=t)
-            db.session.add(type)
-        db.session.commit()
-
-
-class Still(db.Model):
-    __tablename__ = 'stills'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=1000001)
-    timeline = db.Column(db.Integer, default=0)
-    comment = db.Column(db.Text)
-    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    poster_id = db.Column(db.Integer, db.ForeignKey('posters.id'))
+    name = db.Column(db.String(40), unique=True, nullable=False)
     private = db.Column(db.Boolean, default=False)
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    disabled = db.Column(db.Boolean, default=False)
+
+    tags = db.relationship(u'MovieTag', back_populates=u'category', lazy=u'dynamic')
+    posts = db.relationship(u'MoviePost', back_populates=u'category', lazy=u'dynamic')
 
     def to_json(self):
-        json_still = {
-            'id': self.id,
-            'comment': self.comment,
-            'author': '',  # self.author,
-            'poster': '',  # url_for('movie.poster', poster_id=self.poster_id, _external=True),
-            'timestamp': self.timestamp
+        json_type = {
+            u'id': self.id,
+            u'name': self.name,
+            u'private': self.private,
+            u'disabled': self.disabled,
+            u'tags': [t.to_json() for t in self.tags]
         }
-        return json_still
+        return json_type
+
+    @staticmethod
+    def on_changed_name(target, value, oldvalue, initiator):
+        new_path = os.path.join(current_app.data_path, u'movie', value)
+        old_path = os.path.join(current_app.data_path, u'movie', oldvalue) if target.id else None
+        if old_path and os.path.exists(old_path):
+            os.rename(old_path, new_path)
+        else:
+            os.makedirs(new_path)
+
+    @staticmethod
+    def after_delete(mapper, connection, target):
+        os.rmdir(os.path.join(current_app.data_path, u'movie', target.name))
+
+db.event.listen(MovieCategory.name, u'set', MovieCategory.on_changed_name)
+db.event.listen(MovieCategory, u'after_delete', MovieCategory.after_delete)
+
+
+class MovieTagging(db.Model):
+    """ Post与标签关联表 """
+    __tablename__ = u're_movie_tag'
+
+    post_id = db.Column(db.Integer, db.ForeignKey(u'movie_post.id'), primary_key=True)
+    tag_id = db.Column(db.Integer, db.ForeignKey(u'movie_tag.id'), primary_key=True)
+
+
+class MovieTag(db.Model):
+    """ 标签 """
+    __tablename__ = u'movie_tag'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(12), nullable=False)  # unique=False
+    category_id = db.Column(db.Integer, db.ForeignKey(u'movie_category.id'), nullable=False)
+
+    category = db.relationship(u'MovieCategory', back_populates=u'tags')
+    posts = db.relationship(u'MoviePost', secondary=u're_movie_tag', back_populates=u'tags', lazy=u'dynamic')
+
+    def to_json(self):
+        json_tag = {
+            u'id': self.id,
+            u'name': self.name,
+            u'category_id': self.category_id
+        }
+        return json_tag
+
+
+class MoviePost(db.Model):
+    """ 电影海报 """
+    __tablename__ = u'movie_post'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=1000001)
+    category_id = db.Column(db.Integer, db.ForeignKey(u'movie_category.id'), nullable=False)
+    private = db.Column(db.Boolean, default=False)
+    reference = db.Column(db.String(80), default=u'')  # i.e. https://movie.douban.com/...
+    name = db.Column(db.String(50), unique=True)
+    o_name = db.Column(db.String(50), default=u'')
+    alias = db.Column(db.String(160), default=u'')
+    director = db.Column(db.String(40), default=u'')
+    screenwriter = db.Column(db.String(40), default=u'')
+    performers = db.Column(db.String(200), default=u'')
+    length = db.Column(db.String(60), default=u'')
+    release_date = db.Column(db.String(60), default=u'')
+    country = db.Column(db.String(100), default=u'')
+    introduction = db.Column(db.Text, default=u'')
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    category = db.relationship(u'MovieCategory', back_populates=u'posts')
+    tags = db.relationship(u'MovieTag', secondary=u're_movie_tag', back_populates=u'posts')
+    stills = db.relationship(u'MovieStill', backref=u'post', lazy=u'dynamic')
+
+    @staticmethod
+    def on_changed_category(target, value, oldvalue, initiator):
+        target.tags = []
+
+db.event.listen(MoviePost.category_id, u'set', MoviePost.on_changed_category)
+
+
+class MovieStill(db.Model):
+    """ 电影剧照 """
+    __tablename__ = u'movie_still'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=100000001)
+    timeline = db.Column(db.Integer, default=0)
+    comment = db.Column(db.Text, default=u'')
+    post_id = db.Column(db.Integer, db.ForeignKey(u'movie_post.id'))
+    private = db.Column(db.Boolean, default=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
     @staticmethod
     def timeline_str_to_int(str_min, str_sec):

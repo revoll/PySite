@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -5,104 +6,78 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config:
     """ Application Configurations """
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess string'
+    SECRET_KEY = os.environ.get(u'SECRET_KEY') or os.urandom(24)
     SSL_DISABLE = True
 
+    SQLALCHEMY_ECHO = False
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_RECORD_QUERIES = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
 
-    MAIL_SERVER = os.environ.get('MAIL_SERVER')
-    MAIL_PORT = int(os.environ.get('MAIL_PORT', 25))
-    MAIL_USE_TLS = True
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    SLOW_DB_QUERY_TIME = 0.5
 
-    FLASKY_SUPER_ADMIN = '17717529317@163.com'
-    FLASKY_MAIL_SUBJECT_PREFIX = '[PySite]'
-    FLASKY_MAIL_SENDER = 'PySite Admin <17717529317@163.com>'
-    FLASKY_MAIL_NOTIFICATION = os.environ.get('FLASKY_MAIL_NOTIFICATION')
-    FLASKY_SLOW_DB_QUERY_TIME = 0.5
-
-    FLASKY_USERS_PER_PAGE = 50
-    FLASKY_POSTS_PER_PAGE = 20
-    FLASKY_FOLLOWERS_PER_PAGE = 50
-    FLASKY_COMMENTS_PER_PAGE = 30
-    FLASKY_POSTERS_PER_PAGE = 10
-    FLASKY_POSTER_STILLS_PER_PAGE = 10
-    FLASKY_IMAGE_RESOLUTION_LIMIT = 1200
+    MAIL_SERVER = os.environ.get(u'MAIL_SERVER')
+    MAIL_PORT = int(os.environ.get(u'MAIL_PORT') or u'25')
+    MAIL_USERNAME = os.environ.get(u'MAIL_USERNAME')
+    MAIL_PASSWORD = os.environ.get(u'MAIL_PASSWORD')
+    MAIL_SUBJECT_PREFIX = u'[PySite]'
+    MAIL_SENDER = u'PySite Admin <%s>' % os.environ.get(u'MAIL_USERNAME')
+    MAIL_NOTIFICATION = u'MAIL NOTIFICATION BOYD HERE....'
 
     @staticmethod
     def init_app(app):
-        pass
+        app.data_path = os.path.join(basedir, u'data')
+
+
+#
+# Config example for 'SQLALCHEMY_DATABASE_URI':
+#
+# MYSQL  : u'mysql://flasky:654321@localhost/pysite'
+# SQLite : u'sqlite:///' + os.path.join(basedir, u'data/data.sqlite')
+#
 
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = os.getenv('MYSQL_URI_BASE') + 'flasky_dev' if os.getenv('MYSQL_URI_BASE') is not None \
-        else 'sqlite:///' + os.path.join(basedir, 'data-dev.sqlite')
-    # SQLALCHEMY_DATABASE_URI = 'mysql://flasky:654321@localhost/pysite'
+    SQLALCHEMY_DATABASE_URI = u'sqlite:///' + os.path.join(basedir, u'data/data-dev.sqlite')
 
 
 class TestingConfig(Config):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = os.getenv('MYSQL_URI_BASE') + 'flasky_test' if os.getenv('MYSQL_URI_BASE') is not None \
-        else 'sqlite:///' + os.path.join(basedir, 'data-test.sqlite')
+    SQLALCHEMY_DATABASE_URI = u'sqlite:///' + os.path.join(basedir, u'data/data-test.sqlite')
     WTF_CSRF_ENABLED = False
 
 
 class ProductionConfig(Config):
-    SQLALCHEMY_DATABASE_URI = os.getenv('MYSQL_URI_BASE') + 'flasky' if os.getenv('MYSQL_URI_BASE') is not None \
-        else 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
+    SQLALCHEMY_DATABASE_URI = u'sqlite:///' + os.path.join(basedir, u'data/data.sqlite')
 
     @classmethod
     def init_app(cls, app):
         Config.init_app(app)
-
         # email errors to the administrators
         import logging
         from logging.handlers import SMTPHandler
         credentials = None
         secure = None
-        if getattr(cls, 'MAIL_USERNAME', None) is not None:
+        if getattr(cls, u'MAIL_USERNAME', None) is not None:
             credentials = (cls.MAIL_USERNAME, cls.MAIL_PASSWORD)
-            if getattr(cls, 'MAIL_USE_TLS', None):
+            if getattr(cls, u'MAIL_USE_TLS', None):
                 secure = ()
         mail_handler = SMTPHandler(
             mailhost=(cls.MAIL_SERVER, cls.MAIL_PORT),
-            fromaddr=cls.FLASKY_MAIL_SENDER,
-            toaddrs=[cls.FLASKY_MAIL_NOTIFICATION],
-            subject=cls.FLASKY_MAIL_SUBJECT_PREFIX + 'Application Error',
+            fromaddr=cls.MAIL_SENDER,
+            toaddrs=[cls.MAIL_NOTIFICATION],
+            subject=cls.MAIL_SUBJECT_PREFIX + u'Application Error',
             credentials=credentials,
             secure=secure)
         mail_handler.setLevel(logging.ERROR)
         app.logger.addHandler(mail_handler)
 
 
-class HerokuConfig(ProductionConfig):
-    SSL_DISABLE = bool(os.environ.get('SSL_DISABLE'))
-
-    @classmethod
-    def init_app(cls, app):
-        ProductionConfig.init_app(app)
-
-        # handle proxy server headers
-        from werkzeug.contrib.fixers import ProxyFix
-        app.wsgi_app = ProxyFix(app.wsgi_app)
-
-        # log to stderr
-        import logging
-        from logging import StreamHandler
-        file_handler = StreamHandler()
-        file_handler.setLevel(logging.WARNING)
-        app.logger.addHandler(file_handler)
-
-
 class UnixConfig(ProductionConfig):
     @classmethod
     def init_app(cls, app):
         ProductionConfig.init_app(app)
-
         # log to syslog
         import logging
         from logging.handlers import SysLogHandler
@@ -112,11 +87,9 @@ class UnixConfig(ProductionConfig):
 
 
 config = {
-    'development': DevelopmentConfig,
-    'testing': TestingConfig,
-    'production': ProductionConfig,
-    'heroku': HerokuConfig,
-    'unix': UnixConfig,
-
-    'default': DevelopmentConfig
+    u'development': DevelopmentConfig,
+    u'testing': TestingConfig,
+    u'production': ProductionConfig,
+    u'unix': UnixConfig,
+    u'default': DevelopmentConfig
 }

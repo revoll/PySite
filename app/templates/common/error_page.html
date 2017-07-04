@@ -1,0 +1,11 @@
+{% extends "common/common_base.html" %}
+
+
+{% block title %}Error{{ code }}: {{ name }}{% endblock %}
+
+
+{% block common_main %}
+    <h1 class="docs-page-title docs-text-common">{{ code }}: {{ name }}</h1>
+
+    <p>{{ description }}</p>
+{% endblock %}

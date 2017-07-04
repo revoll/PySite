@@ -1,0 +1,46 @@
+    <div class="movie-add-still panel panel-danger">
+        <div class="panel-heading">
+            <h3 class="panel-title">添加剧照</h3>
+        </div>
+        <div class="panel-body">
+            <form class="form-horizontal" action="{{ url_for('.add_still', post_id=post.id) }}" method="post" enctype="multipart/form-data" role="form">
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                    <label for="new-still-min new-still-sec" class="control-label col-sm-3">时间轴</label>
+                    <div class="col-sm-5 col-md-4">
+                        <div class="input-group">
+                            <div class="input-group-addon"><span class="glyphicon glyphicon-time" aria-hidden="true"></span></div>
+                            {{ form.time_min(id='new-still-min', class='form-control text-right', placeholder='00') }}
+                            <div class="input-group-addon">分</div>
+                            {{ form.time_sec(id='new-still-sec', class='form-control text-right', placeholder='00') }}
+                            <div class="input-group-addon">秒</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-3 col-lg-2">
+                        {% if current_user.is_authenticated %}{{ form.private(id='new-still-private', class='form-control') }}{% else %}{{ form.private(id='new-still-private', class='form-control', disabled='disabled') }}{% endif %}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="new-still-method" class="control-label col-sm-3">上传电影剧照</label>
+                    <div class="col-sm-3 col-md-2">
+                        {{ form.method(id='new-still-method', class='form-control', onchange="switch_upload_method(this.value, '#new-still-file', '#new-still-url');") }}
+                    </div>
+                    <div class="col-sm-5">
+                        {{ form.img_file(id='new-still-file', class='form-control') }}
+                        {{ form.img_url(id='new-still-url', class='form-control hidden', placeholder='http://') }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="new-still-comment" class="control-label col-sm-3">想说的话</label>
+                    <div class="col-sm-9 col-lg-8">
+                        {{ form.comment(class='form-control', id='new-still-comment', placeholder='说点什么吧 ......') }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-3 col-sm-9">
+                        {{ form.submit(value='添加此剧照', class='btn btn-default') }}
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>

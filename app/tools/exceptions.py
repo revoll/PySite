@@ -1,5 +1,5 @@
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 
 
-class ValidationError(ValueError):
+class ParameterError(ValueError):
     pass

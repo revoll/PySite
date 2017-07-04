@@ -1,0 +1,128 @@
+{% extends "movie/movie_base.html" %}
+
+
+{% block title %}{% if id %}编辑《{{ form.name.data }}》{% else %}添加新的电影{% endif %}{% endblock %}
+
+
+{% block movie_main %}
+    {% if current_user.is_authenticated and id %}
+    <a href="{{ url_for('.get_post', post_id=id) }}" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-remove text-muted"></span></a>
+    {% endif %}
+
+    <h1 class="docs-page-title docs-text-movie">{% if id %}编辑电影《{{ form.name.data }}》{% else %}添加新的电影{% endif %}</h1>
+    <div class="panel panel-danger">
+        <div class="panel-heading">
+            <h3 class="panel-title">编辑电影信息</h3>
+        </div>
+        <div class="panel-body">
+            <br>
+            <form class="form-horizontal" action="{% if id == None %}{{ url_for('movie.add_post') }}{% else %}{{ url_for('movie.edit_post', post_id=id) }}{% endif %}" method="post" enctype="multipart/form-data" role="form">
+                {{ form.hidden_tag() }}
+                <div class="form-group{% if form.name.errors or form.private.errors %} has-error{% endif %}">
+                    <label for="post-name" class="col-sm-3 control-label">*电影名</label>
+                    <div class="col-sm-6 col-md-5 col-lg-4">
+                        {{ form.name(id="post-name", class="form-control", placeholder="电影名必须唯一") }}
+                        {% if form.name.errors %}<p class="help-block">{{ form.name.errors[0] }}</p>{% endif %}
+                    </div>
+                    <div class="col-sm-3 col-lg-2">
+                        {{ form.private(id="post-private", class="form-control") }}
+                        {% if form.private.errors %}<p class="help-block">{{ form.private.errors[0] }}</p>{% endif %}
+                    </div>
+                </div>
+                <div class="form-group{% if form.reference.errors %} has-error{% endif %}">
+                    <label for="post-reference" class="col-sm-3 control-label">*豆瓣链接</label>
+                    <div class="col-sm-9 col-md-8 col-lg-7">
+                        {{ form.reference(id="post-reference", class="form-control", placeholder="http://") }}
+                        {% if form.reference.errors %}<p class="help-block">{{ form.reference.errors[0] }}</p>{% endif %}
+                    </div>
+                </div>
+                <div class="form-group{% if form.method.errors %} has-error{% endif %}">
+                    <label for="post-method" class="col-sm-3 control-label">*上传电影海报</label>
+                    <div class="col-sm-3 col-md-2">
+                        {{ form.method(id="post-method", class="form-control", onchange="switch_upload_method(this.value, '#post-file', '#post-url');") }}
+                        {% if form.method.errors %}<p class="help-block">{{ form.method.errors[0] }}</p>{% endif %}
+                    </div>
+                    <div class="col-sm-6">
+                        {{ form.img_file(id="post-file", class="form-control") }}
+                        {{ form.img_url(id="post-url", class="form-control hidden", placeholder="http://") }}
+                    </div>
+                </div>
+                <div class="form-group{% if form.director.errors %} has-error{% endif %}">
+                    <label for="post-director" class="col-sm-3 control-label">导演</label>
+                    <div class="col-sm-4">
+                        {{ form.director(id="post-director", class="form-control", placeholder="") }}
+                        {% if form.director.errors %}<p class="help-block">{{ form.director.errors[0] }}</p>{% endif %}
+                    </div>
+                </div>
+                <div class="form-group{% if form.screenwriter.errors %} has-error{% endif %}">
+                    <label for="post-screenwriter" class="col-sm-3 control-label">编剧</label>
+                    <div class="col-sm-6">
+                        {{ form.screenwriter(id="post-screenwriter", class="form-control", placeholder="") }}
+                        {% if form.screenwriter.errors %}<p class="help-block">{{ form.screenwriter.errors[0] }}</p>{% endif %}
+                    </div>
+                </div>
+                <div class="form-group{% if form.performers.errors %} has-error{% endif %}">
+                    <label for="post-performers" class="col-sm-3 control-label">主演</label>
+                    <div class="col-sm-9">
+                        {{ form.performers(id="post-performers", class="form-control", placeholder="") }}
+                        {% if form.performers.errors %}<p class="help-block">{{ form.performers.errors[0] }}</p>{% endif %}
+                    </div>
+                </div>
+                <div class="form-group{% if form.category.errors %} has-error{% endif %}">
+                    <label for="post-category" class="col-sm-3 control-label">分类</label>
+                    <div class="col-sm-4">
+                        {{ form.category(id="post-category", class="form-control") }}
+                        {% if form.category.errors %}<p class="help-block">{{ form.category.errors[0] }}</p>{% endif %}
+                    </div>
+                </div>
+                <div class="form-group{% if form.country.errors %} has-error{% endif %}">
+                    <label for="post-country" class="col-sm-3 control-label">地区</label>
+                    <div class="col-sm-3">
+                        {{ form.country(id="post-country", class="form-control", placeholder="") }}
+                        {% if form.country.errors %}<p class="help-block">{{ form.country.errors[0] }}</p>{% endif %}
+                    </div>
+                </div>
+                <div class="form-group{% if form.length.errors %} has-error{% endif %}">
+                    <label for="post-length" class="col-sm-3 control-label">时长</label>
+                    <div class="col-sm-3">
+                        {{ form.length(id="post-length", class="form-control", placeholder="XX 分钟") }}
+                        {% if form.length.errors %}<p class="help-block">{{ form.length.errors[0] }}</p>{% endif %}
+                    </div>
+                </div>
+                <div class="form-group{% if form.release_date.errors %} has-error{% endif %}">
+                    <label for="post-release" class="col-sm-3 control-label">上映日期</label>
+                    <div class="col-sm-5 col-md-4">
+                        {{ form.release_date(id="post-release", class="form-control", placeholder="年-月-日") }}
+                        {% if form.release_date.errors %}<p class="help-block">{{ form.release_date.errors[0] }}</p>{% endif %}
+                    </div>
+                </div>
+                <div class="form-group{% if form.o_name.errors %} has-error{% endif %}">
+                    <label for="post-original" class="col-sm-3 control-label">原名</label>
+                    <div class="col-sm-7 col-md-6">
+                        {{ form.o_name(id="post-original", class="form-control", placeholder="原版电影名") }}
+                        {% if form.o_name.errors %}<p class="help-block">{{ form.o_name.errors[0] }}</p>{% endif %}
+                    </div>
+                </div>
+                <div class="form-group{% if form.alias.errors %} has-error{% endif %}">
+                    <label for="post-alias" class="col-sm-3 control-label">别名</label>
+                    <div class="col-sm-9 col-md-8">
+                        {{ form.alias(id="post-alias", class="form-control", placeholder="电影的其他名字") }}
+                        {% if form.alias.errors %}<p class="help-block">{{ form.alias.errors[0] }}</p>{% endif %}
+                    </div>
+                </div>
+                <div class="form-group{% if form.introduction.errors %} has-error{% endif %}">
+                    <label for="post-introduction" class="col-sm-3 control-label">电影简介</label>
+                    <div class="col-sm-9 col-md-8">
+                        {{ form.introduction(id="post-introduction", class="form-control", rows="12", placeholder="简单介绍下......") }}
+                        {% if form.introduction.errors %}<p class="help-block">{{ form.introduction.errors[0] }}</p>{% endif %}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-3 col-sm-9">
+                        {{ form.submit(value="提交", class="btn btn-default") }}
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

@@ -1,92 +1,69 @@
-{% extends "common/base.html" %}
+{% extends "movie/movie_base.html" %}
 {% import "common/wtf.html" as wtf %}
 {% import "common/macros.html" as macros %}
 
-{% block title %}Edit Stills{% endblock %}
 
-{% block page_content %}
-    <div id="new-still" class="boxed-group">
-        <div class="header">添加剧照</div>
-        <div class="content">
-            <form class="form-horizontal" action="{{ url_for('movie.add_still', poster_id=poster_id) }}" method="post" enctype="multipart/form-data" role="form">
-                {{ form_new.hidden_tag() }}
-                <div class="form-group">
-                    <label for="new-still-min" class="col-sm-2 control-label">时间轴</label>
+{% block title %}编辑《{{ post.name }}》的剧照{% endblock %}
+
+
+{% block movie_main %}
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('.get_post', post_id=post.id) }}" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-ok text-muted"></span></a>
+    {% endif %}
+
+    <h1 class="docs-page-title docs-text-movie">编辑《{{ post.name }}》的剧照</h1>
+
+    {% include 'movie/_add_still.html' %}
+
+    <div class="movie-es-list panel panel-danger">
+        <div class="panel-heading">
+            <h3 class="panel-title">编辑剧照</h3>
+        </div>
+        <ul class="list-group">
+            {% for form in forms %}
+            <li class="movie-es-item list-group-item">
+                <div class="row">
                     <div class="col-sm-4">
-                        <div class="input-group">
-                            <div class="input-group-addon"><span class="glyphicon glyphicon-time" aria-hidden="true"></span></div>
-                            {{ form_new.time_min(id='new-still-min', class='form-control text-right', placeholder='00') }}
-                            <div class="input-group-addon">分</div>
-                            {{ form_new.time_sec(id='new-still-sec', class='form-control text-right', placeholder='00') }}
-                            <div class="input-group-addon">秒</div>
-                        </div>
+                        <img src="{{ url_for('movie.serve_image', post_id=post.id, filename='{0}.jpg'.format(form.id)) }}"/>
                     </div>
-                    <div>{{ form_new.private(id="new-still-private", class="form-control") }}</div>
-                </div>
-                <div class="form-group">
-                    <label for="new-still-method" class="col-sm-2 control-label">上传电影剧照</label>
-                    <div class="col-sm-7">
-                        {{ form_new.method(id='new-still-method', class='form-control', onchange='switch_upload_method(this.value, "new-still-file", "new-still-url");') }}
-                        <div>
-                            {{ form_new.img_file(id='new-still-file', class='form-control') }}
-                            {{ form_new.img_url(id='new-still-url', class='form-control hidden', placeholder='http://') }}
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="new-still-comment" class="col-sm-2 control-label">要说的话</label>
-                    <div class="col-sm-9">
-                        {{ form_new.comment(class='form-control', id='new-still-comment', placeholder='说点什么吧 ......') }}
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="col-sm-offset-2 col-sm-9">
-                        {{ form_new.submit(value='添加此剧照', class='btn btn-default') }}
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-    <div id="edit-stills" class="boxed-group">
-        <div class="header">编辑剧照</div>
-        <div class="content">
-        {% for form in forms %}
-            <div class="row">
-                <div class="col-sm-4">
-                    <img src="{{ url_for('static', filename='img/poster/{0}/{1}.jpg'.format(poster_id, form.id)) }}" />
-                </div>
-                <div class="col-sm-7">
-                    <form class="form" action="{{ url_for('movie.edit_still', still_id=form.id) }}" method="post">
-                        {{ form_new.hidden_tag() }}
-                        <div class="form-group">
-                            <label>时间轴</label>
-                            <div class="input-group">
-                                <div class="input-group-addon"><span class="glyphicon glyphicon-time" aria-hidden="true"></span></div>
-                                {{ form.time_min(class="form-control text-right", placeholder="00") }}
-                                <div class="input-group-addon">分</div>
-                                {{ form.time_sec(class="form-control text-right", placeholder="00") }}
-                                <div class="input-group-addon">秒</div>
-                                {{ form.private(class="form-control") }}
+                    <div class="col-sm-8">
+                        <form action="{{ url_for('.edit_still', still_id=form.id) }}" method="post">
+                            {{ form.hidden_tag() }}
+                            <div class="form-group">
+                                <label>时间轴</label>
+                                <div class="input-group">
+                                    <div class="input-group-addon"><span class="glyphicon glyphicon-time" aria-hidden="true"></span></div>
+                                    {{ form.time_min(class="form-control text-right", placeholder="00") }}
+                                    <div class="input-group-addon">分</div>
+                                    {{ form.time_sec(class="form-control text-right", placeholder="00") }}
+                                    <div class="input-group-addon">秒</div>
+                                    {{ form.private(class="form-control") }}
+                                </div>
                             </div>
-                        </div>
-                        <div class="form-group">
-                            <label>想说的话</label>
-                            {{ form.comment(class="form-control", placeholder="说点什么吧......") }}
-                        </div>
-                        <div class="form-group">
-                            {{ form.submit(value="提交更新", class="btn btn-primary") }}
-                        </div>
-                    </form>
-                    <button class="btn btn-danger" onclick="head_url('{{ url_for('movie.delete_still', still_id=form.id) }}', '确定删除此剧照吗？');">删除此图</button>
+                            <div class="form-group">
+                                <label>想说的话</label>
+                                {{ form.comment(class="form-control", placeholder="说点什么吧......") }}
+                            </div>
+                            <div class="form-group">
+                                {{ form.submit(value="提交更新", class="btn btn-primary") }}
+                                <a class="btn btn-danger pull-right" href="javascript:delete_still({{ form.id}});">删除剧照</a>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-            </div>
-            <hr>
-        {% endfor %}
-        {% if pagination %}
-            <div class="pagination">
-                {{ macros.pagination_widget(pagination, 'movie.edit_stills', poster_id=poster_id) }}
-            </div>
-        {% endif %}
-        </div>
+            </li>
+            {% endfor %}
+        </ul>
     </div>
+{% endblock %}
+
+
+{% block scripts %}
+    {{ super() }}
+    <script type="text/javascript">
+        function delete_still(still_id) {
+            notification_init('提示', '确定删除这张剧照？', '<button class="btn btn-success" data-dismiss="modal">取消</button><a class="btn btn-danger" role="button" href="' + "{{ url_for('.delete_still', still_id=0) }}".replace(/0/, still_id.toString()) + '">删除</a>');
+            notification_show();
+        }
+    </script>
 {% endblock %}

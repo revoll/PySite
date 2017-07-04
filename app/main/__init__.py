@@ -1,22 +1,13 @@
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 from flask import Blueprint
 
 
-main = Blueprint('main', __name__)
+main_blueprint = Blueprint(u'main', __name__)
+auth_blueprint = Blueprint(u'auth', __name__, url_prefix=u'/auth')
+blog_blueprint = Blueprint(u'blog', __name__, url_prefix=u'/blog')
+music_blueprint = Blueprint(u'music', __name__, url_prefix=u'/music')
+movie_blueprint = Blueprint(u'movie', __name__, url_prefix=u'/movie')
+photo_blueprint = Blueprint(u'photo', __name__, url_prefix=u'/photo')
+files_blueprint = Blueprint(u'files', __name__, url_prefix=u'/files')
 
-user = Blueprint('user', __name__)
-
-auth = Blueprint('auth', __name__)
-
-blog = Blueprint('blog', __name__)
-
-pages = Blueprint('pages', __name__)
-
-files = Blueprint('files', __name__)
-
-movie = Blueprint('movie', __name__)
-
-music = Blueprint('music', __name__)
-
-from . import main_views, user_views, auth_views, blog_views, pages_views, resource_views, \
-    movie_views, music_views
+from . import main_views, auth_views, blog_views, movie_views, music_views, photo_views, files_views

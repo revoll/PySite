@@ -1,336 +1,374 @@
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 import os
 import shutil
 import urllib2
 from StringIO import StringIO
-from PIL import Image
-
-from flask import request, current_app, render_template, redirect, abort, url_for, flash
+from flask import request, current_app, render_template, redirect, make_response, abort, url_for, flash, send_from_directory
 from flask.ext.login import current_user, login_required
-
-from . import movie
-from .movie_forms import AddPosterForm, EditPosterForm, AddStillForm, EditStillForm
+from flask.ext.wtf import Form
+from wtforms import StringField, TextAreaField, SelectField, SubmitField, FileField, ValidationError
+from wtforms.validators import DataRequired, Length, URL, Regexp
+from . import movie_blueprint as movie
 from .. import db
-from ..models.movie import Poster, Still
-from ..models.user import Permission
-from ..tools.decorators import permission_required
+from ..models.movie import MoviePost as Post, MovieStill as Still, MovieCategory as Category, MovieTag as Tag
+from ..tools import save_post_image
 
 
-def poster_form_to_model(form, poster):
-
-    poster.name = form.name.data
-    poster.private = True if form.private.data else False
-    poster.o_name = form.o_name.data
-    poster.alias = form.alias.data
-    poster.director = form.director.data
-    poster.screenwriter = form.screenwriter.data
-    poster.performers = form.performers.data
-    poster.type_id = form.type.data
-    poster.country = form.country.data
-    poster.length = form.length.data
-    poster.release_date = form.release_date.data
-    poster.douban_link = form.douban_link.data
-    poster.introduction = form.introduction.data
+def get_post_dir(post):
+    return os.path.join(current_app.data_path, u'movie', post.category.name, post.name)
 
 
-def poster_model_to_form(poster, form):
+########################################################################################################################
+# Movie Forms
+########################################################################################################################
 
-    form.name.data = poster.name
-    form.private.data = 1 if poster.private else 0
-    form.o_name.data = poster.o_name
-    form.alias.data = poster.alias
-    form.director.data = poster.director
-    form.screenwriter.data = poster.screenwriter
-    form.performers.data = poster.performers
-    form.type.data = poster.type_id
-    form.country.data = poster.country
-    form.length.data = poster.length
-    form.release_date.data = poster.release_date
-    form.douban_link.data = poster.douban_link
-    form.introduction.data = poster.introduction
+class _PostForm(Form):
+    name = StringField(u'电影名', validators=[DataRequired(), Length(1, 50)])
+    private = SelectField(u'是否公开', choices=[(0, u'所有人可见'), (1, u'仅自己可见')], coerce=int)
+    reference = StringField(u'豆瓣链接', validators=[Length(0, 80), URL()])
+    method = SelectField(u'上传方式', choices=[(u'file', u'本地图片'), (u'url', u'网络图片')], validators=[Regexp(u'^file|url$')])
+    img_file = FileField(u'海报图片')
+    img_url = StringField(u'海报URL', validators=[])
+    o_name = StringField(u'原名', validators=[Length(0, 50)])
+    alias = StringField(u'别名', validators=[Length(0, 160)])
+    director = StringField(u'导演', validators=[Length(0, 40)])
+    screenwriter = StringField(u'编剧', validators=[Length(0, 40)])
+    performers = StringField(u'主演', validators=[Length(0, 200)])
+    category = SelectField(u'分类', coerce=int)
+    country = StringField(u'地区', validators=[Length(0, 100)])
+    length = StringField(u'片长', validators=[Length(0, 60)])
+    release_date = StringField(u'上映日期', validators=[Length(0, 60)])
+    introduction = TextAreaField(u'电影简介')
+    submit = SubmitField(u'提交')
+
+    def __init__(self, *args, **kwargs):
+        super(_PostForm, self).__init__(*args, **kwargs)
+        self.category.choices = [(c.id, c.name) for c in Category.query.filter_by(disabled=False).all()]
+
+    def from_post(self, post):
+        if self.method.data is None:
+            self.method.data = u'file'
+        self.name.data = post.name
+        self.private.data = 1 if post.private else 0
+        self.o_name.data = post.o_name
+        self.alias.data = post.alias
+        self.director.data = post.director
+        self.screenwriter.data = post.screenwriter
+        self.performers.data = post.performers
+        self.category.data = post.category_id
+        self.country.data = post.country
+        self.length.data = post.length
+        self.release_date.data = post.release_date
+        self.reference.data = post.reference
+        self.introduction.data = post.introduction
+        return self
+
+    def to_post(self, post):
+        post.name = self.name.data
+        post.private = True if self.private.data else False
+        post.o_name = self.o_name.data
+        post.alias = self.alias.data
+        post.director = self.director.data
+        post.screenwriter = self.screenwriter.data
+        post.performers = self.performers.data
+        post.category_id = self.category.data
+        post.country = self.country.data
+        post.length = self.length.data
+        post.release_date = self.release_date.data
+        post.reference = self.reference.data
+        post.introduction = self.introduction.data
+        return post
 
 
-def save_poster_image(f, path, name, limit):
-    """
-    将图片分别保存为原图,以及最大分辨率不超过规定值(1200px)的裁剪图
-    :param f:
-    :param path:
-    :param name:
-    :param limit:
-    :return:
-    """
-    if not os.path.exists(path):
-        os.mkdir(path)
+class AddPostForm(_PostForm):
 
-    img_1 = img_2 = Image.open(f)
-
-    if img_1.size[0] > limit or img_1.size[1] > limit:
-        if img_1.size[0] > img_1.size[1]:
-            img_2 = img_1.resize((limit, int(float(limit) * img_1.size[1] / img_1.size[0])), Image.ANTIALIAS)
-        else:
-            img_2 = img_1.resize((int(float(limit) * img_1.size[0] / img_1.size[1]), limit), Image.ANTIALIAS)
-
-    img_1.save(os.path.join(path, name + '_raw.jpg'), 'JPEG')
-    img_2.save(os.path.join(path, name + '.jpg'), 'JPEG')
+    def validate_name(self, field):
+        if Post.query.filter_by(name=field.data).first() is not None:
+            raise ValidationError(u'相同电影名已经存在，不能重复添加。')
 
 
-@movie.route('/')
+class EditPostForm(_PostForm):
+    pass
+
+
+class _StillForm(Form):
+    time_min = StringField(u'时间（分）', validators=[Regexp(u'^\d{0,3}$', message=u'最大支持999分钟')])
+    time_sec = StringField(u'时间（秒）', validators=[Regexp(u'^[0-5]?\d?$', message=u'不在0-59秒范围内')])
+    private = SelectField(u'是否公开', choices=[(0, u'所有人可见'), (1, u'仅自己可见')], coerce=int)
+    comment = StringField(u'我想说')
+    submit = SubmitField(u'更新')
+
+
+class AddStillForm(_StillForm):
+    method = SelectField(u'上传方式', choices=[(u'file', u'本地图片'), (u'url', u'网络图片')], validators=[Regexp(u'^file|url$')])
+    img_file = FileField(u'剧照图片')
+    img_url = StringField(u'剧照URL', validators=[])
+
+
+class EditStillForm(_StillForm):
+    pass
+
+
+########################################################################################################################
+# Movie Views
+########################################################################################################################
+
+@movie.route(u'/category/<int:c_id>/', methods=[u'GET'])
+def switch_category(c_id):
+    resp = make_response(redirect(url_for(u'.index')))
+    resp.set_cookie(u'movie_category', str(c_id), max_age=60*60)
+    return resp
+
+
+@movie.route(u'/category/all/', methods=[u'GET'])
+def switch_category_all():
+    resp = make_response(redirect(url_for(u'.index')))
+    resp.set_cookie(u'movie_category', u'', max_age=60*60)
+    return resp
+
+
+@movie.route(u'/', methods=[u'GET'])
 def index():
     """
     访问权限：无
     :return:
     """
-    page = request.args.get('page', 1, type=int)
-    admin = current_user.can(Permission.ADMIN_POSTER)
-    if admin:
-        query = Poster.query
-    else:
-        query = Poster.query.filter_by(private=False)
-    pagination = query.order_by(Poster.timestamp.desc()).paginate(
-        page, per_page=current_app.config['FLASKY_POSTERS_PER_PAGE'], error_out=False)
-    for poster in pagination.items:
-        if len(poster.introduction) > 140:
-            poster.introduction_cut = poster.introduction[:140] + u' ......'
+    page = request.args.get(u'page', 1, type=int)
+    c_id = request.cookies.get(u'movie_category', u'')
+    c_id = int(c_id) if c_id else None
+    query = Post.query
+    if c_id:
+        query = query.filter_by(category_id=c_id)
+    if current_user.is_anonymous:
+        query = query.filter(Category.private==False, Category.disabled==False).filter_by(private=False)
+    pagination = query.order_by(Post.timestamp.desc()).paginate(page, per_page=10, error_out=False)
+    for p in pagination.items:
+        if len(p.introduction) > 140:
+            p.introduction_cut = p.introduction[:140] + u' ......'
         else:
-            poster.introduction_cut = poster.introduction
+            p.introduction_cut = p.introduction
 
-    return render_template('movie/index.html', posters=pagination.items, pagination=pagination, admin=admin)
+    return render_template(u'movie/movie_index.html', posts=pagination.items, pagination=pagination,
+                           categories=Category.query.all(), c_sel=c_id)
 
 
-@movie.route('/poster/<int:poster_id>/')
-def get_poster(poster_id):
+@movie.route(u'/post/<int:post_id>/', methods=[u'GET'])
+def get_post(post_id):
     """
-    访问权限：登陆, 海报为公开访问或自己创建时才可访问, 剧照为公开或自己创建时才能看到.
-    :param poster_id:
+    访问权限：已登录，或者访问公开海报
+    :param post_id:
     :return:
     """
-    page = request.args.get('page', 1, type=int)
-    poster = Poster.query.get_or_404(poster_id)
-    admin = current_user.can(Permission.ADMIN_POSTER)
-    if poster.private and not admin:
-        abort(403)
-    if admin:
-        query = poster.stills
+    page = request.args.get(u'page', 1, type=int)
+    post = Post.query.get_or_404(post_id)
+    if current_user.is_anonymous:
+        if post.category.disabled:
+            abort(404)  # abort 410 exactly
+        if post.private or post.category.private:
+            abort(403)
+    if current_user.is_authenticated:
+        query = post.stills
     else:
-        query = poster.stills.filter_by(private=False)
-    pagination = query.order_by(Still.timeline.asc()).paginate(
-        page, per_page=current_app.config['FLASKY_POSTER_STILLS_PER_PAGE'], error_out=False)
+        query = post.stills.filter_by(private=False)
+    pagination = query.order_by(Still.timeline.asc()).paginate(page, per_page=20, error_out=False)
 
-    return render_template('movie/poster.html', poster=poster, stills=pagination.items,
-                           pagination=pagination, form_new=AddStillForm(), admin=admin)
+    return render_template(u'movie/movie_post.html', post=post, stills=pagination.items,
+                           pagination=pagination, form=AddStillForm())
 
 
-@movie.route('/add/', methods=['GET', 'POST'])
+@movie.route(u'/add/', methods=[u'GET', u'POST'])
 @login_required
-@permission_required(Permission.ADMIN_POSTER)
-def add_poster():
+def add_post():
     """
     访问权限：
     :return:
     """
-    form = AddPosterForm()
+    form = AddPostForm()
 
     if form.validate_on_submit():
-        flag = True
-        img = None
-        poster = None
         method = form.method.data
-
-        if method == u'file':
-            img = request.files['img_file']
-            flag = True if img else False
-        elif method == u'url':
-            url = form.img_url.data
-            try:
-                img = StringIO(urllib2.urlopen(url).read())
-                img.seek(0)
-            except IOError:
-                flag = False
-        else:
-            flag = False
-
-        if flag:
-            poster = Poster(author=current_user)
-            poster_form_to_model(form, poster)
-            try:
-                db.session.add(poster)
-                db.session.commit()
-                poster = Poster.query.filter_by(name=poster.name).first()
-            except Exception:
-                flag = False
-                db.session.rollback()
-
-        if flag and poster:
-            path = os.path.join(current_app.static_folder, 'img/poster', str(poster.id))
-            save_poster_image(img, path, 'archive', current_app.config['FLASKY_IMAGE_RESOLUTION_LIMIT'])
-
-        if flag:
-            flash(u'海报添加成功！')
-            return redirect(url_for('movie.get_poster', poster_id=poster.id))
-        else:
-            flash(u'海报添加时发生了错误...')
-
-    form.method.data = u'file'
-    return render_template('movie/edit_poster.html', form=form, id=None)
-
-
-@movie.route('/edit/<int:poster_id>/', methods=['GET', 'POST'])
-@login_required
-@permission_required(Permission.ADMIN_POSTER)
-def edit_poster(poster_id):
-    """
-    访问权限：
-    :param poster_id:
-    :return:
-    """
-    poster = Poster.query.get_or_404(poster_id)
-    form = EditPosterForm()
-
-    if form.validate_on_submit():
-        flag = True
-        img = None
-        method = form.method.data
-
         try:
-            poster_form_to_model(form, poster)
-            db.session.add(poster)
-            db.session.commit()
-        except Exception:
-            flag = False
-            db.session.rollback()
-
-        if flag:
-            url = form.img_url.data
+            post = form.to_post(Post())
+            db.session.add(post)
+            db.session.flush()
             if method == u'file':
-                img = request.files['img_file']
-            elif method == u'url' and url:
-                try:
-                    img = StringIO(urllib2.urlopen(url).read())
-                    img.seek(0)
-                except IOError:
-                    flag = False
+                img = request.files[u'img_file']
+            elif method == u'url':
+                img = StringIO(urllib2.urlopen(form.img_url.data).read())
+                img.seek(0)
             else:
-                flag = False
-        if flag and img:
-            path = os.path.join(current_app.static_folder, 'img/poster', str(poster_id))
-            save_poster_image(img, path, 'archive', current_app.config['FLASKY_IMAGE_RESOLUTION_LIMIT'])
-
-        if flag:
-            flash(u'海报更新成功！')
-            return redirect(url_for('movie.get_poster', poster_id=poster.id))
+                raise ValueError(u'无效的图片上传方式')
+            save_post_image(img, get_post_dir(post), u'archive')
+            db.session.commit()
+        except Exception, e:
+            db.session.rollback()
+            flash(u'ERROR: %s' % e.message)
         else:
-            flash(u'海报更新时发生了错误...')
+            flash(u'海报添加成功！')
+            return redirect(url_for(u'movie.get_post', post_id=post.id))
 
-    poster_model_to_form(poster, form)
-    form.method.data = u'file'
-    return render_template('movie/edit_poster.html', form=form, id=poster_id)
+    return render_template(u'movie/edit_post.html', form=form, id=None)
 
 
-@movie.route('/delete/<int:poster_id>/')
+@movie.route(u'/edit/<int:post_id>/', methods=[u'GET', u'POST'])
 @login_required
-@permission_required(Permission.ADMIN_POSTER)
-def delete_poster(poster_id):
+def edit_post(post_id):
     """
-    访问权限：
-    :param poster_id:
+    检查事项：电影名是否冲突；所选Category是否有效；
+    :param post_id:
     :return:
     """
-    poster = Poster.query.get_or_404(poster_id)
-    redirect_url = request.args.get('redirect', url_for('movie.index'))
-    flag = True
-    path = os.path.join(current_app.static_folder, 'img/poster', str(poster_id))
+    post = Post.query.get_or_404(post_id)
+    form = EditPostForm()
+
+    if form.validate_on_submit():
+        try:
+            if form.category.data != post.category_id and Category.query.get(form.category.data).disabled:
+                raise ValueError(u'不能修改')
+            old_dir = get_post_dir(post)
+            form.to_post(post)
+            db.session.merge(post)
+            method = form.method.data
+            db.session.flush()
+            post.category = Category.query.get_or_404(post.category_id)  # TODO: 执行flush()后post.category未更新！
+            new_dir = get_post_dir(post)
+            if old_dir != new_dir:
+                os.rename(old_dir, new_dir)
+            if method == u'file':
+                img = request.files[u'img_file']
+            elif method == u'url':
+                img = StringIO(urllib2.urlopen(form.img_url.data).read())
+                img.seek(0)
+            else:
+                raise ValueError(u'无效的图片上传方式')
+            try:
+                save_post_image(img, new_dir, u'archive')
+            except Exception:
+                pass
+            db.session.commit()
+        except Exception, e:
+            db.session.rollback()
+            flash(u'ERROR: %s' % e.message)
+        else:
+            flash(u'海报更新成功！')
+            return redirect(url_for(u'movie.get_post', post_id=post.id))
+
+    form.from_post(post)
+    if post.category.disabled:
+        form.category.choices.append((post.category_id, post.category.name))
+    return render_template(u'movie/edit_post.html', form=form, id=post_id)
+
+
+@movie.route(u'/delete/<int:post_id>/', methods=[u'GET'])
+@login_required
+def delete_post(post_id):
+    """
+    访问权限：
+    :param post_id:
+    :return:
+    """
+    post = Post.query.get_or_404(post_id)
+    redirect_url = request.args.get(u'redirect', url_for(u'movie.index'))
+    path = get_post_dir(post)
 
     try:
-        for still in poster.stills:
+        for still in post.stills:
             db.session.delete(still)
-        db.session.delete(poster)
+        db.session.delete(post)
+        if os.path.exists(path):
+            shutil.rmtree(path)
         db.session.commit()
-    except Exception:
-        flag = False
-        db.session.rollback()
-
-    if flag and os.path.exists(path):
-        shutil.rmtree(path)
-
-    if flag:
-        flash(u'《' + poster.name + u'》已被成功删除！')
+    except Exception, e:
+        db.session.roolback()
+        flash(u'ERROR: %s' % e.message)
     else:
-        flash(u'《' + poster.name + u'》删除失败...')
+        flash(u'《' + post.name + u'》已被成功删除！')
 
     return redirect(redirect_url)
 
 
-@movie.route('/poster/<int:poster_id>/add-still/', methods=['GET', 'POST'])
+@movie.route(u'/edit_tags/<int:post_id>/', methods=[u'POST'])
 @login_required
-# @permission_required(Permission.ADMIN_POSTER)
-def add_still(poster_id):
+def edit_tags(post_id):
     """
-    访问权限：所有已登陆的用户可以访问
-    :param poster_id:
+    编辑标签
+    :param post_id:
     :return:
     """
-    poster = Poster.query.get_or_404(poster_id)
-    redirect_url = request.args.get('redirect', url_for('movie.get_poster', poster_id=poster_id))
+    post = Post.query.get_or_404(post_id)
+
+    try:
+        post.tags = []
+        for t_n in request.form:
+            tag = Tag.query.get(request.form[t_n])
+            if tag:
+                post.tags.append(tag)
+            else:
+                abort(400)
+        db.session.merge(post)
+        db.session.commit()
+    except Exception, e:
+        db.session.rollback()
+        flash(u'ERROR: %s' % e.message)
+
+    return redirect(url_for(u'.get_post', post_id=post_id))
+
+
+@movie.route(u'/add-still/<int:post_id>/', methods=[u'GET', u'POST'])
+@login_required
+def add_still(post_id):
+    """
+    访问权限：
+    :param post_id:
+    :return:
+    """
+    post = Post.query.get_or_404(post_id)
+    redirect_url = request.args.get(u'redirect', url_for(u'.get_post', post_id=post_id))
     form = AddStillForm()
 
     if form.validate_on_submit():
-        flag = True
-        img = None
-        still = None
         method = form.method.data
-
-        if method == u'file':
-            img = request.files['img_file']
-            flag = True if img else False
-        elif method == u'url':
-            url = form.img_url.data
-            try:
-                img = StringIO(urllib2.urlopen(url).read())
-                img.seek(0)
-            except IOError:
-                flag = False
-        else:
-            flag = False
-
-        if flag:
+        try:
             still = Still(timeline=Still.timeline_str_to_int(form.time_min.data, form.time_sec.data),
-                          comment=form.comment.data, poster=poster,
-                          private=True if form.private.data else False, author=current_user)
-            try:
-                db.session.add(still)
-                db.session.commit()
-                still = Still.query.filter_by(
-                    poster_id=poster_id, timeline=still.timeline).order_by(Still.timestamp.desc()).first()
-            except Exception:
-                flag = False
-                db.session.rollback()
-
-        if flag and still:
-            path = os.path.join(current_app.static_folder, 'img/poster', str(poster_id))
-            save_poster_image(img, path, str(still.id), current_app.config['FLASKY_IMAGE_RESOLUTION_LIMIT'])
-
-        if flag:
-            flash(u'剧照添加成功！')
+                          comment=form.comment.data, post_id=post.id, private=bool(form.private.data))
+            db.session.add(still)
+            db.session.flush()
+            if method == u'file':
+                img = request.files[u'img_file']
+            elif method == u'url':
+                img = StringIO(urllib2.urlopen(form.img_url.data).read())
+                img.seek(0)
+            else:
+                raise ValueError(u'无效的图片上传方式')
+            save_post_image(img, get_post_dir(post), str(still.id))
+            db.session.commit()
+        except Exception, e:
+            db.session.roolback()
+            flash(u'ERROR: %s' % e.message)
         else:
-            flash(u'剧照添加时发生了错误...')
+            flash(u'剧照添加成功！')
+    else:
+        # 如果表单验证发现错误，跳转后下一个页面的表单无法提示错误，只能采用flash的方式来提示错误。
+        for e in form.errors:
+            flash(u'ERROR: %s - %s' % (e, form.errors[e][0]))
 
-    form.method.data = u'file'
+    if form.method.data is None:
+        form.method.data = u'file'
+
     return redirect(redirect_url)
 
 
-@movie.route('/poster/<int:poster_id>/edit-stills/', methods=['GET'])
+@movie.route(u'/edit-stills/<int:post_id>/', methods=[u'GET'])
 @login_required
-@permission_required(Permission.ADMIN_POSTER)
-def edit_stills(poster_id):
+def edit_stills(post_id):
     """
     访问权限：
-    :param poster_id:
+    :param post_id:
     :return:
     """
-    page = request.args.get('page', 1, type=int)
-    poster = Poster.query.get_or_404(poster_id)
-    pagination = poster.stills.order_by(Still.timeline.asc()).paginate(
-        page, per_page=current_app.config['FLASKY_POSTER_STILLS_PER_PAGE'], error_out=False)
+    page = request.args.get(u'page', 1, type=int)
+    post = Post.query.get_or_404(post_id)
+    pagination = post.stills.order_by(Still.timeline.asc()).paginate(page, per_page=15, error_out=False)
     forms = []
     for still in pagination.items:
         form = EditStillForm()
@@ -339,13 +377,13 @@ def edit_stills(poster_id):
         form.time_min.data, form.time_sec.data = Still.timeline_int_to_str(still.timeline)
         form.comment.data = still.comment
         forms.append(form)
-    return render_template('movie/edit_stills.html', poster_id=poster_id,
-                           form_new=AddStillForm(), forms=forms, pagination=pagination)
+
+    return render_template(u'movie/edit_stills.html', post=post,
+                           form=AddStillForm(), forms=forms, pagination=pagination)
 
 
-@movie.route('/edit-still/<int:still_id>/', methods=['POST'])
+@movie.route(u'/edit-still/<int:still_id>/', methods=[u'POST'])
 @login_required
-@permission_required(Permission.ADMIN_POSTER)
 def edit_still(still_id):
     """
     访问权限：
@@ -356,29 +394,23 @@ def edit_still(still_id):
     form = EditStillForm()
 
     if form.validate_on_submit():
-        flag = True
         still.private = True if form.private.data else False
         still.timeline = Still.timeline_str_to_int(form.time_min.data, form.time_sec.data)
         still.comment = form.comment.data
-
         try:
-            db.session.add(still)
+            db.session.merge(still)
             db.session.commit()
-        except Exception:
-            flag = False
+        except Exception, e:
             db.session.rollback()
-
-        if flag:
-            flash(u'剧照更新成功！')
+            flash(u'ERROR: %s' % e.message)
         else:
-            flash(u'剧照更新时发生了错误...')
+            flash(u'剧照更新成功！')
 
-    return redirect(url_for('movie.edit_stills', poster_id=still.poster_id))
+    return redirect(url_for(u'movie.edit_stills', post_id=still.post_id))
 
 
-@movie.route('/delete-still/<int:still_id>/')
+@movie.route(u'/delete-still/<int:still_id>/', methods=[u'GET'])
 @login_required
-@permission_required(Permission.ADMIN_POSTER)
 def delete_still(still_id):
     """
     访问权限：
@@ -386,26 +418,27 @@ def delete_still(still_id):
     :return:
     """
     still = Still.query.get_or_404(still_id)
-    flag = True
-    path = os.path.join(current_app.static_folder, 'img/poster', str(still.poster_id))
+    post = Post.query.get_or_404(still.post_id)
+    path = get_post_dir(post)
     img_prefix = os.path.join(path, str(still_id))
 
     try:
         db.session.delete(still)
+        if os.path.exists(img_prefix + u'.jpg'):
+            os.remove(img_prefix + u'.jpg')
+        if os.path.exists(img_prefix + u'_raw.jpg'):
+            os.remove(img_prefix + u'_raw.jpg')
         db.session.commit()
-    except Exception:
-        flag = False
+    except Exception, e:
         db.session.rollback()
-
-    if flag:
-        if os.path.exists(img_prefix + '.jpg'):
-            os.remove(img_prefix + '.jpg')
-        if os.path.exists(img_prefix + '_raw.jpg'):
-            os.remove(img_prefix + '_raw.jpg')
-
-    if flag:
-        flash(u'剧照已被成功删除！')
+        flash(u'ERROR: %s' % e.message)
     else:
-        flash(u'剧照删除失败...')
+        flash(u'剧照已被成功删除！')
 
-    return redirect(url_for('movie.edit_stills', poster_id=still.poster_id))
+    return redirect(url_for(u'movie.edit_stills', post_id=still.post_id))
+
+
+@movie.route(u'/image/<int:post_id>/<filename>', methods=[u'GET'])
+def serve_image(post_id, filename):
+    post = Post.query.get_or_404(post_id)
+    return send_from_directory(get_post_dir(post), filename)

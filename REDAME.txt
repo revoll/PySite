@@ -1,0 +1,91 @@
+------------------------------------------------------------------------------------------------------------------------
+工程规范化步骤：
+=============
+ * URL接口名称、RESTFul六类请求支持定义；[OK]
+ * 业务逻辑跳转确认（返回类型检查，HTML/JSON/Redirect）；
+ * URL请求中带有redirect时的处理？
+ * 权限检查（已登录/匿名登录）
+ * 请求合法性检查（在路由的入口检查所有传入的参数合法性）；
+ * 数据库执行过程检查：流程是否正确、是否会引起异常、是否有遗漏；
+ * 代码中的字符串统一使用Unicode编码；[OK]
+ * LOGGER日志记录：用户输入问题（往前端反馈）与系统问题（LOG记录）分开处理；
+ * 函数注释 & 缩进对齐
+ * SSL & 部署
+
+
+------------------------------------------------------------------------------------------------------------------------
+URL映射规则：
+===========
+Map([
+ <Rule '/' (HEAD, OPTIONS, GET) -> main.index>,
+ <Rule '/shutdown' (HEAD, OPTIONS, GET) -> main.server_shutdown>,
+ <Rule '/static/<filename>' (HEAD, OPTIONS, GET) -> static>,
+ <Rule '/auth/logout' (HEAD, OPTIONS, GET) -> auth.logout>,
+ <Rule '/auth/login' (HEAD, POST, OPTIONS, GET) -> auth.login>,
+
+ <Rule '/ctm/' (HEAD, OPTIONS, GET) -> main.ctm_index>,                                                                 [REDIRECT: main.ctm]
+ <Rule '/ctm/<module>/available-categories/' (HEAD, OPTIONS, GET) -> main.show_available>,                              [REDIRECT: main.ctm]
+ <Rule '/ctm/<module>/deleted-categories/' (HEAD, OPTIONS, GET) -> main.show_deleted>,                                  [REDIRECT: main.ctm]
+ <Rule '/ctm/<module>/' (HEAD, OPTIONS, GET) -> main.ctm>,                                                              [RETURN: tagging.html]
+ <Rule '/ctm/<module>/category-all/' (HEAD, OPTIONS, GET) -> main.all_categories>,                                      [JSON]
+ <Rule '/ctm/<module>/category/<category_id>/' (HEAD, OPTIONS, GET) -> main.query_category>,                            [JSON]
+ <Rule '/ctm/<module>/add-category/' (POST, OPTIONS) -> main.add_category>,                                             [JSON]
+ <Rule '/ctm/<module>/edit-category/<category_id>/' (POST, OPTIONS) -> main.edit_category>,                             [JSON]
+ <Rule '/ctm/<module>/delete-category/<category_id>/' (HEAD, OPTIONS, GET) -> main.delete_category>,                    [JSON]
+ <Rule '/ctm/<module>/recycle-category/<category_id>/' (HEAD, OPTIONS, GET) -> main.recycle_category>,                  [JSON]
+ <Rule '/ctm/<module>/tag/<tag_id>/' (HEAD, OPTIONS, GET) -> main.query_tag>,                                           [JSON]
+ <Rule '/ctm/<module>/add-tag/<int:category_id>/' (POST, OPTIONS) -> main.add_tag>,                                     [JSON]
+ <Rule '/ctm/<module>/edit-tag/<tag_id>/' (POST, OPTIONS) -> main.edit_tag>,                                            [JSON]
+ <Rule '/ctm/<module>/delete-tag/<tag_id>/' (HEAD, OPTIONS, GET) -> main.delete_tag>,                                   [JSON]
+
+ <Rule '/blog/category/<c_id>/' (HEAD, OPTIONS, GET) -> blog.switch_category>,                                          [REDIRECT: blog.index]
+ <Rule '/blog/category/all/' (HEAD, OPTIONS, GET) -> blog.switch_category_all>,                                         [REDIRECT: blog.index]
+ <Rule '/blog/' (HEAD, OPTIONS, GET) -> blog.index>,                                                                    [RETURN: blog_index.html]
+ <Rule '/blog/post/<post_id>/' (HEAD, OPTIONS, GET) -> blog.get_post>,                                                  [RETURN: blog_post.html]
+ <Rule '/blog/add/' (HEAD, POST, OPTIONS, GET) -> blog.add_post>,                                                       [REDIRECT: blog.edit_post]
+ <Rule '/blog/edit/<post_id>/' (HEAD, POST, OPTIONS, GET) -> blog.edit_post>,                                           [RETURN: edit_post.html][JSON]
+ <Rule '/blog/delete/<post_id>/' (HEAD, OPTIONS, GET) -> blog.delete_post>,                                             [REDIRECT: blog.index or redirect]
+ <Rule '/blog/edit_tags/<post_id>/' (POST, OPTIONS) -> blog.edit_tags>,                                                 [REDIRECT: blog.post]
+ <Rule '/blog/upload-image/' (POST, OPTIONS) -> blog.upload_image>,                                                     [JSON]
+ <Rule '/blog/image/<folder>/<filename>' (HEAD, OPTIONS, GET) -> blog.serve_image>,                                     [FILE]
+
+ <Rule '/movie/category/<c_id>/' (HEAD, OPTIONS, GET) -> movie.switch_category>,                                        [REDIRECT: movie.index]
+ <Rule '/movie/category/all/' (HEAD, OPTIONS, GET) -> movie.switch_category_all>,                                       [REDIRECT: movie.index]
+ <Rule '/movie/' (HEAD, OPTIONS, GET) -> movie.index>,                                                                  [RETURN: movie_index.html]
+ <Rule '/movie/post/<post_id>/' (HEAD, OPTIONS, GET) -> movie.get_post>,                                                [RETURN: movie_post.html]
+ <Rule '/movie/add/' (HEAD, POST, OPTIONS, GET) -> movie.add_post>,                                                     [RETURN: edit_post.html][REDIRECT: movie.get_post]
+ <Rule '/movie/edit/<post_id>/' (HEAD, POST, OPTIONS, GET) -> movie.edit_post>,                                         [RETURN: edit_post.html][REDIRECT: movie.get_post]
+ <Rule '/movie/delete/<post_id>/' (HEAD, OPTIONS, GET) -> movie.delete_post>,                                           [REDIRECT: movie.index or redirect]
+ <Rule '/movie/edit_tags/<post_id>/' (POST, OPTIONS) -> movie.edit_tags>,                                               [REDIRECT: movie.post]
+ <Rule '/movie/add-still/<post_id>/' (HEAD, POST, OPTIONS, GET) -> movie.add_still>,                                    [REDIRECT: movie.post or redirect]
+ <Rule '/movie/edit-stills/<post_id>/' (HEAD, OPTIONS, GET) -> movie.edit_stills>,                                      [RETURN: edit_stills.html]
+ <Rule '/movie/edit-still/<still_id>/' (POST, OPTIONS) -> movie.edit_still>,                                            [REDIRECT: movie.edit_stills]
+ <Rule '/movie/delete-still/<still_id>/' (HEAD, OPTIONS, GET) -> movie.delete_still>,                                   [REDIRECT: movie.edit_stills]
+ <Rule '/movie/image/<post_id>/<filename>' (HEAD, OPTIONS, GET) -> movie.serve_image>,                                  [FILE]
+
+ <Rule '/photo/category/<c_id>/' (HEAD, OPTIONS, GET) -> photo.switch_category>,
+ <Rule '/photo/category/all/' (HEAD, OPTIONS, GET) -> photo.switch_category_all>,
+ <Rule '/photo/' (HEAD, OPTIONS, GET) -> photo.index>,
+ <Rule '/photo/post/<post_id>/' (HEAD, OPTIONS, GET) -> photo.get_post>,
+ <Rule '/photo/add/' (HEAD, POST, OPTIONS, GET) -> photo.add_post>,
+ <Rule '/photo/edit/<post_id>/' (HEAD, POST, OPTIONS, GET) -> photo.edit_post>,
+ <Rule '/photo/delete/<post_id>/' (HEAD, OPTIONS, GET) -> photo.delete_post>,
+ <Rule '/photo/edit_tags/<post_id>/' (POST, OPTIONS) -> photo.edit_tags>,
+ <Rule '/photo/add-image/<post_id>/' (POST, OPTIONS) -> photo.add_image>,
+ <Rule '/photo/edit-image/<image_id>/' (POST, OPTIONS) -> photo.edit_image>,
+ <Rule '/photo/delete-image/<image_id>/' (HEAD, OPTIONS, GET) -> photo.delete_image>,
+ <Rule '/photo/image/<post_id>/<filename>' (HEAD, OPTIONS, GET) -> photo.serve_image>,
+
+ <Rule '/files/' (HEAD, OPTIONS, GET) -> files.index>,
+ <Rule '/files/root/' (HEAD, OPTIONS, GET) -> files.explorer>,
+ <Rule '/files/root/<path>' (HEAD, OPTIONS, GET) -> files.explorer>,
+ <Rule '/files/mkdir/' (POST, OPTIONS) -> files.mkdir>,
+ <Rule '/files/mkdir/<path>/' (POST, OPTIONS) -> files.mkdir>,
+ <Rule '/files/upload/' (POST, OPTIONS) -> files.upload>,
+ <Rule '/files/upload/<path>/' (POST, OPTIONS) -> files.upload>,
+ <Rule '/files/delete/' (HEAD, OPTIONS, GET) -> files.delete>,
+ <Rule '/files/delete/<path>/' (HEAD, OPTIONS, GET) -> files.delete>,
+
+ <Rule '/music/' (HEAD, OPTIONS, GET) -> music.index>,                                                                  []
+])
+------------------------------------------------------------------------------------------------------------------------

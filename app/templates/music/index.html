@@ -1,7 +1,110 @@
-{% extends 'common/base.html' %}
+{% extends "common/base.html" %}
 
-{% block page_content %}
-    <div class="page_header">
-        <h1>Index of Music</h1>
-    </div>
+
+{% block title %}音乐播放器 | 音乐频道{% endblock %}
+
+
+{% block header %}{{ super() }}{% endblock %}
+
+
+{% block header2 %}
+    <header>
+        <div class="docs-bg-frame docs-bg-frame-music" id="the-page-wrapper"></div>
+        <img class="hidden" id="the-buff-image" src="/static/img/avatar.png"/>
+        <canvas class="hidden" id="the-buff-canvas"></canvas>
+    </header>
 {% endblock %}
+
+
+{% block content %}
+    <div class="docs-page-music">
+        <div class="music-main-wrapper">
+            <div class="container">
+                <!-- 专辑封面 -->
+                <div class="music-album-wrapper">
+                    <div id="the-album-frame" class="album-frame"></div>
+                    <img src="/static/img/music-default-album.png" id="the-album-image" class="album-image"/>
+                </div>
+                <!-- 播放控件 -->
+                <div class="music-toolbar-wrapper">
+                </div>
+
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+
+{% block footer %}{% endblock %}
+
+
+{% block scripts %}
+    {{ super() }}
+    <script src="{{ url_for('static', filename='js/StackBlur.js') }}"></script>
+    <script type="text/javascript">
+    //
+    // variables
+    //
+    var is_playing = false;
+    //
+    // set album photo and blur image as background
+    //
+    function set_album_photo(img_url) {
+        var img = document.getElementById("the-buff-image");
+        var cvs = document.getElementById("the-buff-canvas");
+        img.onload = function() {
+            var s_w = img.naturalWidth, s_h = img.naturalHeight;
+            var sx = 0, sy = 0, sw = s_w, sh = s_h;
+            var d_w = 392, d_h = 392;
+            var blur_radius = 50, clip_radius=50;
+            var context = cvs.getContext("2d");
+            //
+            // 在canvas上绘制专辑封面
+            //
+            if (s_w / s_h < d_w / d_h) {
+                sh = s_w * d_h / d_w;
+                sy = (s_h - sh) / 2;
+            } else {
+                sw = s_h * d_w / d_h;
+                sx = (s_w - sw) / 2;
+            }
+            cvs.style.width = d_w + "px";
+            cvs.style.height = d_h + "px";
+            cvs.width = d_w;
+            cvs.height = d_h;
+            context.clearRect(0, 0, d_w, d_h);
+            context.drawImage(img, sx, sy, sw, sh, 0, 0, d_w, d_h);
+            context.arc(d_w/2, d_h/2, clip_radius, 0, 2*Math.PI);
+            context.clip();
+            context.clearRect(d_w/2-clip_radius ,d_h/2-clip_radius, d_w, d_h);
+            document.getElementById("the-album-image").setAttribute("src", cvs.toDataURL("image/png"));
+            //
+            // 在canvas上绘制带模糊效果的页面背景图
+            //
+            stackBlurImage("the-buff-image", "the-buff-canvas", blur_radius, false);
+            document.getElementById("the-page-wrapper").style.backgroundImage = "url(" + cvs.toDataURL("image/png") + ")";
+        };
+        img.onerror = function() {
+            // if(img_url != default_img_url) { set_album_photo(default_img_url); }
+            document.getElementById("the-album-image").setAttribute("src", "/static/img/music-default-album.png");
+            document.getElementById("the-page-wrapper").style.backgroundImage = "url(/static/img/music-default-bg.png)";
+        };
+        img.src = img_url;
+    }
+    function play() {
+        $("#the-album-image").addClass("circle-run-image");
+        // $("#the-album-frame").addClass("circle-run-frame");
+        is_playing = true;
+    }
+    function pause() {
+        $("#the-album-image").removeClass("circle-run-image");
+        // $("#the-album-frame").removeClass("circle-run-frame");
+        is_playing = false;
+    }
+    //
+    // test
+    //
+    set_album_photo("/static/img/music-test-album.jpg");
+    play();
+    </script>
+{% endblock scripts %}

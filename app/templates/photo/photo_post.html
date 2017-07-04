@@ -1,0 +1,104 @@
+{% extends "photo/photo_base.html" %}
+{% import "common/macros.html" as macros %}
+
+
+{% block title %}{{ post.title }}{% endblock %}
+
+
+{% block photo_main %}
+    {% if current_user.is_authenticated %}
+    <a href="javascript:delete_post();" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-trash text-muted"></span></a>
+    <a href="{{ url_for('.edit_post', post_id=post.id) }}" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-edit text-muted"></span></a>
+    <a href="{{ url_for('.add_post') }}" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-plus text-muted"></span></a>
+    <a href="javascript:upload_image();" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-cloud-upload text-muted"></span></a>
+    {% endif %}
+
+    <h1 class="docs-post-title docs-text-photo">{{ post.title }}<small><span class="glyphicon glyphicon-eye-{% if post.private %}close{% else %}open{% endif %}"></span></small></h1>
+    <p class="docs-post-metas">
+        <span><i class="glyphicon glyphicon-calendar"></i>{{ moment(post.timestamp).format('YYYY-MM-DD HH:mm:ss') }}</span>
+        <span><i class="glyphicon glyphicon-bookmark docs-text-photo"></i><a class="docs-text-photo" href="{{ url_for('.switch_category', c_id=post.category_id) }}">{{ post.category.name }}</a></span>
+        {% for tag in post.tags %}
+        <span><i class="glyphicon glyphicon-tag"></i>{{ tag.name }}</span>
+        {% endfor %}
+        <span><i class="glyphicon glyphicon-pencil" role="button" onclick="$('.docs-edit-metas').toggleClass('hidden');$(this).toggleClass('docs-text-photo')"></i></span>
+        <div class="docs-edit-metas hidden">
+            <form id="docs-edit-metas" action="{{ url_for('.edit_tags', post_id=post.id) }}" method="post">{% for tag in post.category.tags %}
+                <label class="checkbox-inline"><input type="checkbox" name="cb-{{ tag.id }}" value="{{ tag.id }}"{% if tag in post.tags %} checked{% endif %}/> {{ tag.name }}</label>{% endfor %}
+                <label class="checkbox-inline" onclick="$('#docs-edit-metas').submit()"><span class="glyphicon glyphicon-ok docs-text-photo"></span></label>
+            </form>
+        </div>
+    </p>
+    {% if post.persons %}<p><b>参与人员：</b>{{ post.persons }}</p>{% endif %}
+    {% if post.address %}<p><b>拍照地点：</b>{{ post.address }}</p>{% endif %}
+    {% if post.introduction %}<p><b>简要介绍：</b>{{ post.introduction }}</p>{% endif %}
+
+    <div class="photo-image-list panel panel-warning">
+        <div class="panel-heading">
+            <h3 class="panel-title">包含 {{ post.count }} 张图片</h3>
+        </div>
+        <ul class="list-group">
+        {% for image in images %}
+            <li class="photo-image-item list-group-item">
+                <img src="{{ url_for('.serve_image', post_id=post.id, filename=image.f_name) }}"/>
+                <p>{% if image.private %}<small><span class="glyphicon glyphicon-eye-close"></span></small>{% endif %}{{ image.comment }}</p>
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+
+    {% if pagination %}
+    <div class="pagination">
+        {{ macros.pagination_widget(pagination, '.get_post', fragment='#still-list', post_id=post.id) }}
+    </div>
+    {% endif %}
+{% endblock %}
+
+
+{% block scripts %}
+    {{ super() }}
+    <script type="text/javascript">
+        function delete_post() {
+            var header_html = '提示';
+            var body_html = '确定将图册《{{ post.title }}》删除？';
+            var footer_html = '<button class="btn btn-success" data-dismiss="modal">取消</button><button class="btn btn-danger" onclick="confirm_delete()">删除</button>';
+            notification_init(header_html, body_html, footer_html);
+            notification_show();
+        }
+        function confirm_delete() {
+            $.get("{{ url_for('.delete_post', post_id=post.id) }}", function(){
+                window.opener=null;
+                window.open('','_self');
+                window.close();
+            });
+        }
+        function upload_image() {
+            var header_html = '添加图片到《{{ post.title }}》';
+            var body_html = '\
+                    <div class="photo-add-image">\
+                        <form action="{{ url_for('.add_image', post_id=post.id) }}" method="POST" enctype="multipart/form-data" role="form">\
+                            {{ form.hidden_tag() }}\
+                            <div class="form-group">\
+                                <label for="new-photo-method">上传图片</label>\
+                                <div>\
+                                    {{ form.method(id='new-photo-method', class='form-control', onchange="switch_upload_method(this.value, \\'#new-photo-file\\', \\'#new-photo-url\\');") }}\
+                                    {{ form.img_file(id='new-photo-file', class='form-control') }}\
+                                    {{ form.img_url(id='new-photo-url', class='form-control hidden', placeholder='http://') }}\
+                                    {% if current_user.is_authenticated %}\
+                                    {{ form.private(id='new-photo-private', class='form-control') }}\
+                                    {% else %}\
+                                    {{ form.private(id='new-photo-private', class='form-control', disabled='disabled') }}\
+                                    {% endif %}\
+                                </div>\
+                            </div>\
+                            <div class="form-group">\
+                                <label for="new-photo-comment">要说的话</label>\
+                                {{ form.comment(class='form-control', id='new-photo-comment', placeholder='说点什么吧 ......') }}\
+                            </div>\
+                            <button class="btn btn-danger" type="submit">提交</button>\
+                        </form>\
+                    </div>';
+            notification_init(header_html, body_html, null);
+            notification_show();
+        }
+    </script>
+{% endblock %}

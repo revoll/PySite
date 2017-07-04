@@ -1,18 +1,14 @@
-{% extends "common/base.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
+{% extends "common/common_base.html" %}
+{% import "common/wtf.html" as wtf %}
 
-{% block title %}PySite - Login{% endblock %}
+{% block title %}Login - PySite{% endblock %}
 
-{% block page_content %}
-    <div class="page-header">
-        <h1>Login</h1>
-    </div>
-    <div class="col-md-4">
-        {{ wtf.quick_form(form) }}
-        <br>
+{% block common_main %}
+    <h1 class="docs-page-title docs-text-common">登录</h1>
 
-        <p>Forgot your password? <a href="{{ url_for('auth.password_reset_request') }}">Click here to reset it</a>.</p>
-
-        <p>New user? <a href="{{ url_for('auth.register') }}">Click here to register</a>.</p>
+    <div class="row">
+        <div class="col-sm-5 col-md-4">
+            {{ wtf.quick_form(form) }}
+        </div>
     </div>
 {% endblock %}
