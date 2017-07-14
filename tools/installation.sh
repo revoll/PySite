@@ -18,6 +18,7 @@ ln -s /etc/nginx/sites-available/pysite_nginx.conf /etc/nginx/sites-enabled/pysi
 
 nginx -s reload
 
+cd /var/www/PySite
 source venv/bin/activate
-python PySite/manage.py deploy
+python manage.py deploy
 deactivate
