@@ -1,0 +1,16 @@
+#
+# This is an example environment variable configuration file('.pysite_env').
+# You can simply copy THIS FILE into '/root/' directory, or create it according to this file manually.
+#
+
+# secret key for cookies, sessions, etc.
+SECRET_KEY = hard to guess string
+
+# email server account
+MAIL_SERVER = smtp.163.com
+MAIL_PORT = 25
+MAIL_USERNAME = 17717529317@163.com
+MAIL_PASSWORD = nspocgzinlhjqoyw
+
+# MySQL database account
+MYSQL_URI_BASE = mysql://flasky:654321@localhost/
