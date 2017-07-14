@@ -86,3 +86,4 @@ class DecimalRangeField(core.DecimalField):
     Represents an ``<input type="range">``.
     """
     widget = widgets.RangeInput(step='any')
+

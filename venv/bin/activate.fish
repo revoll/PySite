@@ -36,7 +36,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/home/wangkui/PycharmProjects/PySite/venv"
+set -gx VIRTUAL_ENV "/var/www/pysite/venv"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH

@@ -1,4 +1,4 @@
-#!/home/wangkui/PycharmProjects/PySite/venv/bin/python
+#!/var/www/pysite/venv/bin/python
 
 import sys
 import getopt

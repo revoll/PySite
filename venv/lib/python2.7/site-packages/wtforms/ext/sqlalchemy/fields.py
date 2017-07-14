@@ -17,6 +17,7 @@ except ImportError:
     has_identity_key = False
 
 
+
 __all__ = (
     'QuerySelectField', 'QuerySelectMultipleField',
 )
@@ -142,9 +143,6 @@ class QuerySelectMultipleField(QuerySelectField):
         if default is None:
             default = []
         super(QuerySelectMultipleField, self).__init__(label, validators, default=default, **kwargs)
-        if kwargs.get('allow_blank', False):
-            import warnings
-            warnings.warn('allow_blank=True does not do anything for QuerySelectMultipleField.')
         self._invalid_formdata = False
 
     def _get_data(self):

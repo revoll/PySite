@@ -1,4 +1,4 @@
-#!/home/wangkui/PycharmProjects/PySite/venv/bin/python2
+#!/var/www/pysite/venv/bin/python2
 from __future__ import print_function
 import base64
 import os

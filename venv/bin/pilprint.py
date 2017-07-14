@@ -1,4 +1,4 @@
-#!/home/wangkui/PycharmProjects/PySite/venv/bin/python2
+#!/var/www/pysite/venv/bin/python2
 #
 # The Python Imaging Library.
 # $Id$
