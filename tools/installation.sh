@@ -5,7 +5,15 @@ cd /var/www/
 rm -r -f PySite
 git clone http://github.com/revoll/PySite.git
 cp PySite/.pysite_env.example PySite/.pysite_env
+
+cd /var/www/PySite/
+
+source venv/bin/activate
+python manage.py deploy
+deactivate
+
 chown -R www-data:www-data PySite
+
 
 mkdir -p /etc/nginx
 mkdir -p /etc/uwsgi/vassals
@@ -17,8 +25,3 @@ cp PySite/tools/pysite_uwsgi.ini /etc/uwsgi/vassals/pysite_uwsgi.ini
 ln -s /etc/nginx/sites-available/pysite_nginx.conf /etc/nginx/sites-enabled/pysite_nginx.conf
 
 nginx -s reload
-
-cd /var/www/PySite
-source venv/bin/activate
-python manage.py deploy
-deactivate
