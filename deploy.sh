@@ -1,9 +1,11 @@
 #!/bin/bash
 
-echo -e '\nStepping into directory`/var/www/PySite/`'
+echo ''
+echo 'Stepping into directory`/var/www/PySite/`'
 cd /var/www/PySite/
 
-echo -e '\nPreparing project for deployment ...'
+echo ''
+echo 'Preparing project for deployment ...'
 if [[ -d "data" ]] || [[ -d "venv" ]]; then
     echo 'ERROR: Found directory `data` or `venv` already existed in current project.'
     exit 1
@@ -16,7 +18,8 @@ python ./manage.py deploy
 deactivate
 chown -R www-data:www-data ./
 
-echo -e '\nDeploying NGINX & uWSGI configurations ...'
+echo ''
+echo 'Deploying NGINX & uWSGI configurations ...'
 rm -f /etc/nginx/sites-available/pysite_nginx.conf
 rm -f /etc/nginx/sites-enabled/pysite_nginx.conf
 rm -f /etc/uwsgi/vassals/pysite_uwsgi.ini
@@ -26,8 +29,7 @@ cp ./tools/pysite_nginx.conf /etc/nginx/sites-available/pysite_nginx.conf
 cp ./tools/pysite_uwsgi.ini /etc/uwsgi/vassals/pysite_uwsgi.ini
 ln -s /etc/nginx/sites-available/pysite_nginx.conf /etc/nginx/sites-enabled/pysite_nginx.conf
 #echo 'uwsgi --ini /etc/uwsgi/vassals/pysite_uwsgi.ini' > /etc/rc.local
-
-echo -e '\nRestarting NGINX server with command `nginx -s reload` ...'
+echo 'Restarting NGINX server with command `nginx -s reload` ...'
 nginx -s reload
 
 echo -e '\nDone!\nPlease append `/etc/rc.local` with `uwsgi --ini /etc/uwsgi/vassals/pysite_uwsgi.ini` manually.\n'

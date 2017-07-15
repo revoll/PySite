@@ -5,7 +5,7 @@ import urllib2
 from StringIO import StringIO
 from flask import request, current_app, render_template, redirect, make_response, abort, url_for, flash, send_from_directory
 from flask_login import current_user, login_required
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, SelectField, SubmitField, FileField, ValidationError
 from wtforms.validators import DataRequired, Length, URL, Regexp
 from . import movie_blueprint as movie
@@ -22,7 +22,7 @@ def get_post_dir(post):
 # Movie Forms
 ########################################################################################################################
 
-class _PostForm(Form):
+class _PostForm(FlaskForm):
     name = StringField(u'电影名', validators=[DataRequired(), Length(1, 50)])
     private = SelectField(u'是否公开', choices=[(0, u'所有人可见'), (1, u'仅自己可见')], coerce=int)
     reference = StringField(u'豆瓣链接', validators=[Length(0, 80), URL()])
@@ -91,7 +91,7 @@ class EditPostForm(_PostForm):
     pass
 
 
-class _StillForm(Form):
+class _StillForm(FlaskForm):
     time_min = StringField(u'时间（分）', validators=[Regexp(u'^\d{0,3}$', message=u'最大支持999分钟')])
     time_sec = StringField(u'时间（秒）', validators=[Regexp(u'^[0-5]?\d?$', message=u'不在0-59秒范围内')])
     private = SelectField(u'是否公开', choices=[(0, u'所有人可见'), (1, u'仅自己可见')], coerce=int)

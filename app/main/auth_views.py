@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from flask import render_template, redirect, request, url_for, flash
 from flask_login import login_user, logout_user, login_required
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import Required, Length
 from . import auth_blueprint as auth
@@ -12,7 +12,7 @@ from ..models import User
 # Auth Forms
 ########################################################################################################################
 
-class LoginForm(Form):
+class LoginForm(FlaskForm):
     username = StringField(u'用户名', validators=[Required(), Length(1, 64)])
     password = PasswordField(u'密码', validators=[Required()])
     remember = BooleanField(u'记住我')

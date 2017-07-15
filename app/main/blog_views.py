@@ -6,7 +6,7 @@ from markdown import markdown
 from datetime import date
 from flask import request, current_app, render_template, redirect, abort, url_for, make_response, flash, send_from_directory, jsonify
 from flask_login import login_required, current_user
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from flask_pagedown.fields import PageDownField
 from wtforms import StringField, SubmitField, SelectField
 from wtforms.validators import DataRequired
@@ -20,7 +20,7 @@ from ..tools.restful import Result, bad_request, not_found
 # Blog Forms
 ########################################################################################################################
 
-class PostForm(Form):
+class PostForm(FlaskForm):
     title = StringField(u'标题', validators=[DataRequired()])
     category = SelectField(u'分类', coerce=int)
     # tags = SelectMultipleField(u'标签', coerce=int)

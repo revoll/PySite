@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from StringIO import StringIO
 from flask import request, current_app, render_template, redirect, abort, url_for, make_response, flash, send_from_directory
 from flask_login import current_user, login_required
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, SelectField, SubmitField, FileField
 from wtforms.validators import Length, Regexp, ValidationError
 from . import photo_blueprint as photo
@@ -33,7 +33,7 @@ def validate_post_title(title, timestamp=datetime.utcnow()):
 # photo Forms
 ########################################################################################################################
 
-class _PostForm(Form):
+class _PostForm(FlaskForm):
     category = SelectField(u'分类', coerce=int)
     private = SelectField(u'是否公开', choices=[(0, u'所有人可见'), (1, u'仅自己可见')], coerce=int)
     title = StringField(u'相册名称', validators=[Length(0, 60)])
@@ -76,7 +76,7 @@ class EditPostForm(_PostForm):
     pass
 
 
-class _ImageForm(Form):
+class _ImageForm(FlaskForm):
     private = SelectField(u'是否公开', choices=[(0, u'所有人可见'), (1, u'仅自己可见')], coerce=int)
     comment = StringField(u'备注')
     submit = SubmitField(u'更新')
