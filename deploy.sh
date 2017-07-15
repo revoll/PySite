@@ -29,7 +29,16 @@ cp ./tools/pysite_nginx.conf /etc/nginx/sites-available/pysite_nginx.conf
 cp ./tools/pysite_uwsgi.ini /etc/uwsgi/vassals/pysite_uwsgi.ini
 ln -s /etc/nginx/sites-available/pysite_nginx.conf /etc/nginx/sites-enabled/pysite_nginx.conf
 #echo 'uwsgi --ini /etc/uwsgi/vassals/pysite_uwsgi.ini' > /etc/rc.local
-echo 'Restarting NGINX server with command `nginx -s reload` ...'
+echo 'Restarting NGINX with command `nginx -s reload` ...'
 nginx -s reload
+echo 'Restarting uWSGI ...'
+NAME="pysite"
+ID=`ps -ef | grep "$NAME" | grep -v "$0" | grep -v "grep" | awk '{print $2}'`
+for id in $ID
+    do
+        kill -9 $id
+        echo "kill $id"
+    done
+uwsgi --ini /etc/uwsgi/vassals/pysite_uwsgi.ini
 
 echo -e '\nDone!\nPlease append `/etc/rc.local` with `uwsgi --ini /etc/uwsgi/vassals/pysite_uwsgi.ini` manually.\n'
