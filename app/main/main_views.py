@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from flask import render_template, abort, request, current_app, make_response, redirect, url_for, jsonify
-from flask.ext.login import current_user, login_required
-from flask.ext.sqlalchemy import get_debug_queries
+from flask_login import current_user, login_required
+from flask_sqlalchemy import get_debug_queries
 from . import main_blueprint as main
 from .. import db
 from ..tools.restful import Result, bad_request, unauthorized, forbidden, not_found, method_not_allowed, internal_server_error

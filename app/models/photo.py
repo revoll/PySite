@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-from datetime import datetime, date
+from datetime import datetime
 from flask import current_app
 from .. import db
 

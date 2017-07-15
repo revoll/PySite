@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 import os
 from flask import current_app
-from flask.ext.script import Manager, Shell
-from flask.ext.migrate import Migrate, MigrateCommand
+from flask_script import Manager, Shell
+from flask_migrate import Migrate, MigrateCommand
 from app import create_app, db
 from app.models.blog import BlogPost, BlogCategory, BlogTag
 from app.models.movie import MoviePost, MovieStill, MovieCategory, MovieTag

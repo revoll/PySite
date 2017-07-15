@@ -3,7 +3,7 @@ import os
 import time
 import shutil
 from flask import request, render_template, url_for, redirect, current_app, send_file, abort, flash
-from flask.ext.login import current_user
+from flask_login import current_user
 from . import files_blueprint as files
 
 

@@ -4,8 +4,8 @@ import shutil
 import urllib2
 from StringIO import StringIO
 from flask import request, current_app, render_template, redirect, make_response, abort, url_for, flash, send_from_directory
-from flask.ext.login import current_user, login_required
-from flask.ext.wtf import Form
+from flask_login import current_user, login_required
+from flask_wtf import Form
 from wtforms import StringField, TextAreaField, SelectField, SubmitField, FileField, ValidationError
 from wtforms.validators import DataRequired, Length, URL, Regexp
 from . import movie_blueprint as movie

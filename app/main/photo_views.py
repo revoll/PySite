@@ -4,8 +4,8 @@ import urllib2
 from datetime import datetime, timedelta
 from StringIO import StringIO
 from flask import request, current_app, render_template, redirect, abort, url_for, make_response, flash, send_from_directory
-from flask.ext.login import current_user, login_required
-from flask.ext.wtf import Form
+from flask_login import current_user, login_required
+from flask_wtf import Form
 from wtforms import StringField, TextAreaField, SelectField, SubmitField, FileField
 from wtforms.validators import Length, Regexp, ValidationError
 from . import photo_blueprint as photo
