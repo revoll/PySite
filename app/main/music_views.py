@@ -14,4 +14,4 @@ from . import music_blueprint as music
 
 @music.route(u'/')
 def index():
-    return render_template(u'music/index.html')
+    return render_template(u'music/music_index.html')

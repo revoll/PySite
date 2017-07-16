@@ -43,7 +43,7 @@ if os.environ.get(u'FLASK_COVERAGE'):
     COV.start()
 
 
-app = create_app(u'unix' or os.getenv(u'FLASK_CONFIG') or u'default')  # use 'unix' config
+app = create_app(os.getenv('FLASK_CONFIG') or 'default')
 manager = Manager(app)
 migrate = Migrate(app, db)
 

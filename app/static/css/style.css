@@ -23,46 +23,48 @@ body {
 	font-size: 1.6rem;
 	line-height: 1.6;
 	color: #333;
-	background-color: #fff;
+	background-color: #ccc;
+	/* 设置 body 使得 content 在任何的高度下都可以撑满整个屏幕 */
 	display: flex;
 	flex-direction: column;
 	height: 100%;
 }
-header {
+.docs-header {
 	/* 我们希望 header 采用固定的高度，只占用必须的空间 */
 	/* 0 flex-grow, 0 flex-shrink, auto flex-basis */
 	flex: 0 0 auto;
 }
-section.container {
-	/* 将 flex-grow 设置为1，该元素会占用所有的可使用空间
-	  而其他元素该属性值为0，因此不会得到多余的空间*/
+.docs-content {
+	margin-top: -20px;
+	margin-bottom: -60px;
+	padding-top: 60px;
+	padding-bottom: 90px;
+	/* 将 flex-grow 设置为1，该元素会占用所有的可使用空间，而其他元素该属性值为0，因此不会得到多余的空间 */
 	/* 1 flex-grow, 0 flex-shrink, auto flex-basis */
 	flex: 1 0 auto;
 }
-footer {
+.docs-footer {
+	margin-top: 60px;
+	padding: 30px 0;
+	color: #99979c;
+	text-align: center;
+	background-color: #2a2730;
 	/* 和 header 一样，footer 也采用固定高度*/
 	/* 0 flex-grow, 0 flex-shrink, auto flex-basis */
 	flex: 0 0 auto;
 }
 
-.docs-footer {
-	margin-top: 60px;
-	padding: 50px 0;
-	color: #99979c;
-	text-align: center;
-	background-color: #2a2730;
-}
 .docs-footer a {
 	color: #fff;
 }
-.docs-footer-links {
+.docs-footer .footer-links {
 	padding-left: 0;
 	margin-bottom: 20px;
 }
-.docs-footer-links li {
+.docs-footer .footer-links li {
 	display: inline-block;
 }
-.docs-footer-links li + li {
+.docs-footer .footer-links li + li {
 	margin-left: 15px;
 }
 @media (min-width: 768px) {
@@ -76,85 +78,56 @@ footer {
 
 
 /**
- * Customized styles for each sections: color and layout related
+ * Global page styles & Customized styles for each sections (color and layout related)
  */
-.docs-bg-frame {
-	position: fixed;
-	z-index: -9999;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
+.docs-bg-blog {
+	background: #5cb85c url(/static/img/bg-blog.png) no-repeat fixed center/cover;
 }
-.docs-bg-frame-common {
-	background: #337ab7 url(/static/img/bg-common.png) no-repeat fixed center;
-	background-size: cover;
+.docs-bg-music {
+	background: #563d7c url(/static/img/bg-music.png) no-repeat fixed center/cover;
 }
-.docs-bg-frame-blog {
-	background: #5cb85c url(/static/img/bg-blog.png) no-repeat fixed center;
-	background-size: cover;
+.docs-bg-movie {
+	background: #d9534f url(/static/img/bg-movie.png) no-repeat fixed center/cover;
 }
-.docs-bg-frame-music { /* 音乐栏目特殊定制！ */
-	z-index: -999 !important;
-	background: #563d7c url(/static/img/bg-music.png) no-repeat fixed center;
-	background-size: cover;
+.docs-bg-photo {
+	background: #f0ad4e url(/static/img/bg-photo.png) no-repeat fixed center/cover;
 }
-.docs-bg-frame-music:before {
-	position: fixed;
-	z-index: -1000;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background-color: rgba(0, 0, 0, 0.1);
-	content: '';
+.docs-bg-files {
+	background: #5bc0de url(/static/img/bg-files.png) no-repeat fixed center/cover;
 }
-.docs-bg-frame-movie {
-	background: #d9534f url(/static/img/bg-movie.png) no-repeat fixed center;
-	background-size: cover;
-}
-.docs-bg-frame-photo {
-	background: #f0ad4e url(/static/img/bg-photo.png) no-repeat fixed center;
-	background-size: cover;
-}
-.docs-bg-frame-files {
-	background: #5bc0de url(/static/img/bg-files.png) no-repeat fixed center;
-	background-size: cover;
+.docs-bg-common {
+	background: #337ab7 url(/static/img/bg-common.png) no-repeat fixed center/cover;
 }
 
-.docs-page-wrapper { /* 页面主体：common,blog,movie,photo,files. 此处参数修改需要对应修改下面参数 */
+.docs-page {
 	position: relative;
-	margin-top: 30px;
-	margin-bottom: 30px;
 	padding: 60px 35px 60px;
-	width: 100%;
+	min-height: 480px;
 	background-color: #fcfcfc;
 	box-shadow: 0 0 25px #000;
 }
-.docs-page-wrapper > .docs-page-header,
-.docs-page-wrapper > .docs-page-footer {
-	position: absolute;
-	left: 0;
-	width: 100%;
-	padding-left: 35px;
-	padding-right: 35px;
- }
-.docs-page-wrapper > .docs-page-header { /* 页眉 */
-	top: 0;
-	height: 60px;
+@media (min-width: 992px) {
+	.docs-page {
+		padding-left: 50px;
+		padding-right: 50px;
+	}
 }
-.docs-page-wrapper > .docs-page-footer { /* 页脚 */
-	bottom: 0;
-	height: 60px;
+@media (min-width: 1200px) {
+	.docs-page {
+		padding-left: 85px;
+		padding-right: 85px;
+	}
 }
-.docs-page-common { /* 页面主体：全局公用 */ }
 .docs-page-blog { /* 页面主体：博客 */ }
-.docs-page-music { /* 页面主体：音乐（单独设计，不再使用.docs-page-wrapper类） */ }
+.docs-page-music { /* 页面主体：音乐（单独设计,不和'.docs-page'组合使用） */ }
 .docs-page-movie { /* 页面主体：电影 */ }
 .docs-page-photo { /* 页面主体：图册 */ }
 .docs-page-files { /* 页面主体：资源 */ }
+.docs-page-common { /* 页面主体：全局公用 */ }
 
 @media (max-width: 991px) {
+	.docs-page-blog .docs-navigation-tabs > ul,
+	/* 博客在中等屏幕以下时: 不分栏 */
 	.docs-page-movie .docs-navigation-tabs > ul,
 	.docs-page-photo .docs-navigation-tabs > ul,
 	.docs-page-files .docs-navigation-tabs > ul,
@@ -166,56 +139,36 @@ footer {
 	}
 }
 @media (min-width: 992px) {
-	.docs-page-blog .blog-main-wrapper {
-		padding-left: 35px;
-		padding-right: 35px;
-	}
-	.docs-page-movie .movie-main-wrapper,
-	.docs-page-photo .photo-main-wrapper,
-	.docs-page-files .files-main-wrapper,
-	.docs-page-common .common-main-wrapper {
-		padding-left: 35px;
-		padding-right: 35px;
+	.docs-page-blog .blog-sidebar-wrapper {
+		position: relative;
+		left: -10px;
 	}
 	.docs-page-movie .docs-navigation-tabs > ul,
 	.docs-page-photo .docs-navigation-tabs > ul,
 	.docs-page-files .docs-navigation-tabs > ul,
 	.docs-page-common .docs-navigation-tabs > ul {
-		margin-left: -70px;
-		margin-right: -70px;
-		padding-left: 70px;
-		padding-right: 70px;
+		margin-left: -50px;
+		margin-right: -50px;
+		padding-left: 50px;
+		padding-right: 50px;
 	}
 }
 @media (min-width: 1200px) {
-	.docs-page-blog .blog-main-wrapper {
-		padding-left: 45px;
-		padding-right: 50px;
-	}
-	.docs-page-movie .movie-main-wrapper,
-	.docs-page-photo .photo-main-wrapper,
-	.docs-page-files .files-main-wrapper,
-	.docs-page-common .common-main-wrapper {
-		padding-left: 60px;
-		padding-right: 60px;
+	.docs-page-blog .blog-sidebar-wrapper {
+		position: relative;
+		left: -25px;
 	}
 	.docs-page-movie .docs-navigation-tabs > ul,
 	.docs-page-photo .docs-navigation-tabs > ul,
 	.docs-page-files .docs-navigation-tabs > ul,
 	.docs-page-common .docs-navigation-tabs > ul {
-		margin-left: -95px;
-		margin-right: -95px;
-		padding-left: 95px;
-		padding-right: 95px;
+		margin-left: -85px;
+		margin-right: -85px;
+		padding-left: 85px;
+		padding-right: 85px;
 	}
 }
 
-.docs-page-common .pagination > .active > a,
-.docs-page-common .pagination > .active > span { /* 分页栏颜色 */
-	color: white;
-	background-color: #337ab7;
-	border-color: #2e6da4;
-}
 .docs-page-blog .pagination > .active > a,
 .docs-page-blog .pagination > .active > span {
 	color: white;
@@ -246,10 +199,13 @@ footer {
 	background-color: #5bc0de;
 	border-color: #46b8da;
 }
-
-.docs-text-common { /* 字体颜色辅助 */
-	color: #337ab7 !important;
+.docs-page-common .pagination > .active > a,
+.docs-page-common .pagination > .active > span {
+	color: white;
+	background-color: #337ab7;
+	border-color: #2e6da4;
 }
+
 .docs-text-blog {
 	color: #3c763d !important;
 }
@@ -264,6 +220,9 @@ footer {
 }
 .docs-text-files {
 	color: #31708f !important;
+}
+.docs-text-common {
+	color: #337ab7 !important;
 }
 
 

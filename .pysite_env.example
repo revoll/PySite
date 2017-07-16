@@ -3,6 +3,8 @@
 # You can simply copy THIS FILE into '/root/' directory, or create it according to this file manually.
 #
 
+#FLASK_CONFIG = unix
+
 # secret key for cookies, sessions, etc.
 SECRET_KEY = hard to guess string
 

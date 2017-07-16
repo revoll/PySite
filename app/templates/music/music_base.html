@@ -1,0 +1,28 @@
+{% extends "common/base.html" %}
+
+
+{% block styles %}
+    {{ super() }}
+    <style type="text/css">
+        #the-music-page {
+            position: fixed;
+            z-index: 0;
+            top: 51px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+    </style>
+{% endblock styles %}
+
+
+{% block body %}
+    <header class="docs-header">{% block header %}{{ super() }}{% endblock header %}</header>
+    <section id="the-music-page" class="docs-bg-music">
+        <div class="container">
+            <div class="docs-page-music">{% block music_main %}{% endblock %}</div>
+        </div>
+    </section>
+    {% block notification %}{{ super() }}{% endblock notification %}
+    {% block scripts %}{{ super() }}{% endblock scripts %}
+{% endblock body %}

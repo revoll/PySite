@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh">
-{% block head %}
 <head>
+{% block head %}
 {% block metas %}
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -33,85 +33,87 @@
         <script src="{{ url_for('static', filename='js/html5shiv.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/respond.min.js') }}"></script>
     <![endif]-->
-</head>
 {% endblock head %}
-{% block body %}
+</head>
 <body>
+{% block body %}
+    <header class="docs-header">
 {% block header %}
-    <header class="navbar navbar-inverse navbar-static-top">
-        <div class="container">
-        {% block header_content %}
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="{{ url_for('main.index') }}">PySite</a>
+        <div class="navbar navbar-inverse navbar-static-top">
+            <div class="container">
+            {% block header_content %}
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="{{ url_for('main.index') }}">PySite</a>
+                </div>
+                <div class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav">
+                        <li><a href="{{ url_for('blog.index') }}">博客</a></li>
+                        <li><a href="{{ url_for('music.index') }}">音乐</a></li>
+                        <li><a href="{{ url_for('movie.index') }}">电影</a></li>
+                        <li><a href="{{ url_for('photo.index') }}">图册</a></li>
+                        <li><a href="{{ url_for('files.index') }}">文件</a></li>
+                        <li class="dropdown">
+                            <a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">工具 <span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#">Action</a></li>
+                                <li><a href="#">Separated link</a></li>
+                                <li role="separator" class="divider"></li>
+                                <li><a href="#">Another action</a></li>
+                                <li role="separator" class="divider"></li>
+                                <li><a href="#">One more separated link</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <ul class="nav navbar-nav navbar-right">
+                    {% if current_user.is_authenticated %}
+                        <li id="global-nav-system" class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                <img src="{{ url_for('static', filename='img/avatar.png') }}" class="img-circle" style="width:16px;height:16px;"/> 管理员<span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a href="/">用户设置</a></li>
+                                <li role="separator" class="divider"></li>
+                                <li><a href="{{ url_for('main.ctm_index') }}" target="_blank">分类与标签管理</a></li>
+                                <li role="separator" class="divider"></li>
+                                <li><a href="{{ url_for('auth.logout') }}">退出</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li><a href="{{ url_for('auth.login') }}">登陆</a></li>
+                    {% endif %}
+                    </ul>
+                </div>
+            {% endblock header_content %}
             </div>
-            <div class="collapse navbar-collapse">
-                <ul class="nav navbar-nav">
-                    <li><a href="{{ url_for('blog.index') }}">博客</a></li>
-                    <li><a href="{{ url_for('music.index') }}">音乐</a></li>
-                    <li><a href="{{ url_for('movie.index') }}">电影</a></li>
-                    <li><a href="{{ url_for('photo.index') }}">图册</a></li>
-                    <li><a href="{{ url_for('files.index') }}">文件</a></li>
-                    <li class="dropdown">
-                        <a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">工具 <span class="caret"></span></a>
-                        <ul class="dropdown-menu">
-                            <li><a href="#">Action</a></li>
-                            <li><a href="#">Separated link</a></li>
-                            <li role="separator" class="divider"></li>
-                            <li><a href="#">Another action</a></li>
-                            <li role="separator" class="divider"></li>
-                            <li><a href="#">One more separated link</a></li>
-                        </ul>
-                    </li>
-                </ul>
-                <ul class="nav navbar-nav navbar-right">
-                {% if current_user.is_authenticated %}
-                    <li id="global-nav-system" class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                            <img src="{{ url_for('static', filename='img/avatar.png') }}" class="img-circle" style="width:16px;height:16px;"/> 管理员<span class="caret"></span>
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a href="/">用户设置</a></li>
-                            <li role="separator" class="divider"></li>
-                            <li><a href="{{ url_for('main.ctm_index') }}" target="_blank">分类与标签管理</a></li>
-                            <li role="separator" class="divider"></li>
-                            <li><a href="{{ url_for('auth.logout') }}">退出</a></li>
-                        </ul>
-                    </li>
-                {% else %}
-                    <li><a href="{{ url_for('auth.login') }}">登陆</a></li>
-                {% endif %}
-                </ul>
-            </div>
-        {% endblock header_content %}
         </div>
-    </header>
 {% endblock header %}
+    </header>
 
-{% block header2 %}{% endblock header2 %}
-
+    <section class="docs-content {% block body_style %}docs-bg-common{% endblock body_style %}">
 {% block content %}
-    <section class="container">
-    {% for message in get_flashed_messages() %}
-        <div class="alert alert-warning">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            {{ message }}
+        <div class="container">
+        {% for message in get_flashed_messages() %}
+            <div class="alert alert-warning">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% block main_content %}{% endblock main_content %}
         </div>
-    {% endfor %}
-    {% block page_content %}{% endblock page_content %}
-    </section>
 {% endblock content %}
+    </section>
 
-{% block footer %}
     <footer class="docs-footer">
+{% block footer %}
         <div class="container">
         {% block footer_content %}
-            <ul class="docs-footer-links">
+            <ul class="footer-links">
                 <li><a href="#">GitHub仓库</a></li>
                 <li><a href="#">实例</a></li>
                 <li><a href="#">精选网站</a></li>
@@ -121,8 +123,8 @@
             <p><b>&copy;Copyright</b> by<b> Kui Wang</b>. All rights reserved.</p>
         {% endblock footer_content %}
         </div>
-    </footer>
 {% endblock footer %}
+    </footer>
 
 {% block notification %}
     <div id="myModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalTitle">
@@ -158,6 +160,6 @@
         });
     </script>
 {% endblock scripts %}
-</body>
 {% endblock body %}
+</body>
 </html>

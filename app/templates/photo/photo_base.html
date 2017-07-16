@@ -1,26 +1,11 @@
 {% extends "common/base.html" %}
 
 
-{% block header %}{{ super() }}{% endblock %}
+{% block body_style %}docs-bg-photo{% endblock body_style %}
 
-{% block header2 %}
-    <header>
-        <div class="docs-bg-frame docs-bg-frame-photo"></div>
-    </header>
-{% endblock %}
 
 {% block content %}
-    <section class="container">
-        <div class="docs-page-wrapper docs-page-photo">
-            <div class="docs-page-header">
-            {% block docs_page_header %}{% endblock %}
-            </div>
-            <div class="photo-main-wrapper">
-            {% block photo_main %}{% endblock %}
-            </div>
-            <div class="docs-page-footer">
-            {% block docs_page_footer %}{% endblock %}
-            </div>
-        </div>
-    </section>
+    <div class="container">
+        <div class="docs-page docs-page-photo">{% block photo_main %}{% endblock %}</div>
+    </div>
 {% endblock content %}

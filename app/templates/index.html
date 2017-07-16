@@ -1,17 +1,33 @@
 {% extends "common/base.html" %}
 
-{% block title %}Index - PySite{% endblock %}
 
-{% block page_content %}
-    <div class="page-header">
-	    {% if current_user.is_authenticated %}
-	        <h1>主人好，汪汪！</h1>
-        {% else %}
-		    <h1>欢迎您的访问！</h1>
-	    {% endif %}
-    </div>
-{% endblock %}
-
-{% block scripts %}
+{% block styles %}
     {{ super() }}
+    <style type="text/css">
+        .test {
+            position: relative;
+            padding: 60px 35px 60px;
+            min-height: 2000px;
+            box-shadow: 0 0 25px #000;
+            background-color: rgba(0,0,0,0.3);
+        }
+        body:before {
+            content: ' ';
+            position: fixed;
+            z-index: -1000;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #5cb85c url(/static/img/bg-blog.png) no-repeat fixed center/cover;
+        }
+    </style>
 {% endblock %}
+
+
+{% block content %}
+    <div class="container">
+        <div class="test">
+        </div>
+    </div>
+{% endblock content %}
