@@ -5,7 +5,7 @@
     {{ super() }}
     <style type="text/css">
         #the-docs-content {
-            position: fixed;
+            position: absolute;
             z-index: 0;
             top: 51px;
             left: 0;
@@ -37,11 +37,7 @@
 
 
 {% block body %}
-    <header class="docs-header">
-        <div class="navbar navbar-inverse navbar-fixed-top">
-            <div class="container">{% block header_content %}{{ super() }}{% endblock header_content %}</div>
-        </div>
-    </header>
+    <header class="docs-header">{% block header %}{{ super() }}{% endblock header %}</header>
     <section id="the-docs-content" class="docs-bg-music">
         <div class="container">
             <div class="panel-wrapper">
