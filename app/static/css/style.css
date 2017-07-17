@@ -101,37 +101,52 @@ body {
 
 .docs-page {
 	position: relative;
-	padding: 60px 35px 60px;
+	margin-left: -15px;
+	margin-right: -15px;
+	padding: 60px 15px 60px;
 	min-height: 480px;
 	background-color: #fcfcfc;
 	box-shadow: 0 0 25px #000;
 }
+@media (min-width: 768px) {
+	.docs-page {
+		margin-left: 0;
+		margin-right: 0;
+		padding-left: 35px;
+		padding-right: 35px;
+	}
+}
 @media (min-width: 992px) {
 	.docs-page {
+		margin-left: 0;
+		margin-right: 0;
 		padding-left: 50px;
 		padding-right: 50px;
 	}
 }
 @media (min-width: 1200px) {
 	.docs-page {
+		margin-left: 0;
+		margin-right: 0;
 		padding-left: 85px;
 		padding-right: 85px;
 	}
 }
 .docs-page-blog { /* 页面主体：博客 */ }
-.docs-page-music { /* 页面主体：音乐（单独设计,不和'.docs-page'组合使用） */ }
+.docs-page-music { /* 页面主体：音乐（模板MUSIC为单独设计,此样式在这里不做定义） */ }
 .docs-page-movie { /* 页面主体：电影 */ }
 .docs-page-photo { /* 页面主体：图册 */ }
 .docs-page-files { /* 页面主体：资源 */ }
 .docs-page-common { /* 页面主体：全局公用 */ }
 
-@media (max-width: 991px) {
-	.docs-page-blog .docs-navigation-tabs > ul,
-	/* 博客在中等屏幕以下时: 不分栏 */
-	.docs-page-movie .docs-navigation-tabs > ul,
-	.docs-page-photo .docs-navigation-tabs > ul,
-	.docs-page-files .docs-navigation-tabs > ul,
-	.docs-page-common .docs-navigation-tabs > ul {
+.docs-page .docs-navigation-tabs > ul {
+	margin-left: -15px;
+	margin-right: -15px;
+	padding-left: 15px;
+	padding-right: 15px;
+}
+@media (min-width: 768px) {
+	.docs-page .docs-navigation-tabs > ul {
 		margin-left: -35px;
 		margin-right: -35px;
 		padding-left: 35px;
@@ -139,33 +154,39 @@ body {
 	}
 }
 @media (min-width: 992px) {
-	.docs-page-blog .blog-sidebar-wrapper {
-		position: relative;
-		left: -10px;
-	}
-	.docs-page-movie .docs-navigation-tabs > ul,
-	.docs-page-photo .docs-navigation-tabs > ul,
-	.docs-page-files .docs-navigation-tabs > ul,
-	.docs-page-common .docs-navigation-tabs > ul {
+	.docs-page .docs-navigation-tabs > ul {
 		margin-left: -50px;
 		margin-right: -50px;
 		padding-left: 50px;
 		padding-right: 50px;
 	}
-}
-@media (min-width: 1200px) {
+	.docs-page-blog .docs-navigation-tabs > ul {
+		margin-left: 0; !important;
+		margin-right: 0; !important;
+		padding-left: 0; !important;
+		padding-right: 0; !important;
+	}
 	.docs-page-blog .blog-sidebar-wrapper {
 		position: relative;
-		left: -25px;
+		left: -10px;
 	}
-	.docs-page-movie .docs-navigation-tabs > ul,
-	.docs-page-photo .docs-navigation-tabs > ul,
-	.docs-page-files .docs-navigation-tabs > ul,
-	.docs-page-common .docs-navigation-tabs > ul {
+}
+@media (min-width: 1200px) {
+	.docs-page .docs-navigation-tabs > ul {
 		margin-left: -85px;
 		margin-right: -85px;
 		padding-left: 85px;
 		padding-right: 85px;
+	}
+	.docs-page-blog .docs-navigation-tabs > ul {
+		margin-left: 0; !important;
+		margin-right: 0; !important;
+		padding-left: 0; !important;
+		padding-right: 0; !important;
+	}
+	.docs-page-blog .blog-sidebar-wrapper {
+		position: relative;
+		left: -25px;
 	}
 }
 

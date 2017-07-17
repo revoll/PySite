@@ -8,7 +8,9 @@
     <div class="container">
         <div class="docs-page docs-page-blog">
             <div class="row">
-                <div class="col-md-9 col-md-push-3">{% block blog_main %}{% endblock %}</div>
+                <div class="col-md-9 col-md-push-3">
+                    <div class="blog-main-wrapper">{% block blog_main %}{% endblock %}</div>
+                </div>
                 <div class="col-md-3 col-md-pull-9">
                     <div class="blog-sidebar-wrapper">{% block blog_sidebar %}
                         <div class="panel panel-success">

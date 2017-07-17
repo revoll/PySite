@@ -4,7 +4,15 @@
 {% block title %}音乐播放器{% endblock %}
 
 
-{% block music_main %}
+{% block styles %}
+    {{ super() }}
+    <style type="text/css">
+
+    </style>
+{% endblock styles %}
+
+
+{% block panel_main %}
     <!-- 缓冲元素 -->
     <img class="hidden" id="the-buff-image" src="/static/img/avatar.png"/>
     <canvas class="hidden" id="the-buff-canvas"></canvas>
@@ -14,8 +22,11 @@
         <img src="/static/img/music-default-album.png" id="the-album-image" class="album-image"/>
     </div>
     <!-- 播放控件 -->
-    <div class="music-toolbar-wrapper">
-    </div>
+    <div class="music-toolbar-wrapper"></div>
+{% endblock %}
+
+
+{% block panel_info %}
 {% endblock %}
 
 
@@ -63,12 +74,12 @@
             // 在canvas上绘制带模糊效果的页面背景图
             //
             stackBlurImage("the-buff-image", "the-buff-canvas", blur_radius, false);
-            document.getElementById("the-music-page").style.backgroundImage = "url(" + cvs.toDataURL("image/png") + ")";
+            document.getElementById("the-docs-content").style.backgroundImage = "url(" + cvs.toDataURL("image/png") + ")";
         };
         img.onerror = function() {
             // if(img_url != default_img_url) { set_album_photo(default_img_url); }
             document.getElementById("the-album-image").setAttribute("src", "/static/img/music-default-album.png");
-            document.getElementById("the-music-page").style.backgroundImage = "url(/static/img/music-default-bg.png)";
+            document.getElementById("the-docs-content").style.backgroundImage = "url(/static/img/music-default-bg.png)";
         };
         img.src = img_url;
     }
@@ -85,7 +96,7 @@
     //
     // test
     //
-    set_album_photo("/static/img/music-test-album.jpg");
+    //set_album_photo("/static/img/music-test-album.jpg");
     play();
     </script>
 {% endblock scripts %}

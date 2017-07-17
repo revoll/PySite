@@ -4,7 +4,7 @@
 {% block styles %}
     {{ super() }}
     <style type="text/css">
-        #the-music-page {
+        #the-docs-content {
             position: fixed;
             z-index: 0;
             top: 51px;
@@ -12,15 +12,44 @@
             right: 0;
             bottom: 0;
         }
+        #the-docs-content > .container, .panel-wrapper {
+            position: relative;
+            height: 100%;
+        }
+        #the-panel-main {
+            position: absolute;
+            z-index: 100;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(100, 0, 0, 0.3);
+            display: block;
+        }
+        #the-panel-info {
+            position: absolute;
+            z-index: 101;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.3);
+            display: none;
+        }
     </style>
 {% endblock styles %}
 
 
 {% block body %}
-    <header class="docs-header">{% block header %}{{ super() }}{% endblock header %}</header>
-    <section id="the-music-page" class="docs-bg-music">
+    <header class="docs-header">
+        <div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container">{% block header_content %}{{ super() }}{% endblock header_content %}</div>
+        </div>
+    </header>
+    <section id="the-docs-content" class="docs-bg-music">
         <div class="container">
-            <div class="docs-page-music">{% block music_main %}{% endblock %}</div>
+            <div class="panel-wrapper">
+                <!-- 放置播放器主界面元素 (容器没有内边距) -->
+                <div id="the-panel-main">{% block panel_main %}{% endblock %}</div>
+                <!-- 放置后台调出的信息等 (容器含有内边距,类似其它板块PAGE样式) -->
+                <div id="the-panel-info">{% block panel_info %}{% endblock %}</div>
+            </div>
         </div>
     </section>
     {% block notification %}{{ super() }}{% endblock notification %}
