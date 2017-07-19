@@ -7,6 +7,15 @@ from .. import db
 from ..tools.restful import Result, bad_request, unauthorized, forbidden, not_found, method_not_allowed, internal_server_error
 
 
+@main.before_app_request
+def before_request():
+    if current_user.is_authenticated:
+        current_user.ping()
+        if not current_user.confirmed and \
+                request.endpoint and request.endpoint[:5] != u'auth.' and request.endpoint != u'static':
+            return redirect(url_for(u'auth.unconfirmed'))
+
+
 @main.after_app_request
 def after_request(response):
     for query in get_debug_queries():

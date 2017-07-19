@@ -5,10 +5,12 @@
 
 {% block common_main %}
     <h1 class="docs-page-title docs-text-common">登录</h1>
-
     <div class="row">
-        <div class="col-sm-5 col-md-4">
+        <div class="col-md-4">
             {{ wtf.quick_form(form) }}
         </div>
     </div>
+    <br>
+    <p>Forgot your password? <a href="{{ url_for('auth.password_reset_request') }}">Click here to reset it</a>.</p>
+    <p>New user? <a href="{{ url_for('auth.register') }}">Click here to register</a>.</p>
 {% endblock %}
