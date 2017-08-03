@@ -4,6 +4,7 @@ from flask_login import current_user, login_required
 from flask_sqlalchemy import get_debug_queries
 from . import main_blueprint as main
 from .. import db
+from ..tools.decoraters import admin_required
 from ..tools.restful import Result, bad_request, unauthorized, forbidden, not_found, method_not_allowed, internal_server_error
 
 
@@ -73,26 +74,6 @@ def internal_server_error(e):
 
 
 ########################################################################################################################
-# Views & Controls
-########################################################################################################################
-
-@main.route(u'/')
-def index():
-    return render_template(u'index.html')
-
-
-@main.route(u'/shutdown')
-def server_shutdown():
-    if not current_app.testing:
-        abort(404)
-    shutdown = request.environ.get(u'werkzeug.server.shutdown')
-    if not shutdown:
-        abort(500)
-    shutdown()
-    return u'Shutting down...'
-
-
-########################################################################################################################
 # Categories and tags management (ctm)
 ########################################################################################################################
 from app.models.blog import BlogCategory, BlogTag, BlogPost
@@ -108,7 +89,7 @@ ctm_mapper = {
 
 
 @main.route(u'/ctm/', methods=[u'GET'])
-@login_required
+@admin_required
 def ctm_index():
     """
     分类与标签管理首页，直接跳转到CTM处理。
@@ -118,7 +99,7 @@ def ctm_index():
 
 
 @main.route(u'/ctm/<module>/available-categories/', methods=[u'GET'])
-@login_required
+@admin_required
 def show_available(module):
     """
     显示所有可用的分类及对应的标签。
@@ -132,7 +113,7 @@ def show_available(module):
 
 
 @main.route(u'/ctm/<module>/deleted-categories/', methods=[u'GET'])
-@login_required
+@admin_required
 def show_deleted(module):
     """
     显示所有已经弃用的分类及对应的标签。
@@ -147,7 +128,7 @@ def show_deleted(module):
 
 
 @main.route(u'/ctm/<module>/', methods=[u'GET'])
-@login_required
+@admin_required
 def ctm(module):
     """
     标签管理视图：根据Session中的'show_deleted'字段进行分类显示。
@@ -220,7 +201,7 @@ def query_category(module, category_id):
 
 
 @main.route(u'/ctm/<module>/add-category/', methods=[u'POST'])
-@login_required
+@admin_required
 def add_category(module):
     """
     在指定模块下添加一个分类。
@@ -254,7 +235,7 @@ def add_category(module):
 
 
 @main.route(u'/ctm/<module>/edit-category/<int:category_id>/', methods=[u'POST'])
-@login_required
+@admin_required
 def edit_category(module, category_id):
     """
     编辑指定模块下的某个分类的信息。
@@ -294,7 +275,7 @@ def edit_category(module, category_id):
 
 
 @main.route(u'/ctm/<module>/delete-category/<int:category_id>/', methods=[u'GET'])
-@login_required
+@admin_required
 def delete_category(module, category_id):
     """
     删除指定模块下的指定分类（冻结）。
@@ -329,7 +310,7 @@ def delete_category(module, category_id):
 
 
 @main.route(u'/ctm/<module>/recycle-category/<int:category_id>/', methods=[u'GET'])
-@login_required
+@admin_required
 def recycle_category(module, category_id):
     """
     恢复使用指定模块下的指定分类（解冻）。
@@ -382,7 +363,7 @@ def query_tag(module, tag_id):
 
 
 @main.route(u'/ctm/<module>/add-tag/<int:category_id>/', methods=[u'POST'])
-@login_required
+@admin_required
 def add_tag(module, category_id):
     """
     在指定模块指定分类下添加一个标签。
@@ -419,7 +400,7 @@ def add_tag(module, category_id):
 
 
 @main.route(u'/ctm/<module>/edit-tag/<int:tag_id>/', methods=[u'POST'])
-@login_required
+@admin_required
 def edit_tag(module, tag_id):
     """
     编辑指定模块指定分类下的特定标签。
@@ -458,7 +439,7 @@ def edit_tag(module, tag_id):
 
 
 @main.route(u'/ctm/<module>/delete-tag/<int:tag_id>/', methods=[u'GET'])
-@login_required
+@admin_required
 def delete_tag(module, tag_id):
     """
     删除指定模块指定分类下的特定标签。
@@ -485,3 +466,29 @@ def delete_tag(module, tag_id):
         result.data = t.to_json()
     finally:
         return jsonify(result.to_json())
+
+
+########################################################################################################################
+# Views & Controls
+########################################################################################################################
+
+@main.route(u'/')
+def index():
+    return render_template(u'index.html')
+
+
+@main.route(u'/shutdown')
+def server_shutdown():
+    if not current_app.testing:
+        abort(404)
+    shutdown = request.environ.get(u'werkzeug.server.shutdown')
+    if not shutdown:
+        abort(500)
+    shutdown()
+    return u'Shutting down...'
+
+
+@main.route(u'/user/detail/')
+@login_required
+def user():
+    return render_template(u'common/user.html')

@@ -1,0 +1,13 @@
+{% extends "common/common_base.html" %}
+{% import "common/wtf.html" as wtf %}
+
+{% block title %}User {{ current_user.email }}{% endblock %}
+
+{% block common_main %}
+    <h1 class="docs-page-title docs-text-common">用户详情</h1>
+    <p>EMAIL: {{ current_user.email }}</p>
+    <p>USERNAME: {{ current_user.username }}</p>
+    <p>NAME: {{ current_user.name }}</p>
+    <p>LOCATION: {{ current_user.location }}</p>
+    <p>ABOUT: {{ current_user.about_me }}</p>
+{% endblock %}

@@ -8,6 +8,7 @@ from wtforms import ValidationError
 from . import auth_blueprint as auth
 from .. import db
 from ..models.user import User
+from ..tools.decoraters import admin_required
 from ..tools.email import send_email
 
 
@@ -25,18 +26,18 @@ class LoginForm(FlaskForm):
 class RegistrationForm(FlaskForm):
     email = StringField(u'邮箱', validators=[DataRequired(), Length(1, 64), Email()])
     username = StringField(u'用户名', validators=[
-        DataRequired(), Length(1, 64), Regexp(u'^[A-Za-z][A-Za-z0-9_.]*$', 0, u'用户名只能包含字母,数字或下划线.')])
+        DataRequired(), Length(1, 64), Regexp(u'^[A-Za-z][A-Za-z0-9_.]*$', 0, u'用户名只能包含字母,数字或下划线')])
     password = PasswordField(u'密码', validators=[DataRequired(), EqualTo(u'password2', message=u'两次输入的密码不一致')])
     password2 = PasswordField(u'再输入一次密码', validators=[DataRequired()])
     submit = SubmitField(u'注册')
 
     def validate_email(self, field):
         if User.query.filter_by(email=field.data).first():
-            raise ValidationError(u'此邮箱已经被注册.')
+            raise ValidationError(u'此邮箱已经被注册')
 
     def validate_username(self, field):
         if User.query.filter_by(username=field.data).first():
-            raise ValidationError(u'用户名已经被占用.')
+            raise ValidationError(u'用户名已经被占用')
 
 
 class ChangePasswordForm(FlaskForm):
@@ -106,6 +107,7 @@ def logout():
 
 
 @auth.route(u'/register', methods=[u'GET', u'POST'])
+@admin_required  # 只有与管理员才可以注册会员,发送确认邮件后由用户自己确认注册,并完成注册流程
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
@@ -114,13 +116,12 @@ def register():
         db.session.commit()
         token = user.generate_confirmation_token()
         send_email(user.email, u'Confirm Your Account', u'auth/email/confirm', user=user, token=token)
-        flash(u'A confirmation email has been sent to you by email.')
-        return redirect(url_for(u'auth.login'))
+        flash(u'A confirmation email has been sent to %s by email.' % user.email)
+        # return redirect(url_for(u'auth.login'))
     return render_template(u'auth/register.html', form=form)
 
 
 @auth.route(u'/confirm/<token>')
-@login_required
 def confirm(token):
     if current_user.confirmed:
         return redirect(url_for(u'main.index'))
@@ -132,7 +133,7 @@ def confirm(token):
 
 
 @auth.route(u'/confirm')
-@login_required
+@admin_required
 def resend_confirmation():
     token = current_user.generate_confirmation_token()
     send_email(current_user.email, u'Confirm Your Account', u'auth/email/confirm', user=current_user, token=token)
@@ -166,8 +167,10 @@ def password_reset_request():
             token = user.generate_reset_token()
             send_email(user.email, u'Reset Your Password', u'auth/email/reset_password',
                        user=user, token=token, next=request.args.get(u'next'))
-        flash(u'An email with instructions to reset your password has been sent to you.')
-        return redirect(url_for(u'auth.login'))
+            flash(u'An email with instructions to reset your password has been sent to you.')
+            return redirect(url_for(u'auth.login'))
+        else:
+            flash(u'This email has not registered yet.')
     return render_template(u'auth/reset_password.html', form=form)
 
 

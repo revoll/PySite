@@ -98,7 +98,7 @@ def deploy():
     """
     data_root = current_app.data_path
     if os.path.exists(data_root):
-        print u'FAILED: Target directory \'%s\' already exists.' % data_root
+        print u'SKIP: Target directory \'%s\' already exists, skip deploy.' % data_root
         return
 
     print u'DEPLOY: Creating necessary directories for application data storage ...'
@@ -110,7 +110,10 @@ def deploy():
 
     print u'DEPLOY: Preparing database ...'
     db.create_all()
-    from app.models import blog, movie, photo
+    from app.models import user, blog, movie, photo
+    db.session.add(user.User(email=current_app.config[u'MAIL_USERNAME'],
+                             username=u'ROOT_ADMIN', password=u'12345678',
+                             permissions=user.Role.ROOT, confirmed=True))
     db.session.add(blog.BlogCategory(id=0, name=u'未分类'))
     db.session.add(movie.MovieCategory(id=0, name=u'未分类'))
     db.session.add(photo.PhotoCategory(id=0, name=u'未分类'))

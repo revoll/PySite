@@ -12,18 +12,18 @@ class Permission():
     """
     系统资源访问权限: 每个权限用一位表示.
     """
-    WRITE_BLOG = 0x0001
-    WRITE_MUSIC = 0x0002
-    WRITE_MOVIE = 0x0004
-    WRITE_PHOTO = 0x0008
+    WRITE_BLOG = 1 << 0
+    WRITE_MUSIC = 1 << 1
+    WRITE_MOVIE = 1 << 2
+    WRITE_PHOTO = 1 << 3
     WRITE = WRITE_BLOG | WRITE_MUSIC | WRITE_MOVIE | WRITE_PHOTO
-    VIEW_PRIVATE_BLOG = 0x0010
-    VIEW_PRIVATE_MUSIC = 0x0020
-    VIEW_PRIVATE_MOVIE = 0x0040
-    VIEW_PRIVATE_PHOTO = 0x0080
+    VIEW_PRIVATE_BLOG = 1 << 4
+    VIEW_PRIVATE_MUSIC = 1 << 5
+    VIEW_PRIVATE_MOVIE = 1 << 6
+    VIEW_PRIVATE_PHOTO = 1 << 7
     VIEW_PRIVATE = VIEW_PRIVATE_BLOG | VIEW_PRIVATE_MUSIC | VIEW_PRIVATE_MOVIE | VIEW_PRIVATE_PHOTO
     # 系统管理角色,不包含查看私有内容及编辑内容权限.
-    ADMINISTER = 0x8000
+    ADMINISTER = 1 << 31
 
 
 class Role():
@@ -32,7 +32,7 @@ class Role():
     为简单起见,系统不支持根据用户角色赋予对应的权限集合.这里定义的`Role`类只用作权限初始化赋值,修改用户权限只能通过后台手动修改.
     """
     USER = 0
-    ROOT = 0xffff
+    ROOT = 0xffffffff
     ADMIN = Permission.ADMINISTER
     DEFAULT = USER
 

@@ -77,7 +77,8 @@
                                 <img src="{{ url_for('static', filename='img/avatar.png') }}" class="img-circle" style="width:16px;height:16px;"/> 管理员<span class="caret"></span>
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a href="/">用户设置</a></li>
+                                <li><a href="{{ url_for('main.user') }}">用户设置</a></li>
+                                <li><a href="{{ url_for('auth.register') }}">添加用户</a></li>
                                 <li role="separator" class="divider"></li>
                                 <li><a href="{{ url_for('main.ctm_index') }}" target="_blank">分类与标签管理</a></li>
                                 <li role="separator" class="divider"></li>
@@ -97,15 +98,7 @@
 
     <section class="docs-content {% block body_style %}docs-bg-common{% endblock body_style %}">
 {% block content %}
-        <div class="container">
-        {% for message in get_flashed_messages() %}
-            <div class="alert alert-warning">
-                <button type="button" class="close" data-dismiss="alert">&times;</button>
-                {{ message }}
-            </div>
-        {% endfor %}
-        {% block main_content %}{% endblock main_content %}
-        </div>
+        <div class="container">{% block main_content %}{% endblock main_content %}</div>
 {% endblock content %}
     </section>
 
