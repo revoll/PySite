@@ -472,7 +472,7 @@ def delete_tag(module, tag_id):
 # Views & Controls
 ########################################################################################################################
 
-@main.route(u'/')
+@main.route(u'/', methods=[u'GET', u'POST'])
 def index():
     return render_template(u'index.html')
 

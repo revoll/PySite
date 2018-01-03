@@ -77,7 +77,7 @@ def explorer(path=u''):
                     u'link': url_for(u'.explorer', path=os.path.join(path, name)),
                     u'type': type_c[1] if len(type_c) == 2 else None,
                     u'size': u'%.3f %s' % (size, [u'B', u'KB', u'MB', u'GB', u'TB'][size_l]) if size_l else u'%.0f B' % size,
-                    u'last_modify': time.strftime(u'%Y-%m-%d %H:%M:%S', time.localtime(os.path.getmtime(abs_path))),
+                    u'last_modify': time.strftime(u'%Y-%m-%d %H:%M:%S', time.localtime(os.path.getmtime(path_name))),
                 }
         # folders = sorted(folders.iteritems(), key=lambda k: k, reverse=False)
         # objects = sorted(objects.iteritems(), key=lambda k: k, reverse=False)

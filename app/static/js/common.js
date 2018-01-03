@@ -140,20 +140,3 @@ function notification_show() {
 	//
 	$("#myModal").modal();
 }
-
-
-/**
- * 页面加载完成初始化代码
- */
-$(document).ready(function() {
-	//
-	// Open popup menu on hover
-	//
-	// $(document).off('click.bs.dropdown.data-api');
-	// $('.dropdown').mouseover(function(){$(this).addClass('open')}).mouseout(function(){$(this).removeClass('open')});
-
-	//
-	// flask moment timestamp
-	//
-	flask_moment_render_all();
-});

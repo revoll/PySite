@@ -8,21 +8,31 @@
     {{ super() }}
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='mdeditor/css/editormd.min.css') }}">
     <style type="text/css">
-        #md-wrapper {
-            position: absolute;
-            // z-index: 1001;
-            left: 0;
-            top: 0;
+        .panel-wrapper {
+            position: relative;
+            z-index: 0;
             width: 100%;
             height: 100%;
-            margin: 0;
-            padding: 51px 0 24px;
+            padding-bottom: 24px;
         }
         #md-editor {
+            position: relative;
             width: 100%;
             height: 100%;
             margin: 0;
             padding: 0;
+        }
+        #status-bar {
+            position: absolute;
+            width: 100%;
+            height: 24px;
+            left: 0;
+            bottom: 0;
+            margin: 0;
+            padding: 4px 12px;
+            background-color: #f4f4f4;
+            font-size: 12px;
+            font-weight: 700;
         }
     </style>
 {% endblock %}
@@ -30,35 +40,11 @@
 
 {% block body %}
 <body>
-    <header class="navbar navbar-inverse navbar-static-top">
-        <div class="container-fluid">
-            <div class="navbar-header">
-                <a class="navbar-brand" href="{{ url_for('main.index') }}">PySite</a>
-                <a class="navbar-brand" href="{{ url_for('blog.index') }}">博客</a>
-            </div>
-            <div class="collapse navbar-collapse">
-                <form class="navbar-form navbar-left">
-                    {{ form.hidden_tag() }}
-                    <div class="form-group">
-                        {{ form.category(id="post-category", class="form-control") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.title(id="post-title", class="form-control", placeholder="") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.private(id="post-private", class="form-control") }}
-                    </div>
-                    <button type="button" class="btn btn-success" onclick="save_post()">保存所有</button>
-                </form>
-                <a href="{{ url_for('.get_post', post_id=post.id) }}" class="btn btn-danger navbar-btn pull-right" role="button">退出编辑</a>
-            </div>
-        </div>
-    </header>
-
-    <div id="md-wrapper">
+    <div class="panel-wrapper">
         <div id="md-editor">
             <textarea>{{ post.body }}</textarea>
         </div>
+        <div id="status-bar">标题：{{ post.title }}（{% if post.private %}不公开{% else %}公开{% endif %}，{{ post.category.name }}）</div>
     </div>
 
     {% block notification %}{{ super() }}{% endblock %}
@@ -71,7 +57,8 @@
         $(function() {
             editor = editormd("md-editor", {
                 path                : "{{ url_for('static', filename='mdeditor/lib/') }}",
-                saveHTMLToTextarea  : true,
+                // watch:
+                saveHTMLToTextarea  : false,  // 啥作用？
                 searchReplace       : true,
                 htmlDecode          : "style,script,iframe|on*",  // 开启 HTML 标签解析，为了安全性，默认不开启
                 emoji               : true,
@@ -82,27 +69,71 @@
                 sequenceDiagram     : true,
                 imageUpload         : true,
                 imageFormats        : ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
-                imageUploadURL      : "{{ url_for('.upload_image') }}"
+                imageUploadURL      : "{{ url_for('.upload_image') }}",
+                toolbarIcons        : function() { return ["exit", "metas", "save", "|"].concat(editormd.toolbarModes["full"]); },  // "full", You can also use editormd.toolbarModes[name] default list, values: full, simple, mini.
+                toolbarIconsClass   : { save: "fa-save", exit: "fa-power-off", metas: "fa-gear" },
+                lang                : { toolbar: { save: "保存文本", exit: "退出编辑", metas : "修改属性" } },
+                toolbarHandlers     : { // 自定义工具栏按钮的事件处理
+                    /**
+                     * @param {Object}      cm         CodeMirror对象
+                     * @param {Object}      icon       图标按钮jQuery元素对象
+                     * @param {Object}      cursor     CodeMirror的光标对象，可获取光标所在行和位置
+                     * @param {String}      selection  编辑器选中的文本
+                     */
+                    save : function(cm, icon, cursor, selection) {
+                        save_post_content(_ajax_message_ok);
+                    },
+                    exit : function(cm, icon, cursor, selection) {
+                        exit_editor();
+                    },
+                    metas : function(cm, icon, cursor, selection) {
+                        $.get('{{ url_for('._get_edit_metas_form', post_id=post.id) }}', function(metas_form) {
+                            notification_init('编辑属性', metas_form, null);
+                            notification_show();
+                        });
+                    }
+                },
+                onload : function() { /* $("[type=\"file\"]").bind("change", function(){ testEditor.cm.replaceSelection($(this).val()); }); */ }
             });
         });
-        function save_post() {
+        function save_post_metas() {
 			$.ajax({
-				url: "{{ url_for('.edit_post', post_id=post.id) }}",
+				url: "{{ url_for('.save_post_metas', post_id=post.id) }}",
 				type: "POST",
 				contentType: "application/json",
 				dataType: "json",
 				data: JSON.stringify({
-					"title": $("#post-title").val(),
+					// "title": $("#post-title").val(),
 					"category": $("#post-category").val(),
 					"private": $("#post-private").val(),
+                    "title": $("#post-title").val()
+				}),
+				success: _ajax_message_ok
+			});
+        }
+        function save_post_content(fn) {
+			$.ajax({
+				url: "{{ url_for('.save_post_content', post_id=post.id) }}",
+				type: "POST",
+				contentType: "application/json",
+				dataType: "json",
+				data: JSON.stringify({
 					"body": editor.getMarkdown(),
 					"body_html": editor.getPreviewedHTML()
 				}),
-				success: function (param) {
-                    notification_init('', param.detail, '');
-                    notification_show();
-				}
+				success: fn
 			});
+        }
+        function _ajax_message_ok(param) {
+            notification_init('', param.detail, '');
+            notification_show();
+        }
+        function _ajax_message_exit(param) {
+            window.location.href = '{{ url_for('.get_post', post_id=post.id) }}';
+        }
+        function exit_editor() {
+            notification_init('', '是否保存已编辑的内容？', '<button class="btn btn-success" onclick="save_post_content(_ajax_message_exit)">需要保存</button><a class="btn btn-danger" href="{{ url_for('.get_post', post_id=post.id) }}">直接退出</a>');
+            notification_show();
         }
     </script>
     {% endblock scripts %}

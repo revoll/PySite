@@ -11,6 +11,7 @@ from wtforms.validators import DataRequired, Length, URL, Regexp
 from . import movie_blueprint as movie
 from .. import db
 from ..models.movie import MoviePost as Post, MovieStill as Still, MovieCategory as Category, MovieTag as Tag
+from ..tools.decoraters import admin_required
 from ..tools import save_post_image
 
 
@@ -177,7 +178,7 @@ def get_post(post_id):
 
 
 @movie.route(u'/add/', methods=[u'GET', u'POST'])
-@login_required
+@admin_required
 def add_post():
     """
     访问权限：
@@ -211,7 +212,7 @@ def add_post():
 
 
 @movie.route(u'/edit/<int:post_id>/', methods=[u'GET', u'POST'])
-@login_required
+@admin_required
 def edit_post(post_id):
     """
     检查事项：电影名是否冲突；所选Category是否有效；
@@ -260,7 +261,7 @@ def edit_post(post_id):
 
 
 @movie.route(u'/delete/<int:post_id>/', methods=[u'GET'])
-@login_required
+@admin_required
 def delete_post(post_id):
     """
     访问权限：
@@ -281,14 +282,12 @@ def delete_post(post_id):
     except Exception, e:
         db.session.roolback()
         flash(u'ERROR: %s' % e.message)
-    else:
-        flash(u'《' + post.name + u'》已被成功删除！')
 
     return redirect(redirect_url)
 
 
 @movie.route(u'/edit_tags/<int:post_id>/', methods=[u'POST'])
-@login_required
+@admin_required
 def edit_tags(post_id):
     """
     编辑标签
@@ -296,7 +295,6 @@ def edit_tags(post_id):
     :return:
     """
     post = Post.query.get_or_404(post_id)
-
     try:
         post.tags = []
         for t_n in request.form:
@@ -315,7 +313,7 @@ def edit_tags(post_id):
 
 
 @movie.route(u'/add-still/<int:post_id>/', methods=[u'GET', u'POST'])
-@login_required
+@admin_required
 def add_still(post_id):
     """
     访问权限：
@@ -345,8 +343,6 @@ def add_still(post_id):
         except Exception, e:
             db.session.roolback()
             flash(u'ERROR: %s' % e.message)
-        else:
-            flash(u'剧照添加成功！')
     else:
         # 如果表单验证发现错误，跳转后下一个页面的表单无法提示错误，只能采用flash的方式来提示错误。
         for e in form.errors:
@@ -359,7 +355,7 @@ def add_still(post_id):
 
 
 @movie.route(u'/edit-stills/<int:post_id>/', methods=[u'GET'])
-@login_required
+@admin_required
 def edit_stills(post_id):
     """
     访问权限：
@@ -383,7 +379,7 @@ def edit_stills(post_id):
 
 
 @movie.route(u'/edit-still/<int:still_id>/', methods=[u'POST'])
-@login_required
+@admin_required
 def edit_still(still_id):
     """
     访问权限：
@@ -403,14 +399,12 @@ def edit_still(still_id):
         except Exception, e:
             db.session.rollback()
             flash(u'ERROR: %s' % e.message)
-        else:
-            flash(u'剧照更新成功！')
 
     return redirect(url_for(u'movie.edit_stills', post_id=still.post_id))
 
 
 @movie.route(u'/delete-still/<int:still_id>/', methods=[u'GET'])
-@login_required
+@admin_required
 def delete_still(still_id):
     """
     访问权限：
@@ -432,13 +426,17 @@ def delete_still(still_id):
     except Exception, e:
         db.session.rollback()
         flash(u'ERROR: %s' % e.message)
-    else:
-        flash(u'剧照已被成功删除！')
 
     return redirect(url_for(u'movie.edit_stills', post_id=still.post_id))
 
 
 @movie.route(u'/image/<int:post_id>/<filename>', methods=[u'GET'])
 def serve_image(post_id, filename):
+    """
+    图片获取接口(部署时实际使用WEB容器完成)
+    :param post_id:
+    :param filename:
+    :return:
+    """
     post = Post.query.get_or_404(post_id)
     return send_from_directory(get_post_dir(post), filename)

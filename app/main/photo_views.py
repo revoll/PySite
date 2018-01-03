@@ -11,6 +11,7 @@ from wtforms.validators import Length, Regexp, ValidationError
 from . import photo_blueprint as photo
 from .. import db
 from ..models.photo import PhotoPost as Post, PhotoImage as Image, PhotoCategory as Category, PhotoTag as Tag
+from ..tools.decoraters import admin_required
 from ..tools import save_post_image
 
 
@@ -155,7 +156,7 @@ def get_post(post_id):
 
 
 @photo.route(u'/add/', methods=[u'GET', u'POST'])
-@login_required
+@admin_required
 def add_post():
     """
     访问权限：
@@ -175,14 +176,13 @@ def add_post():
             db.session.rollback()
             flash(u'ERROR: %s' % e.message)
         else:
-            flash(u'图册添加成功！')
             return redirect(url_for(u'.get_post', post_id=post.id))
 
     return render_template(u'photo/edit_post.html', post_id=None, form=form)
 
 
 @photo.route(u'/edit/<int:post_id>/', methods=[u'GET', u'POST'])
-@login_required
+@admin_required
 def edit_post(post_id):
     """
     检查事项：所选Category是否有效；
@@ -213,7 +213,6 @@ def edit_post(post_id):
             db.session.rollback()
             flash(u'ERROR: %s' % e.message)
         else:
-            flash(u'图册更新成功！')
             return redirect(url_for(u'photo.get_post', post_id=post.id))
 
     form.from_post(post)
@@ -231,7 +230,7 @@ def edit_post(post_id):
 
 
 @photo.route(u'/delete/<int:post_id>/', methods=[u'GET'])
-@login_required
+@admin_required
 def delete_post(post_id):
     """
     访问权限：
@@ -253,14 +252,12 @@ def delete_post(post_id):
     except Exception, e:
         db.session.rollback()
         flash(u'ERROR: %s' % e.message)
-    else:
-        flash(u'删除成功！')
 
     return redirect(redirect_url)
 
 
 @photo.route(u'/edit_tags/<int:post_id>/', methods=[u'POST'])
-@login_required
+@admin_required
 def edit_tags(post_id):
     """
     编辑标签
@@ -268,7 +265,6 @@ def edit_tags(post_id):
     :return:
     """
     post = Post.query.get_or_404(post_id)
-
     try:
         post.tags = []
         for t_n in request.form:
@@ -287,6 +283,7 @@ def edit_tags(post_id):
 
 
 @photo.route(u'/add-image/<int:post_id>/', methods=[u'POST'])
+@admin_required
 def add_image(post_id):
     """
     访问权限：已登录，或者访问公开图册
@@ -297,8 +294,6 @@ def add_image(post_id):
     form = AddImageForm()
 
     if form.validate_on_submit():
-        if current_user.is_anonymous:
-            abort(403)
         method = form.method.data
         try:
             post.index += 1
@@ -319,16 +314,18 @@ def add_image(post_id):
         except Exception, e:
             db.session.rollback()
             flash(u'ERROR: %s' % e.message)
-        else:
-            form = AddImageForm()  # 使用空白表单
-            flash(u'添加图片成功！')
 
     return redirect(url_for(u'.get_post', post_id=post_id))
 
 
 @photo.route(u'/edit-image/<int:image_id>/', methods=[u'POST'])
-@login_required
+@admin_required
 def edit_image(image_id):
+    """
+    修改图片的可见性及备注信息
+    :param image_id:
+    :return:
+    """
     image = Image.query.get_or_404(image_id)
     try:
         comment = request.form.get(u'comment')
@@ -346,8 +343,13 @@ def edit_image(image_id):
 
 
 @photo.route(u'/delete-image/<int:image_id>/', methods=[u'GET'])
-@login_required
+@admin_required
 def delete_image(image_id):
+    """
+    删除图片
+    :param image_id:
+    :return:
+    """
     image = Image.query.get_or_404(image_id)
     try:
         image = Image.query.get(image_id)
@@ -364,5 +366,11 @@ def delete_image(image_id):
 
 @photo.route(u'/image/<int:post_id>/<filename>', methods=[u'GET'])
 def serve_image(post_id, filename):
+    """
+    图片获取接口(部署时实际使用WEB容器完成)
+    :param post_id:
+    :param filename:
+    :return:
+    """
     post = Post.query.get_or_404(post_id)
     return send_from_directory(get_post_dir(post), filename)
