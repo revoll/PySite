@@ -1,0 +1,152 @@
+{% extends "common/common_base.html" %}
+
+
+{% block title %}密码本{% endblock %}
+
+
+{% block styles %}
+    {{ super() }}
+    <style type="text/css">
+        .pointer {
+            cursor: pointer;
+        }
+        .password-mask {
+            position: relative;
+        }
+        .password-mask:before {
+            position: absolute;
+            left: 0;
+            top: 20%;
+            z-index: 99;
+            width: 100%;
+            height: 60%;
+            font: italic bold 8px/24px arial,sans-serif;
+            text-align: center;
+            color: #666;
+            background-color: #aaa;
+            content: 'PASSWORD';
+        }
+    </style>
+{% endblock %}
+
+
+{% block common_main %}
+    <div>
+        <a href="javascript:add_record()" class="docs-page-tool pull-right">
+            <span class="glyphicon glyphicon-plus text-muted"></span>
+        </a>
+    </div>
+
+    <h1 class="docs-page-title docs-text-common">密码本</h1>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>名称＆操作</th>
+                    <th>域名</th>
+                    <th>用户名</th>
+                    <th>密码</th>
+                    <th>其它信息</th>
+                </tr>
+            </thead>
+            <tbody>{% for record in records %}
+                <tr id="record-{{ record.id }}" data-id="{{ record.id }}" data-name="{{ record.name }}" data-keyword="{{ record.keyword }}">
+                    <th class="pointer docs-text-common" onclick="edit_record({{ record.id }})">{{ record.name }}{% if record.keyword %}({{ record.keyword }}){% endif %}</th>
+                    <td>{{ record.host }}</td>
+                    <td>{{ record.username }}</td>
+                    <td class="pointer password-mask" onclick="$(this).toggleClass('password-mask');">{{ record.password }}</td>
+                    <td>{{ record.comments }}</td>
+                </tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+
+{% block scripts %}
+    {{ super() }}
+    <script type="text/javascript">
+        var form_html = '<form id="record-form" class="form-horizontal" method="POST" action="">\
+    {{ form.hidden_tag() }}\
+    <input type="text" class="hidden" id="record-id" name="id" value="">\
+    <div class="form-group">\
+        <label for="record-name" class="col-sm-3 control-label">记录名称</label>\
+        <div class="col-sm-6">\
+            <input type="text" class="form-control" id="record-name" name="name" placeholder="网址名称">\
+        </div>\
+    </div>\
+    <div class="form-group">\
+        <label for="record-keyword" class="col-sm-3 control-label">关键字</label>\
+        <div class="col-sm-3">\
+            <input type="text" class="form-control text-uppercase" id="record-keyword" name="keyword" placeholder="(可选)">\
+        </div>\
+    </div>\
+    <div class="form-group">\
+        <label for="record-host" class="col-sm-3 control-label">主机地址</label>\
+        <div class="col-sm-6">\
+            <input type="text" class="form-control" id="record-host" name="host" value="http://">\
+        </div>\
+    </div>\
+    <div class="form-group">\
+        <label for="record-username" class="col-sm-3 control-label">用户名</label>\
+        <div class="col-sm-4">\
+            <input type="text" class="form-control" id="record-username" name="username" placeholder="用户名">\
+        </div>\
+    </div>\
+    <div class="form-group">\
+        <label for="record-password" class="col-sm-3 control-label">密码</label>\
+        <div class="col-sm-7">\
+            <input type="text" class="form-control" id="record-password" name="password" placeholder="密码">\
+        </div>\
+    </div>\
+    <div class="form-group">\
+        <label for="record-comments" class="col-sm-3 control-label">其它信息</label>\
+        <div class="col-sm-8">\
+            <textarea rows="4" class="form-control" id="record-comments" name="comments" placeholder="输入备注内容..."/>\
+        </div>\
+    </div>\
+    <div class="form-group">\
+        <div class="col-sm-offset-3 col-sm-9">\
+            <button type="submit" class="btn btn-primary">提交</button>\
+            <button type="button" class="btn btn-danger hidden" id="record-btn-delete" onclick="_delete_record()">删除</button>\
+        </div>\
+    </div></form>';
+        function add_record() {
+            notification_init('新建记录', form_html, '');
+            $('#record-form').attr('action', '{{ url_for(".passbook_create_record") }}');
+            notification_show();
+        }
+        function edit_record(id) {
+            notification_init('修改记录', form_html, '');
+            $('#record-form').attr('action', '{{ url_for(".passbook_update_record", record_id=0) }}'.replace(/0/, id));
+            var id_str = '#record-' + id;
+            $('#record-id').val($(id_str).attr('data-id'));
+            $('#record-keyword').val($(id_str).attr('data-keyword'));
+            $('#record-name').val($(id_str).attr('data-name'));
+            var children = $(id_str + ' td');
+            $('#record-host').val(children.eq(1).text());
+            $('#record-username').val(children.eq(2).text());
+            $('#record-password').val(children.eq(3).text());
+            $('#record-comments').val(children.eq(4).text());
+            $('#record-btn-delete').toggleClass('hidden');
+            notification_show();
+        }
+        function _delete_record() {
+            if(confirm("确认删除此条记录？")) {
+                var record_id = $('#record-id').val();
+                var url = "{{ url_for('.passbook_delete_record', record_id=0) }}".replace(/0/, record_id);
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    contentType: "application/json",
+                    dataType: "json",
+                    data: JSON.stringify({
+                        "id": record_id
+                    }),
+                    success: callback_with_reload
+                });
+            }
+        }
+    </script>
+{% endblock %}

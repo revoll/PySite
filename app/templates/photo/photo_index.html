@@ -6,22 +6,13 @@
 
 
 {% block photo_main %}
-    <div class="docs-navigation-tabs">
-        <ul class="nav nav-tabs">
-            <li role="presentation"{% if None == c_sel %} class="active"{% endif %}>
-                <a href="{{ url_for('.switch_category_all') }}">全部</a>
-            </li>
-            {% for c in categories %}
-            <li role="presentation"{% if c.id == c_sel %} class="active"{% endif %}>
-                <a href="{{ url_for('.switch_category', c_id=c.id) }}">{{ c.name }}</a>
-            </li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% if current_user.is_authenticated %}
+    {{ macros.widget_navigation_tabs(categories, c_sel) }}
+
+    {% if current_user.can(Permission.CURD_PHOTO) %}
     <a href="{{ url_for('.add_post') }}" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-plus text-muted"></span></a>
-    <div class="clearfix"></div>
     {% endif %}
+
+    <div class="clearfix"></div>
 
     <div class="photo-item-list">
         {% for post in posts %}
@@ -29,9 +20,9 @@
             <p class="photo-item-title">
                 <span class="glyphicon glyphicon-eye-{% if post.private %}close{% else %}open{% endif %} text-muted"></span><a href="{{ url_for('.get_post', post_id=post.id) }}" class="docs-text-photo">{{ post.title }} [{{ post.count }}P]</a>
             </p>
-            <div class="docs-post-metas photo-item-metas">
+            <div class="docs-post-metas">
                 <span><i class="glyphicon glyphicon-calendar"></i>{{ moment(post.timestamp).format('YYYY-MM-DD HH:mm:ss') }}</span>
-                <span><i class="glyphicon glyphicon-bookmark"></i><a href="{{ url_for('.switch_category', c_id=post.category_id) }}">{{ post.category.name }}</a></span>
+                <span><i class="glyphicon glyphicon-bookmark"></i><a href="{{ url_for('.index', c_id=post.category_id) }}">{{ post.category.name }}</a></span>
                 {% for tag in post.tags %}
                 <span><i class="glyphicon glyphicon-tag"></i>{{ tag.name }}</span>
                 {% endfor %}
@@ -39,9 +30,6 @@
         </div>
         {% endfor %}
     </div>
-    {% if pagination %}
-    <div class="pagination">
-        {{ macros.pagination_widget(pagination, '.index') }}
-    </div>
-    {% endif %}
+
+    {% if pagination %}{{ macros.widget_pagination(pagination, '.index') }}{% endif %}
 {% endblock %}

@@ -12,18 +12,23 @@ class Permission():
     """
     系统资源访问权限: 每个权限用一位表示.
     """
-    WRITE_BLOG = 1 << 0
-    WRITE_MUSIC = 1 << 1
-    WRITE_MOVIE = 1 << 2
-    WRITE_PHOTO = 1 << 3
-    WRITE = WRITE_BLOG | WRITE_MUSIC | WRITE_MOVIE | WRITE_PHOTO
-    VIEW_PRIVATE_BLOG = 1 << 4
-    VIEW_PRIVATE_MUSIC = 1 << 5
-    VIEW_PRIVATE_MOVIE = 1 << 6
-    VIEW_PRIVATE_PHOTO = 1 << 7
+    LOGIN_BASIC = 1 << 0
+
+    CURD_BLOG = 1 << 1
+    CURD_MUSIC = 1 << 2
+    CURD_MOVIE = 1 << 3
+    CURD_PHOTO = 1 << 4
+
+    VIEW_PRIVATE_BLOG = 1 << 5
+    VIEW_PRIVATE_MUSIC = 1 << 6
+    VIEW_PRIVATE_MOVIE = 1 << 7
+    VIEW_PRIVATE_PHOTO = 1 << 8
+
+    CURD_ALL = CURD_BLOG | CURD_MUSIC | CURD_MOVIE | CURD_PHOTO
     VIEW_PRIVATE = VIEW_PRIVATE_BLOG | VIEW_PRIVATE_MUSIC | VIEW_PRIVATE_MOVIE | VIEW_PRIVATE_PHOTO
+
     # 系统管理角色,不包含查看私有内容及编辑内容权限.
-    ADMINISTER = 1 << 31
+    ADMIN = 1 << 31
 
 
 class Role():
@@ -31,9 +36,9 @@ class Role():
     用户角色(权限集): 每一位代表一种权限,由Permission经过"与"操作计算得出.
     为简单起见,系统不支持根据用户角色赋予对应的权限集合.这里定义的`Role`类只用作权限初始化赋值,修改用户权限只能通过后台手动修改.
     """
-    USER = 0
+    USER = Permission.LOGIN_BASIC
     ROOT = 0xffffffff
-    ADMIN = Permission.ADMINISTER
+    ADMIN = USER | Permission.ADMIN
     DEFAULT = USER
 
 
@@ -127,7 +132,7 @@ class User(UserMixin, db.Model):
         return (self.permissions & permissions) == permissions
 
     def is_administrator(self):
-        return self.can(Permission.ADMINISTER)
+        return self.can(Permission.ADMIN)
 
     def ping(self):
         self.last_seen = datetime.utcnow()

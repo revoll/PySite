@@ -6,19 +6,21 @@
 
 
 {% block photo_main %}
-    {% if current_user.is_authenticated %}
+    {% if current_user.can(Permission.CURD_PHOTO) %}
     <a href="javascript:upload_image();" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-cloud-upload text-muted"></span></a>
     <a href="javascript:delete_post();" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-trash text-muted"></span></a>
     <a href="{{ url_for('.edit_post', post_id=post.id) }}" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-edit text-muted"></span></a>
+    <a href="{{ url_for('.add_post') }}" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-plus text-muted"></span></a>
     {% endif %}
 
     <h1 class="docs-post-title docs-text-photo">{{ post.title }}<small>{% if post.private %}<span class="glyphicon glyphicon-eye-close"></span>{% endif %}</small></h1>
     <div class="docs-post-metas">
         <span><i class="glyphicon glyphicon-calendar"></i>{{ moment(post.timestamp).format('YYYY-MM-DD HH:mm:ss') }}</span>
-        <span><i class="glyphicon glyphicon-bookmark"></i><a href="{{ url_for('.switch_category', c_id=post.category_id) }}">{{ post.category.name }}</a></span>
+        <span><i class="glyphicon glyphicon-bookmark"></i><a href="{{ url_for('.index', c_id=post.category_id) }}">{{ post.category.name }}</a></span>
         {% for tag in post.tags %}
         <span><i class="glyphicon glyphicon-tag"></i>{{ tag.name }}</span>
         {% endfor %}
+        {% if current_user.can(Permission.CURD_PHOTO) %}
         <span><i class="glyphicon glyphicon-pencil" role="button" onclick="$('.docs-edit-metas').toggleClass('hidden');$(this).toggleClass('docs-text-photo')"></i></span>
         <div class="docs-edit-metas hidden">
             <form id="docs-edit-metas" action="{{ url_for('.edit_tags', post_id=post.id) }}" method="post">{% for tag in post.category.tags %}
@@ -26,6 +28,7 @@
                 <label class="checkbox-inline" onclick="$('#docs-edit-metas').submit()"><span class="glyphicon glyphicon-ok docs-text-photo"></span></label>
             </form>
         </div>
+        {% endif %}
     </div>
     {% if post.persons %}<p><b>参与人员：</b>{{ post.persons }}</p>{% endif %}
     {% if post.address %}<p><b>拍照地点：</b>{{ post.address }}</p>{% endif %}
@@ -45,7 +48,7 @@
 
     {% if pagination %}
     <div class="pagination">
-        {{ macros.pagination_widget(pagination, '.get_post', fragment='#still-list', post_id=post.id) }}
+        {{ macros.widget_pagination(pagination, '.get_post', fragment='#still-list', post_id=post.id) }}
     </div>
     {% endif %}
 {% endblock %}
@@ -80,7 +83,7 @@
                                     {{ form.method(id='new-photo-method', class='form-control', onchange="switch_upload_method(this.value, \\'#new-photo-file\\', \\'#new-photo-url\\');") }}\
                                     {{ form.img_file(id='new-photo-file', class='form-control') }}\
                                     {{ form.img_url(id='new-photo-url', class='form-control hidden', placeholder='http://') }}\
-                                    {% if current_user.is_authenticated %}\
+                                    {% if current_user.can(Permission.CURD_PHOTO) %}\
                                     {{ form.private(id='new-photo-private', class='form-control') }}\
                                     {% else %}\
                                     {{ form.private(id='new-photo-private', class='form-control', disabled='disabled') }}\
@@ -94,7 +97,7 @@
                             <button class="btn btn-danger" type="submit">提交</button>\
                         </form>\
                     </div>';
-            notification_init(header_html, body_html, null);
+            notification_init(header_html, body_html, '');
             notification_show();
         }
     </script>

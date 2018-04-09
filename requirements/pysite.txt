@@ -13,6 +13,7 @@ Jinja2
 Mako
 Markdown
 MarkupSafe
+Pillow
 SQLAlchemy
 WTForms
 Werkzeug
@@ -22,5 +23,4 @@ blinker
 bs4
 html5lib
 itsdangerous
-Pillow
 six

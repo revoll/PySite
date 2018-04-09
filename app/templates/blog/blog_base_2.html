@@ -1,0 +1,33 @@
+{% extends "common/base.html" %}
+
+
+{% block body_style %}docs-bg-blog{% endblock body_style %}
+
+
+{% block content %}
+    <div class="container">
+        <div class="docs-page docs-page-blog">
+            <div class="row">
+                <div class="col-md-9 col-md-push-3">
+                    <div class="blog-main-wrapper">{% block blog_main %}{% endblock %}</div>
+                </div>
+                <div class="col-md-3 col-md-pull-9">
+                    <div class="blog-sidebar-wrapper">{% block blog_sidebar %}
+                        <div class="panel panel-success">
+                            <div class="panel-heading">
+                                <b>Archive by time</b>
+                            </div>
+                            <div class="panel-body">
+                                <p>所有文章</p>
+                                <p>2018年</p>
+                                <p>2017年</p>
+                                <p>2016年</p>
+                                <p>更早......</p>
+                            </div>
+                        </div>
+                    {% endblock %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

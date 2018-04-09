@@ -118,25 +118,64 @@ function flask_moment_render_all() {
  * 设置与呼出notification模态对话框
  */
 function notification_init(header, body, footer) {
-	if (header == null) {
-		$("#myModalTitle").html('');
-	} else {
-		$("#myModalTitle").html(header || '提示：');
-	}
-	if (body == null) {
-		$("#myModalBody").html('');
-	} else {
-		$("#myModalBody").html(body || '请在此处添加提示信息......');
-	}
-	if (footer == null) {
-		$("#myModalFooter").html('');
-	} else {
-		$("#myModalFooter").html(footer || '<button type="button" class="btn btn-default" data-dismiss="modal">好的</button>');
-	}
+	$("#myModalTitle").html(header != null ? header : '提示：');
+	$("#myModalBody").html(body != null ? body : '请在此处添加提示信息......');
+	$("#myModalFooter").html(footer != null ? footer : '<button type="button" class="btn btn-default" data-dismiss="modal">好的</button>');
 }
 function notification_show() {
 	//
-	// $('#myModal').modal(options); /** or **/ <button type="button" class="btn btn-primary" data-toggle="modal" data-target="myModal">Launch Model</button>
+	// $('#myModal').modal(options);
+	//           or
+	// <button type="button" class="btn btn-primary" data-toggle="modal" data-target="myModal">Launch Model</button>
 	//
 	$("#myModal").modal();
+}
+
+
+/**
+ * AJAX方式调用服务接口成功后，典型的回调函数
+ */
+function callback_with_display(param) {
+	notification_init(null, param.detail, null);
+	notification_show();
+}
+function callback_with_reload(param) {
+	window.location.reload();
+}
+function callback_with_reload_or_display(param) {
+	if (param.status == "success") {
+		window.location.reload();
+	} else {
+		notification_init(null, param.detail, null);
+		notification_show();
+	}
+}
+
+
+/**
+ * BLOG页面组件：POST增删改查接口 & 标签编辑框
+ */
+function create_post(api_url) {
+	$.get(api_url, function(form_html) {
+		notification_init('创建新的文章', form_html, '');
+		notification_show();
+	});
+}
+
+function delete_post(api_url) {
+	notification_init('提示', '确定删除当前文章？', '<button class="btn btn-default" data-dismiss="modal">取消</button><a class="btn btn-danger" href="' + api_url + '">删除</a>');
+	notification_show();
+}
+
+function update_post_metas(api_url) {
+	var check = [];
+	$("input[name^='metas-cb-']:checked").each(function(i){check[i] = $(this).val();});
+	$.ajax({
+		url: api_url,
+		type: "POST",
+		contentType: "application/json",
+		dataType: "json",
+		data: JSON.stringify({check: check}),
+		success: callback_with_reload_or_display
+	});
 }

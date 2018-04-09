@@ -92,8 +92,8 @@ body {
 .docs-bg-photo {
 	background: #f0ad4e url(/static/img/bg-photo.png) no-repeat fixed center/cover;
 }
-.docs-bg-files {
-	background: #5bc0de url(/static/img/bg-files.png) no-repeat fixed center/cover;
+.docs-bg-xxxxx {
+	background: #5bc0de url(/static/img/bg-xxxxx.png) no-repeat fixed center/cover;
 }
 .docs-bg-common {
 	background: #337ab7 url(/static/img/bg-common.png) no-repeat fixed center/cover;
@@ -136,7 +136,7 @@ body {
 .docs-page-music { /* 页面主体：音乐（模板MUSIC为单独设计,此样式在这里不做定义） */ }
 .docs-page-movie { /* 页面主体：电影 */ }
 .docs-page-photo { /* 页面主体：图册 */ }
-.docs-page-files { /* 页面主体：资源 */ }
+.docs-page-xxxxx { /* 页面主体：资源 */ }
 .docs-page-common { /* 页面主体：全局公用 */ }
 
 .docs-page .docs-navigation-tabs > ul {
@@ -214,8 +214,8 @@ body {
 	background-color: #f0ad4e;
 	border-color: #eea236;
 }
-.docs-page-files .pagination > .active > a,
-.docs-page-files .pagination > .active > span {
+.docs-page-xxxxx .pagination > .active > a,
+.docs-page-xxxxx .pagination > .active > span {
 	color: white;
 	background-color: #5bc0de;
 	border-color: #46b8da;
@@ -239,7 +239,7 @@ body {
 .docs-text-photo {
 	color: #8a6d3b !important;
 }
-.docs-text-files {
+.docs-text-xxxxx {
 	color: #31708f !important;
 }
 .docs-text-common {
@@ -259,6 +259,7 @@ body {
 .docs-page-title span {
 	margin-left: 20px;
 }
+
 .docs-page-tool {
 	position: relative;
 	display: inline;
@@ -270,10 +271,12 @@ body {
 .docs-page-tool:hover {
 	text-shadow: 0 0 25px gray;
 }
+
 .docs-navigation-tabs {
 	position: relative;
-	top: -15px;
+	margin-bottom: 25px;
 }
+
 .docs-path-tree {
 	margin-top: 15px;
 	margin-bottom: 0;
@@ -377,7 +380,7 @@ body {
  * Section 1: blog
  */
 .blog-item-list {
-	margin-top: 35px;
+	margin-top: 65px;
 	margin-bottom: 35px;
 }
 .blog-item-wrapper {
@@ -398,7 +401,7 @@ body {
 .blog-item-title span {
 	margin-left: 15px;
 }
-.blog-item-metas {
+.blog-item-wrapper > .docs-post-metas {
 	margin-bottom: 12px !important;
 }
 .blog-item-thumbnail {
@@ -419,7 +422,9 @@ body {
 }
 .blog-post-content {
 	width: 100%;
-	padding: 35px 0 35px;
+	min-height: 240px;
+	margin-bottom: 35px;
+	padding: 45px 20px 30px !important;
 	border-top: 1px dashed #888;
 	border-bottom: 1px dashed #888;
 	color: #333;
@@ -499,7 +504,7 @@ body {
  * Section 3: movie
  */
 .movie-item-list {
-	margin-top: 35px;
+	margin-top: 65px;
 	margin-bottom: 35px;
 }
 .movie-item-wrapper {
@@ -520,7 +525,7 @@ body {
 .movie-item-title span {
 	margin-left: 15px;
 }
-.movie-item-metas {
+.movie-item-wrapper > .docs-post-metas {
 	margin-top: 5px !important;
 	margin-bottom: 0 !important;
 }
@@ -580,7 +585,7 @@ body {
  * Section 4: photo
  */
 .photo-item-list {
-	margin-top: 35px;
+	margin-top: 50px;
 	margin-bottom: 15px;
 }
 .photo-item-wrapper {
@@ -611,7 +616,7 @@ body {
 .photo-item-title span {
 	margin-right: 15px;
 }
-.photo-item-metas {
+.photo-item-wrapper > .docs-post-metas {
 	margin-top: 5px !important;
 	margin-bottom: 0 !important;
 }
@@ -652,7 +657,7 @@ body {
 
 
 /**
- * Section 5: files
+ * Section Utils: files
  */
 .files-tool {
 	margin-top: -15px !important;

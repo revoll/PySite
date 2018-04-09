@@ -2,17 +2,17 @@
 import os
 import uuid
 from bs4 import BeautifulSoup
-from markdown import markdown
 from datetime import date
-from flask import request, current_app, render_template, redirect, abort, url_for, make_response, flash, send_from_directory, jsonify
+from flask import request, current_app, render_template, redirect, abort, url_for, send_from_directory, jsonify
 from flask_login import current_user, login_required
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField
 from wtforms.validators import DataRequired
 from . import blog_blueprint as blog
 from .. import db
+from ..models.user import Permission
 from ..models.blog import BlogPost as Post, BlogCategory as Category, BlogTag as Tag
-from ..tools.decoraters import admin_required
+from ..tools.decoraters import admin_required, permission_required
 from ..tools.restful import Result, bad_request, not_found
 
 
@@ -20,7 +20,7 @@ from ..tools.restful import Result, bad_request, not_found
 # Blog Forms
 ########################################################################################################################
 
-class PostMetasForm(FlaskForm):
+class PostAttributesForm(FlaskForm):
     title = StringField(u'标题', validators=[DataRequired()])
     category = SelectField(u'分类', coerce=int)
     # tags = SelectMultipleField(u'标签', coerce=int)
@@ -29,14 +29,14 @@ class PostMetasForm(FlaskForm):
     submit = SubmitField(u'下一步')
 
     def __init__(self, *args, **kwargs):
-        super(PostMetasForm, self).__init__(*args, **kwargs)
+        super(PostAttributesForm, self).__init__(*args, **kwargs)
         self.category.choices = [(c.id, c.name) for c in Category.query.filter_by(disabled=False).all()]
 
 
 ########################################################################################################################
 # Blog Views
 ########################################################################################################################
-
+'''
 @blog.route(u'/category/<int:c_id>/', methods=[u'GET'])
 def switch_category(c_id):
     resp = make_response(redirect(url_for(u'.index')))
@@ -53,10 +53,6 @@ def switch_category_all():
 
 @blog.route(u'/', methods=[u'GET'])
 def index():
-    """
-    首页
-    :return:
-    """
     page = request.args.get(u'page', 1, type=int)
     c_id = request.cookies.get(u'blog_category', u'')
     c_id = int(c_id) if c_id else None
@@ -73,6 +69,31 @@ def index():
         posts[i].cover_url = soup.img[u'src'] if soup.img else None
     return render_template(u'blog/blog_index.html', posts=posts, pagination=pagination,
                            categories=Category.query.all(), c_sel=c_id)
+'''
+
+
+@blog.route(u'/', methods=[u'GET'])
+def index():
+    """
+    首页导航
+    args: 分页页码(page)，分类(c_id)
+    :return:
+    """
+    page = request.args.get(u'page', 1, type=int)
+    c_id = request.args.get(u'c_id', None, type=int)
+    query = Post.query.filter(Category.disabled==False)
+    if not current_user.can(Permission.VIEW_PRIVATE_BLOG):
+        query = query.filter(Category.private==False, Post.private==False)
+    if c_id:
+        query = query.filter_by(category_id=c_id)
+    pagination = query.order_by(Post.timestamp.desc()).paginate(page, per_page=10, error_out=False)
+    posts = pagination.items
+    for i in range(0, len(posts)):
+        soup = BeautifulSoup(posts[i].body_html, u'html.parser')  # markdown(posts[i].body, output_format=u'html')
+        posts[i].body_text = soup.get_text()[:400]
+        posts[i].cover_url = soup.img[u'src'] if soup.img else None
+    return render_template(u'blog/blog_index.html', posts=posts, pagination=pagination,
+                           categories=Category.query.all(), c_sel=c_id)
 
 
 @blog.route(u'/post/<int:post_id>/', methods=[u'GET'])
@@ -84,27 +105,25 @@ def get_post(post_id):
     :return:
     """
     post = Post.query.get_or_404(post_id)
-    if current_user.is_anonymous:
-        if post.category.disabled:
-            abort(404)  # abort 410 exactly
+    if post.category.disabled:
+        abort(404)  # abort 410 exactly
+    if not current_user.can(Permission.VIEW_PRIVATE_BLOG):
         if post.private or post.category.private:
             abort(403)
-    try:
-        post.content = post.body_html if post.body_html[:3] != u'<h1' \
-            else post.body_html[post.body_html.index(u'</h1>')+len(u'</h1>'):]
-    except ValueError:
-        post.content = post.body_html
-    return render_template(u'blog/blog_post.html', post=post)
+    template_name = {
+        u'category01': u'blog_post_category01.html',
+    }.get(post.category.name, u'blog_post.html')
+    return render_template(u'blog/' + template_name, post=post)
 
 
 @blog.route(u'/add/', methods=[u'GET', u'POST'])
-@admin_required
+@permission_required(Permission.CURD_BLOG)
 def add_post():
     """
     添加博客
     :return:
     """
-    form = PostMetasForm()
+    form = PostAttributesForm()
     if request.method == u'POST':
         try:
             assert form.validate_on_submit()
@@ -112,12 +131,12 @@ def add_post():
             post.title = form.title.data
             post.category_id = form.category.data
             post.private = True if form.private.data == u'1' else False
-            post.body = u'# ' + post.title + u'\r\n\r\n\r\n'
-            post.body_html = u'<h1>%s</h1>' % post.title
+            post.body = u''
+            post.body_html = u''
             db.session.add(post)
             db.session.commit()
         except AssertionError:
-            abort(400)  # bad request
+            abort(400)  # parameter error
         except IOError:
             db.session.rollback()
             abort(500)  # internal server error
@@ -127,7 +146,7 @@ def add_post():
 
 
 @blog.route(u'/edit/<int:post_id>/', methods=[u'GET'])
-@admin_required
+@permission_required(Permission.CURD_BLOG)
 def edit_post(post_id):
     """
     编辑博客: 编辑时调阅MARKDOWN版本的文本,保存时同时保存MARKDOWN和HTML版本的文本,查看时调阅HTML版本的文本.
@@ -138,28 +157,29 @@ def edit_post(post_id):
     return render_template(u'blog/edit_post.html', post=post)
 
 
-@blog.route(u'/form-edit-metas/<int:post_id>', methods=[u'GET'])
-def _get_edit_metas_form(post_id):
+@blog.route(u'/edit/<int:post_id>/edit-post-attributes', methods=[u'GET'])
+@permission_required(Permission.CURD_BLOG)
+def edit_post_attributes(post_id):
     """
-    获取文章元信息
+    获取文章属性信息（在博客编辑页面中有使用）
     :param post_id:
     :return:
     """
     post = Post.query.get(post_id)
     if post is None:
-        return u'<h3>ERROR_404</h3><p>Can not read target post\'s metas. (POST_ID: %d)</p>' % post_id
-    form = PostMetasForm()
+        return u'<h3>ERROR_404</h3><p>Can not read target post\'s attributes. (POST_ID: %d)</p>' % post_id
+    form = PostAttributesForm()
     form.category.data = post.category_id
     form.private.data = 1 if post.private else 0
     form.title.data = post.title
-    return render_template(u'blog/_post_metas_form.html', form=form)
+    return render_template(u'blog/_post_attributes_form.html', form=form)
 
 
-@blog.route(u'/save-metas/<int:post_id>/', methods=[u'POST'])
-@admin_required
-def save_post_metas(post_id):
+@blog.route(u'/save-attributes/<int:post_id>/', methods=[u'POST'])
+@permission_required(Permission.CURD_BLOG)
+def save_post_attributes(post_id):
     """
-    编辑博客元信息
+    保存博客属性信息
     :param post_id:
     :return:
     """
@@ -191,7 +211,7 @@ def save_post_metas(post_id):
 
 
 @blog.route(u'/save-content/<int:post_id>/', methods=[u'POST'])
-@admin_required
+@permission_required(Permission.CURD_BLOG)
 def save_post_content(post_id):
     """
     编辑博客内容(标题在MarkDown文本的首行).
@@ -224,7 +244,7 @@ def save_post_content(post_id):
 
 
 @blog.route(u'/delete/<int:post_id>/', methods=[u'GET'])
-@admin_required
+@permission_required(Permission.CURD_BLOG)
 def delete_post(post_id):
     """
     删除博客
@@ -238,7 +258,7 @@ def delete_post(post_id):
 
 
 @blog.route(u'/edit_tags/<int:post_id>/', methods=[u'POST'])
-@admin_required
+@permission_required(Permission.CURD_BLOG)
 def edit_tags(post_id):
     """
     编辑博客标签
@@ -246,24 +266,29 @@ def edit_tags(post_id):
     :return:
     """
     post = Post.query.get_or_404(post_id)
+    id_array = request.json[u'check']
+    result = Result()
     try:
         post.tags = []
-        for t_n in request.form:
-            tag = Tag.query.get(request.form[t_n])
+        for tag_id in id_array:
+            tag = Tag.query.get(tag_id)
             if tag:
                 post.tags.append(tag)
             else:
                 abort(400)
         db.session.merge(post)
         db.session.commit()
+        result.status = Result.Status.SUCCESS
+        result.detail = Result.Detail.SUCCESS
     except IOError, e:
         db.session.rollback()
-        flash(u'ERROR: %s' % e.message)
-    return redirect(url_for(u'.get_post', post_id=post_id))
+        result.status = Result.Status.ERROR
+        result.detail = u'保持标签时发生错误，可能是传入了非法的数据。'
+    return jsonify(result.to_json())
 
 
 @blog.route(u'/upload-image/', methods=[u'POST'])
-@admin_required
+@permission_required(Permission.CURD_BLOG)
 def upload_image():
     """
     上传图片接口(AJAX API)

@@ -11,7 +11,7 @@
     # apt-get install nginx uwsgi=2.0.15
 ```
 
-### 2. 将工程代码拷贝到制定目录
+### 2. 将工程代码拷贝到指定目录
 ```
     # cp ./PySite /var/www/pysite
 ```

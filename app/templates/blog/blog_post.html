@@ -1,56 +1,56 @@
 {% extends "blog/blog_base.html" %}
+{% import "common/macros.html" as macros %}
 
 
 {% block title %}{{ post.title }} | PySite - Blog{% endblock %}
 
 
-{% block styles %}
-    {{ super() }}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='mdeditor/css/editormd.preview.min.css') }}">
+{% block blog_main %}
+    {% if current_user.can(Permission.CURD_BLOG) %}<div>
+        <a href="javascript:delete_post('{{ url_for('.delete_post', post_id=post.id) }}');" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-trash text-muted"></span></a>
+        <a href="{{ url_for('.edit_post', post_id=post.id) }}" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-edit text-muted"></span></a>
+        <a href="javascript:create_post('{{ url_for('.add_post') }}')" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-plus text-muted"></span></a>
+    </div>{% endif %}
+
+    {{ macros.widget_blog_metas(post, moment=moment, editable=true if current_user.can(Permission.CURD_BLOG) else false) }}
+
+    <h1 class="docs-post-title docs-text-blog">{{ post.title }}{% if post.private %}<small><span class="glyphicon glyphicon-eye-close"></span></small>{% endif %}</h1>
+
+    <div class="clearfix"></div>
+
+    <div id="md-editor-view" class="blog-post-content markdown-body">
+        <textarea style="display:none;">{{ post.body | safe }}</textarea>
+    </div>
 {% endblock %}
 
 
-{% block blog_main %}
-    {% if current_user.is_authenticated %}
-    <a href="javascript:delete_post();" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-trash text-muted"></span></a>
-    <a href="{{ url_for('.edit_post', post_id=post.id) }}" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-edit text-muted"></span></a>
-    <a href="javascript:add_post_dialog()" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-plus text-muted"></span></a>
-    {% endif %}
-    <h1 class="docs-post-title docs-text-blog">{{ post.title }}{% if post.private %}<small><span class="glyphicon glyphicon-eye-close"></span></small>{% endif %}</h1>
-    <div class="docs-post-metas">
-        <span><i class="glyphicon glyphicon-calendar"></i>{{ moment(post.timestamp).format('YYYY-MM-DD HH:mm:ss') }}</span>
-        <span><i class="glyphicon glyphicon-bookmark"></i>{{ post.category.name }}</span>
-        {% for tag in post.tags %}
-        <span><i class="glyphicon glyphicon-tag"></i>{{ tag.name }}</span>
-        {% endfor %}
-        <span><i class="glyphicon glyphicon-pencil" role="button" onclick="$('.docs-edit-metas').toggleClass('hidden');$(this).toggleClass('docs-text-blog')"></i></span>
-        <div class="docs-edit-metas hidden">
-            <form id="docs-edit-metas" action="{{ url_for('.edit_tags', post_id=post.id) }}" method="post">{% for tag in post.category.tags %}
-                <label class="checkbox-inline"><input type="checkbox" name="cb-{{ tag.id }}" value="{{ tag.id }}"{% if tag in post.tags %} checked{% endif %}/> {{ tag.name }}</label>{% endfor %}
-                <label class="checkbox-inline" onclick="$('#docs-edit-metas').submit()"><span class="glyphicon glyphicon-ok docs-text-blog"></span></label>
-            </form>
-        </div>
-    </div>
-    <div class="clearfix"></div>
-
-    <div class="blog-post-content markdown-body">
-        {{ post.content | safe }}
-    </div>
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='mdeditor/css/editormd.preview.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='mdeditor/lib/katex/katex.min.css') }}">
 {% endblock %}
 
 
 {% block scripts %}
     {{ super() }}
+    <script src="{{ url_for('static', filename='mdeditor/editormd.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='mdeditor/lib/marked.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='mdeditor/lib/prettify.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='mdeditor/lib/raphael.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='mdeditor/lib/underscore.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='mdeditor/lib/sequence-diagram.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='mdeditor/lib/katex/katex.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='mdeditor/lib/flowchart.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='mdeditor/lib/jquery.flowchart.min.js') }}"></script>
     <script type="text/javascript">
-        function add_post_dialog() {
-            $.get('{{ url_for('.add_post') }}', function(form_html) {
-                notification_init('创建新的文章', form_html, null);
-                notification_show();
-            });
-        }
-        function delete_post() {
-            notification_init('提示', '确定将《{{ post.title }}》删除？', '<button class="btn btn-default" data-dismiss="modal">取消</button><a class="btn btn-danger" href="{{ url_for('.delete_post', post_id=post.id) }}">删除</a>');
-            notification_show();
-        }
+        editormd.markdownToHTML("md-editor-view", {
+            htmlDecode      : "style,script,iframe",  // you can filter tags decode  // true
+            emoji           : true,
+            taskList        : true,
+            tex             : true,  // 默认不解析
+            flowChart       : true,  // 默认不解析
+            sequenceDiagram : true,  // 默认不解析
+            markdownSourceCode: false
+        });
     </script>
 {% endblock %}

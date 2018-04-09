@@ -4,6 +4,7 @@ from flask_login import current_user, login_required
 from flask_sqlalchemy import get_debug_queries
 from . import main_blueprint as main
 from .. import db
+from ..models.user import Permission
 from ..tools.decoraters import admin_required
 from ..tools.restful import Result, bad_request, unauthorized, forbidden, not_found, method_not_allowed, internal_server_error
 
@@ -25,6 +26,11 @@ def after_request(response):
                 u'Slow query: %s\nParameters: %s\nDuration: %fs\nContext: %s\n'
                 % (query.statement, query.parameters, query.duration, query.context))
     return response
+
+
+@main.app_context_processor
+def inject_template_vars():
+    return dict(Permission=Permission)
 
 
 ########################################################################################################################

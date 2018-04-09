@@ -31,19 +31,22 @@ def create_app(config_name):
     login_manager.init_app(app)
     pagedown.init_app(app)
 
+    # 添加全局模板变量，使得在模板中可以直接使用该变量
+    # app.add_template_global(moment, 'moment')
+
     if not app.debug and not app.testing and not app.config[u'SSL_DISABLE']:
         from flask_sslify import SSLify
         sslify = SSLify(app)
 
     from .main import main_blueprint, auth_blueprint, \
-        blog_blueprint, music_blueprint, movie_blueprint, photo_blueprint, files_blueprint
+        blog_blueprint, music_blueprint, movie_blueprint, photo_blueprint, utils_blueprint
     app.register_blueprint(main_blueprint)
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(blog_blueprint)
     app.register_blueprint(photo_blueprint)
-    app.register_blueprint(files_blueprint)
     app.register_blueprint(movie_blueprint)
     app.register_blueprint(music_blueprint)
+    app.register_blueprint(utils_blueprint)
 
     from .api_1_0 import api as api_1_0_blueprint
     app.register_blueprint(api_1_0_blueprint, url_prefix='/api_v1.0')

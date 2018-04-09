@@ -3,15 +3,16 @@ import os
 import shutil
 import urllib2
 from StringIO import StringIO
-from flask import request, current_app, render_template, redirect, make_response, abort, url_for, flash, send_from_directory
+from flask import request, current_app, render_template, redirect, abort, url_for, flash, send_from_directory
 from flask_login import current_user, login_required
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, SelectField, SubmitField, FileField, ValidationError
 from wtforms.validators import DataRequired, Length, URL, Regexp
 from . import movie_blueprint as movie
 from .. import db
+from ..models.user import Permission
 from ..models.movie import MoviePost as Post, MovieStill as Still, MovieCategory as Category, MovieTag as Tag
-from ..tools.decoraters import admin_required
+from ..tools.decoraters import permission_required
 from ..tools import save_post_image
 
 
@@ -114,20 +115,6 @@ class EditStillForm(_StillForm):
 # Movie Views
 ########################################################################################################################
 
-@movie.route(u'/category/<int:c_id>/', methods=[u'GET'])
-def switch_category(c_id):
-    resp = make_response(redirect(url_for(u'.index')))
-    resp.set_cookie(u'movie_category', str(c_id), max_age=60*60)
-    return resp
-
-
-@movie.route(u'/category/all/', methods=[u'GET'])
-def switch_category_all():
-    resp = make_response(redirect(url_for(u'.index')))
-    resp.set_cookie(u'movie_category', u'', max_age=60*60)
-    return resp
-
-
 @movie.route(u'/', methods=[u'GET'])
 def index():
     """
@@ -135,20 +122,15 @@ def index():
     :return:
     """
     page = request.args.get(u'page', 1, type=int)
-    c_id = request.cookies.get(u'movie_category', u'')
-    c_id = int(c_id) if c_id else None
-    query = Post.query
+    c_id = request.args.get(u'c_id', None, type=int)
+    query = Post.query.filter(Category.disabled==False)
+    if not current_user.can(Permission.VIEW_PRIVATE_MOVIE):
+        query = query.filter(Category.private==False, Post.private==False)
     if c_id:
         query = query.filter_by(category_id=c_id)
-    if current_user.is_anonymous:
-        query = query.filter(Category.private==False, Category.disabled==False).filter_by(private=False)
     pagination = query.order_by(Post.timestamp.desc()).paginate(page, per_page=10, error_out=False)
     for p in pagination.items:
-        if len(p.introduction) > 140:
-            p.introduction_cut = p.introduction[:140] + u' ......'
-        else:
-            p.introduction_cut = p.introduction
-
+        p.introduction_cut = p.introduction if len(p.introduction) <= 140 else p.introduction[:140] + u' ......'
     return render_template(u'movie/movie_index.html', posts=pagination.items, pagination=pagination,
                            categories=Category.query.all(), c_sel=c_id)
 
@@ -162,30 +144,26 @@ def get_post(post_id):
     """
     page = request.args.get(u'page', 1, type=int)
     post = Post.query.get_or_404(post_id)
-    if current_user.is_anonymous:
-        if post.category.disabled:
-            abort(404)  # abort 410 exactly
+    query = post.stills
+    if post.category.disabled:
+        abort(404)  # abort 410 exactly
+    if not current_user.can(Permission.VIEW_PRIVATE_MOVIE):
         if post.private or post.category.private:
             abort(403)
-    if current_user.is_authenticated:
-        query = post.stills
-    else:
-        query = post.stills.filter_by(private=False)
+        query = query.filter_by(private=False)
     pagination = query.order_by(Still.timeline.asc()).paginate(page, per_page=20, error_out=False)
-
     return render_template(u'movie/movie_post.html', post=post, stills=pagination.items,
                            pagination=pagination, form=AddStillForm())
 
 
 @movie.route(u'/add/', methods=[u'GET', u'POST'])
-@admin_required
+@permission_required(Permission.CURD_MOVIE)
 def add_post():
     """
     访问权限：
     :return:
     """
     form = AddPostForm()
-
     if form.validate_on_submit():
         method = form.method.data
         try:
@@ -207,12 +185,11 @@ def add_post():
         else:
             flash(u'海报添加成功！')
             return redirect(url_for(u'movie.get_post', post_id=post.id))
-
     return render_template(u'movie/edit_post.html', form=form, id=None)
 
 
 @movie.route(u'/edit/<int:post_id>/', methods=[u'GET', u'POST'])
-@admin_required
+@permission_required(Permission.CURD_MOVIE)
 def edit_post(post_id):
     """
     检查事项：电影名是否冲突；所选Category是否有效；
@@ -221,7 +198,6 @@ def edit_post(post_id):
     """
     post = Post.query.get_or_404(post_id)
     form = EditPostForm()
-
     if form.validate_on_submit():
         try:
             if form.category.data != post.category_id and Category.query.get(form.category.data).disabled:
@@ -253,7 +229,6 @@ def edit_post(post_id):
         else:
             flash(u'海报更新成功！')
             return redirect(url_for(u'movie.get_post', post_id=post.id))
-
     form.from_post(post)
     if post.category.disabled:
         form.category.choices.append((post.category_id, post.category.name))
@@ -261,7 +236,7 @@ def edit_post(post_id):
 
 
 @movie.route(u'/delete/<int:post_id>/', methods=[u'GET'])
-@admin_required
+@permission_required(Permission.CURD_MOVIE)
 def delete_post(post_id):
     """
     访问权限：
@@ -271,7 +246,6 @@ def delete_post(post_id):
     post = Post.query.get_or_404(post_id)
     redirect_url = request.args.get(u'redirect', url_for(u'movie.index'))
     path = get_post_dir(post)
-
     try:
         for still in post.stills:
             db.session.delete(still)
@@ -282,12 +256,11 @@ def delete_post(post_id):
     except Exception, e:
         db.session.roolback()
         flash(u'ERROR: %s' % e.message)
-
     return redirect(redirect_url)
 
 
 @movie.route(u'/edit_tags/<int:post_id>/', methods=[u'POST'])
-@admin_required
+@permission_required(Permission.CURD_MOVIE)
 def edit_tags(post_id):
     """
     编辑标签
@@ -308,12 +281,11 @@ def edit_tags(post_id):
     except Exception, e:
         db.session.rollback()
         flash(u'ERROR: %s' % e.message)
-
     return redirect(url_for(u'.get_post', post_id=post_id))
 
 
 @movie.route(u'/add-still/<int:post_id>/', methods=[u'GET', u'POST'])
-@admin_required
+@permission_required(Permission.CURD_MOVIE)
 def add_still(post_id):
     """
     访问权限：
@@ -323,7 +295,6 @@ def add_still(post_id):
     post = Post.query.get_or_404(post_id)
     redirect_url = request.args.get(u'redirect', url_for(u'.get_post', post_id=post_id))
     form = AddStillForm()
-
     if form.validate_on_submit():
         method = form.method.data
         try:
@@ -347,15 +318,13 @@ def add_still(post_id):
         # 如果表单验证发现错误，跳转后下一个页面的表单无法提示错误，只能采用flash的方式来提示错误。
         for e in form.errors:
             flash(u'ERROR: %s - %s' % (e, form.errors[e][0]))
-
     if form.method.data is None:
         form.method.data = u'file'
-
     return redirect(redirect_url)
 
 
 @movie.route(u'/edit-stills/<int:post_id>/', methods=[u'GET'])
-@admin_required
+@permission_required(Permission.CURD_MOVIE)
 def edit_stills(post_id):
     """
     访问权限：
@@ -373,13 +342,12 @@ def edit_stills(post_id):
         form.time_min.data, form.time_sec.data = Still.timeline_int_to_str(still.timeline)
         form.comment.data = still.comment
         forms.append(form)
-
     return render_template(u'movie/edit_stills.html', post=post,
                            form=AddStillForm(), forms=forms, pagination=pagination)
 
 
 @movie.route(u'/edit-still/<int:still_id>/', methods=[u'POST'])
-@admin_required
+@permission_required(Permission.CURD_MOVIE)
 def edit_still(still_id):
     """
     访问权限：
@@ -388,7 +356,6 @@ def edit_still(still_id):
     """
     still = Still.query.get_or_404(still_id)
     form = EditStillForm()
-
     if form.validate_on_submit():
         still.private = True if form.private.data else False
         still.timeline = Still.timeline_str_to_int(form.time_min.data, form.time_sec.data)
@@ -399,12 +366,11 @@ def edit_still(still_id):
         except Exception, e:
             db.session.rollback()
             flash(u'ERROR: %s' % e.message)
-
     return redirect(url_for(u'movie.edit_stills', post_id=still.post_id))
 
 
 @movie.route(u'/delete-still/<int:still_id>/', methods=[u'GET'])
-@admin_required
+@permission_required(Permission.CURD_MOVIE)
 def delete_still(still_id):
     """
     访问权限：
@@ -415,7 +381,6 @@ def delete_still(still_id):
     post = Post.query.get_or_404(still.post_id)
     path = get_post_dir(post)
     img_prefix = os.path.join(path, str(still_id))
-
     try:
         db.session.delete(still)
         if os.path.exists(img_prefix + u'.jpg'):
@@ -426,7 +391,6 @@ def delete_still(still_id):
     except Exception, e:
         db.session.rollback()
         flash(u'ERROR: %s' % e.message)
-
     return redirect(url_for(u'movie.edit_stills', post_id=still.post_id))
 
 

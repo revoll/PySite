@@ -53,62 +53,58 @@
     {{ super() }}
     <script src="{{ url_for('static', filename='mdeditor/editormd.min.js') }}"></script>
     <script type="text/javascript">
-        var editor;
-        $(function() {
-            editor = editormd("md-editor", {
-                path                : "{{ url_for('static', filename='mdeditor/lib/') }}",
-                // watch:
-                saveHTMLToTextarea  : false,  // 啥作用？
-                searchReplace       : true,
-                htmlDecode          : "style,script,iframe|on*",  // 开启 HTML 标签解析，为了安全性，默认不开启
-                emoji               : true,
-                taskList            : true,
-                tocm                : true,
-                tex                 : true,
-                flowChart           : true,
-                sequenceDiagram     : true,
-                imageUpload         : true,
-                imageFormats        : ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
-                imageUploadURL      : "{{ url_for('.upload_image') }}",
-                toolbarIcons        : function() { return ["exit", "metas", "save", "|"].concat(editormd.toolbarModes["full"]); },  // "full", You can also use editormd.toolbarModes[name] default list, values: full, simple, mini.
-                toolbarIconsClass   : { save: "fa-save", exit: "fa-power-off", metas: "fa-gear" },
-                lang                : { toolbar: { save: "保存文本", exit: "退出编辑", metas : "修改属性" } },
-                toolbarHandlers     : { // 自定义工具栏按钮的事件处理
-                    /**
-                     * @param {Object}      cm         CodeMirror对象
-                     * @param {Object}      icon       图标按钮jQuery元素对象
-                     * @param {Object}      cursor     CodeMirror的光标对象，可获取光标所在行和位置
-                     * @param {String}      selection  编辑器选中的文本
-                     */
-                    save : function(cm, icon, cursor, selection) {
-                        save_post_content(_ajax_message_ok);
-                    },
-                    exit : function(cm, icon, cursor, selection) {
-                        exit_editor();
-                    },
-                    metas : function(cm, icon, cursor, selection) {
-                        $.get('{{ url_for('._get_edit_metas_form', post_id=post.id) }}', function(metas_form) {
-                            notification_init('编辑属性', metas_form, null);
-                            notification_show();
-                        });
-                    }
+        var editor = editormd("md-editor", {
+            path                : "{{ url_for('static', filename='mdeditor/lib/') }}",
+            // watch:
+            saveHTMLToTextarea  : false,  // 啥作用？
+            searchReplace       : true,
+            htmlDecode          : "style,script,iframe|on*",  // 开启 HTML 标签解析，为了安全性，默认不开启
+            emoji               : false,
+            taskList            : true,
+            tocm                : true,
+            tex                 : true,
+            flowChart           : true,
+            sequenceDiagram     : true,
+            imageUpload         : true,
+            imageFormats        : ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
+            imageUploadURL      : "{{ url_for('.upload_image') }}",
+            toolbarIcons        : function() { return ["exit", "attribute", "save", "|"].concat(editormd.toolbarModes["full"]); },  // "full", You can also use editormd.toolbarModes[name] default list, values: full, simple, mini.
+            toolbarIconsClass   : { save: "fa-save", exit: "fa-power-off", attribute: "fa-gear" },
+            lang                : { toolbar: { save: "保存文本", exit: "退出编辑", attribute : "修改属性" } },
+            toolbarHandlers     : { // 自定义工具栏按钮的事件处理
+                /**
+                 * @param {Object}      cm         CodeMirror对象
+                 * @param {Object}      icon       图标按钮jQuery元素对象
+                 * @param {Object}      cursor     CodeMirror的光标对象，可获取光标所在行和位置
+                 * @param {String}      selection  编辑器选中的文本
+                 */
+                save : function(cm, icon, cursor, selection) {
+                    save_post_content(callback_with_display);
                 },
-                onload : function() { /* $("[type=\"file\"]").bind("change", function(){ testEditor.cm.replaceSelection($(this).val()); }); */ }
-            });
+                exit : function(cm, icon, cursor, selection) {
+                    exit_editor();
+                },
+                attribute : function(cm, icon, cursor, selection) {
+                    $.get('{{ url_for('.edit_post_attributes', post_id=post.id) }}', function(metas_form) {
+                        notification_init('编辑属性', metas_form, '');
+                        notification_show();
+                    });
+                }
+            },
+            onload : function() { /* $("[type=\"file\"]").bind("change", function(){ testEditor.cm.replaceSelection($(this).val()); }); */ }
         });
-        function save_post_metas() {
+        function save_post_attributes() {
 			$.ajax({
-				url: "{{ url_for('.save_post_metas', post_id=post.id) }}",
+				url: "{{ url_for('.save_post_attributes', post_id=post.id) }}",
 				type: "POST",
 				contentType: "application/json",
 				dataType: "json",
 				data: JSON.stringify({
-					// "title": $("#post-title").val(),
 					"category": $("#post-category").val(),
 					"private": $("#post-private").val(),
                     "title": $("#post-title").val()
 				}),
-				success: _ajax_message_ok
+				success: callback_with_display
 			});
         }
         function save_post_content(fn) {
@@ -124,15 +120,11 @@
 				success: fn
 			});
         }
-        function _ajax_message_ok(param) {
-            notification_init('', param.detail, '');
-            notification_show();
-        }
-        function _ajax_message_exit(param) {
-            window.location.href = '{{ url_for('.get_post', post_id=post.id) }}';
+        function _redirect_post_detail() {
+            window.location.href="{{ url_for('.get_post', post_id=post.id) }}";
         }
         function exit_editor() {
-            notification_init('', '是否保存已编辑的内容？', '<button class="btn btn-success" onclick="save_post_content(_ajax_message_exit)">需要保存</button><a class="btn btn-danger" href="{{ url_for('.get_post', post_id=post.id) }}">直接退出</a>');
+            notification_init('', '是否保存已编辑的内容？', '<button class="btn btn-success" onclick="save_post_content(_redirect_post_detail)">需要保存</button><a class="btn btn-danger" href="{{ url_for('.get_post', post_id=post.id) }}">直接退出</a>');
             notification_show();
         }
     </script>

@@ -7,9 +7,7 @@
 
 
 {% block movie_main %}
-    {% if current_user.is_authenticated %}
-    <a href="{{ url_for('.get_post', post_id=post.id) }}" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-ok text-muted"></span></a>
-    {% endif %}
+    <a href="{{ url_for('.get_post', post_id=post.id) }}" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-off text-muted"></span></a>
 
     <h1 class="docs-page-title docs-text-movie">编辑《{{ post.name }}》的剧照</h1>
 

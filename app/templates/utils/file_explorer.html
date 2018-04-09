@@ -1,0 +1,169 @@
+{% extends "common/common_base.html" %}
+
+
+{% block title %}文件管理器{% endblock %}
+
+
+{% block styles %}
+    {{ super() }}
+    <style type="text/css">
+        .file-type {
+            width: 38px;
+            text-align: center;
+        }
+        .file-name {
+            font-weight: bold;
+            text-align: left;
+        }
+        .file-size {
+            width: 120px;
+            text-align: right;
+        }
+        .file-date {
+            width: 180px;
+            text-align: center;
+        }
+        .widget-box {
+            width: 50px;
+            text-align: center;
+        }
+        .widget-box > .glyphicon {
+            margin: 1px 4px;
+            cursor: pointer;
+        }
+    </style>
+{% endblock %}
+
+
+{% block common_main %}
+
+    <a class="docs-page-tool files-tool pull-right" href="javascript:upload_files()"><span class="glyphicon glyphicon-cloud-upload text-muted"></span></a>
+    <a class="docs-page-tool files-tool pull-right" href="javascript:add_directory()"><span class="glyphicon glyphicon-plus-sign text-muted"></span></a>
+
+    <div class="docs-navigation-tabs">
+        <ul class="nav nav-tabs">
+            <li role="presentation" class="active"><a href="#">{% if current_user.can(Permission.ADMIN) %}全部文件{% else %}公共文件{% endif %}</a></li>
+        </ul>
+    </div>
+    <div class="docs-path-tree">
+        <ol class="breadcrumb">
+            {% if back_link %}<li><a href="{{ back_link }}"><span class="glyphicon glyphicon-level-up"></span></a></li>{% else %}<li class="active"><span class="glyphicon glyphicon-level-up"></span></li>{% endif %}{% for tab in nav_tabs %}
+            <li{% if not tab['url'] %} class="active"{% endif %}>{% if tab['url'] %}<a href="{{ tab['url'] }}">{% endif %}{% if tab['name'] %}{{ tab['name'] }}{% else %}<span class="glyphicon glyphicon-home"></span> Home{% endif %}{% if tab['url'] %}</a>{% endif %}</li>{% endfor %}
+        </ol>
+    </div>
+    <div class="clearfix"></div>
+
+    <div class="files-item-list">
+        <div class="panel panel-primary table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th class="file-type">#</th>
+                        <th class="file-name">文件名</th>
+                        <th class="file-size">大小</th>
+                        <th class="file-date">修改日期</th>
+                        <th class="widget-box">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for folder in folders %}
+                    <tr>
+                        <td class="file-type">1</td>
+                        <td class="file-name docs-text-common"><a href="{{ folders[folder]['link'] }}">{{ folder }}/</a></td>
+                        <td class="file-size">-</td>
+                        <td class="file-date">{{ folders[folder]['last_modify'] }}</td>
+                        <td class="widget-box"><span class="glyphicon glyphicon-remove text-muted" onclick="delete_item('{{ folder }}')"></span></td>
+                    </tr>
+                    {% endfor %}
+                    {% for file in files %}
+                    <tr>
+                        <td class="file-type">1</td>
+                        <td class="file-name"><a href="{{ files[file]['link'] }}">{{ file }}</a></td>
+                        <td class="file-size">{{ files[file]['size'] }}</td>
+                        <td class="file-date">{{ files[file]['last_modify'] }}</td>
+                        <td class="widget-box"><span class="glyphicon glyphicon-remove text-muted" onclick="delete_item('{{ file }}')"></span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+
+
+
+{% block scripts %}
+    {{ super() }}
+    <script type="text/javascript">
+        var _upload_count = 0;
+        function _add_upload_item() {
+            var item_html = '\
+                <div class="form-group">\
+                    <select class="form-control" id="files-method" name="method" onchange="switch_upload_method(this.value, \'#files-file\', \'#files-url\');"><option value="file">本地上传</option><option value="url">网络下载</option></select>\
+                    <input type="file" class="form-control" id="files-file" name="file_name">\
+                    <input class="form-control hidden" id="files-url" name="file_url" placeholder="http://" type="text" value="">\
+                </div>';
+            return item_html.replace('*', string(_upload_count));
+        }
+        function upload_files() {
+            var header = '上传文件';
+            var body = '\
+            <form class="form-inline" action="{{ url_for('.files_upload', path=path) if path else url_for('.files_upload') }}" method="post" enctype="multipart/form-data" role="form">\
+                <div class="form-group">\
+                    <select class="form-control" id="files-method" name="method" onchange="switch_upload_method(this.value, \'#files-file\', \'#files-url\');"><option value="file">本地上传</option><option value="url">网络下载</option></select>\
+                    <input type="file" class="form-control" id="files-file" name="file_name">\
+                    <input class="form-control hidden" id="files-url" name="file_url" placeholder="http://" type="text" value="">\
+                </div>\
+                <button type="submit" class="btn btn-default">立即上传</button>\
+            </form>';
+            notification_init(header, body, '');
+            notification_show();
+        }
+
+        function add_directory() {
+            var header = '添加目录';
+            var body = '\
+            <div class="form-inline">\
+                <div class="form-group">\
+                    <label class="sr-only" for="files-new-directory">新的目录名</label>\
+                    <input type="text" class="form-control" id="files-new-directory" name="name" placeholder="输入要创建的文件夹名称...">\
+                </div>\
+            </div>';
+            var footer = '<button type="button" class="btn btn-default" data-dismiss="modal">取消</button><button type="button" class="btn btn-primary" onclick="_add_directory()">确定</button>';
+            notification_init(header, body, footer);
+            notification_show();
+        }
+        function _add_directory() {
+            var e = $('#files-new-directory');
+            if(! e.val()) {
+                e.parent().addClass('has-error');
+                return;
+            }
+            $.ajax({
+                url: "{{ url_for('.files_mkdir', path=path) if path else url_for('.files_mkdir') }}",
+                type: "POST",
+                contentType: "application/json",
+                dataType: "json",
+                data: JSON.stringify({
+                    "name": e.val()
+                }),
+                success: callback_with_reload_or_display
+            });
+        }
+        function delete_item(name) {
+            var footer_html = '<button type="button" class="btn btn-default" data-dismiss="modal">取消</button><button type="button" class="btn btn-danger" onclick="_delete_item(\'' + name + '\')">删除</button>';
+            notification_init(null, '<br>确定删除此文件（夹）？<br><br><br>', footer_html);
+            notification_show();
+        }
+        function _delete_item(name) {
+            $.ajax({
+                url: "{{ url_for('.files_delete', path=path) if path else url_for('.files_delete') }}",
+                type: "POST",
+                contentType: "application/json",
+                dataType: "json",
+                data: JSON.stringify({"name": name}),
+                success: callback_with_reload_or_display
+            });
+        }
+    </script>
+{% endblock %}

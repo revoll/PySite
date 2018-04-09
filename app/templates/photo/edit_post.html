@@ -5,7 +5,7 @@
 
 
 {% block photo_main %}
-    {% if current_user.is_authenticated and post_id %}
+    {% if post_id %}
     <a href="{{ url_for('.get_post', post_id=post_id) }}" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-off text-muted"></span></a>
     {% endif %}
 
@@ -54,7 +54,7 @@
                 <div class="form-group{% if form.introduction.errors %} has-error{% endif %}">
                     <label for="post-introduction" class="col-sm-3 control-label">图册简介</label>
                     <div class="col-sm-9 col-md-8">
-                        {{ form.introduction(id="post-introduction", class="form-control", rows="12", placeholder="简单介绍下......") }}
+                        {{ form.introduction(id="post-introduction", class="form-control", rows="6", placeholder="简单介绍下......") }}
                         {% if form.introduction.errors %}<p class="help-block">{{ form.introduction.errors[0] }}</p>{% endif %}
                     </div>
                 </div>

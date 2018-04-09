@@ -5,8 +5,8 @@
 
 
 {% block movie_main %}
-    {% if current_user.is_authenticated and id %}
-    <a href="{{ url_for('.get_post', post_id=id) }}" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-remove text-muted"></span></a>
+    {% if id %}
+    <a href="{{ url_for('.get_post', post_id=id) }}" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-off text-muted"></span></a>
     {% endif %}
 
     <h1 class="docs-page-title docs-text-movie">{% if id %}编辑电影《{{ form.name.data }}》{% else %}添加新的电影{% endif %}</h1>

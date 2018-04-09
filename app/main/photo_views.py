@@ -3,15 +3,16 @@ import os
 import urllib2
 from datetime import datetime, timedelta
 from StringIO import StringIO
-from flask import request, current_app, render_template, redirect, abort, url_for, make_response, flash, send_from_directory
-from flask_login import current_user, login_required
+from flask import request, current_app, render_template, redirect, abort, url_for, flash, send_from_directory
+from flask_login import current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, SelectField, SubmitField, FileField
 from wtforms.validators import Length, Regexp, ValidationError
 from . import photo_blueprint as photo
 from .. import db
+from ..models.user import Permission
 from ..models.photo import PhotoPost as Post, PhotoImage as Image, PhotoCategory as Category, PhotoTag as Tag
-from ..tools.decoraters import admin_required
+from ..tools.decoraters import permission_required
 from ..tools import save_post_image
 
 
@@ -97,20 +98,6 @@ class EditImageForm(_ImageForm):
 # photo Views
 ########################################################################################################################
 
-@photo.route(u'/category/<int:c_id>/', methods=[u'GET'])
-def switch_category(c_id):
-    resp = make_response(redirect(url_for(u'.index')))
-    resp.set_cookie(u'photo_category', str(c_id), max_age=60*60)
-    return resp
-
-
-@photo.route(u'/category/all/', methods=[u'GET'])
-def switch_category_all():
-    resp = make_response(redirect(url_for(u'.index')))
-    resp.set_cookie(u'photo_category', u'', max_age=60*60)
-    return resp
-
-
 @photo.route(u'/', methods=[u'GET'])
 def index():
     """
@@ -118,15 +105,13 @@ def index():
     :return:
     """
     page = request.args.get(u'page', 1, type=int)
-    c_id = request.cookies.get(u'photo_category', u'')
-    c_id = int(c_id) if c_id else None
-    query = Post.query
+    c_id = request.args.get(u'c_id', None, type=int)
+    query = Post.query.filter(Category.disabled==False)
+    if not current_user.can(Permission.VIEW_PRIVATE_PHOTO):
+        query = query.filter(Category.private==False, Post.private==False)
     if c_id:
         query = query.filter_by(category_id=c_id)
-    if current_user.is_anonymous:
-        query = query.filter(Category.private==False, Category.disabled==False).filter_by(private=False)
     pagination = query.order_by(Post.timestamp.desc()).paginate(page, per_page=20, error_out=False)
-
     return render_template(u'photo/photo_index.html', posts=pagination.items, pagination=pagination,
                            categories=Category.query.all(), c_sel=c_id)
 
@@ -140,23 +125,19 @@ def get_post(post_id):
     """
     page = request.args.get(u'page', 1, type=int)
     post = Post.query.get_or_404(post_id)
-
-    if current_user.is_anonymous:
-        if post.category.disabled:
-            abort(404)  # abort 410 exactly
+    query = post.images
+    if post.category.disabled:
+        abort(404)
+    if not current_user.can(Permission.VIEW_PRIVATE_PHOTO):
         if post.private or post.category.private:
             abort(403)
-    if current_user.is_authenticated:
-        query = post.images
-    else:
-        query = post.images.filter_by(private=False)
+        query = query.filter_by(private=False)
     pagination = query.order_by(Image.timestamp.asc()).paginate(page, per_page=10, error_out=False)
-
     return render_template(u'photo/photo_post.html', post=post, images=pagination.items, pagination=pagination, form=AddImageForm())
 
 
 @photo.route(u'/add/', methods=[u'GET', u'POST'])
-@admin_required
+@permission_required(Permission.CURD_PHOTO)
 def add_post():
     """
     访问权限：
@@ -164,7 +145,6 @@ def add_post():
     """
     post = Post()
     form = AddPostForm()
-
     if form.validate_on_submit():
         try:
             form.to_post(post)
@@ -177,12 +157,11 @@ def add_post():
             flash(u'ERROR: %s' % e.message)
         else:
             return redirect(url_for(u'.get_post', post_id=post.id))
-
     return render_template(u'photo/edit_post.html', post_id=None, form=form)
 
 
 @photo.route(u'/edit/<int:post_id>/', methods=[u'GET', u'POST'])
-@admin_required
+@permission_required(Permission.CURD_PHOTO)
 def edit_post(post_id):
     """
     检查事项：所选Category是否有效；
@@ -193,7 +172,6 @@ def edit_post(post_id):
     post = Post.query.get_or_404(post_id)
     form = EditPostForm()
     forms = []
-
     if form.validate_on_submit():
         try:
             if form.category.data != post.category_id and Category.query.get(form.category.data).disabled:
@@ -214,7 +192,6 @@ def edit_post(post_id):
             flash(u'ERROR: %s' % e.message)
         else:
             return redirect(url_for(u'photo.get_post', post_id=post.id))
-
     form.from_post(post)
     if post.category.disabled:
         form.category.choices.append((post.category_id, post.category.name))
@@ -230,7 +207,7 @@ def edit_post(post_id):
 
 
 @photo.route(u'/delete/<int:post_id>/', methods=[u'GET'])
-@admin_required
+@permission_required(Permission.CURD_PHOTO)
 def delete_post(post_id):
     """
     访问权限：
@@ -239,7 +216,6 @@ def delete_post(post_id):
     """
     post = Post.query.get_or_404(post_id)
     redirect_url = request.args.get(u'redirect', url_for(u'photo.index'))
-
     try:
         post_dir = get_post_dir(post)
         for image in post.images:
@@ -252,12 +228,11 @@ def delete_post(post_id):
     except Exception, e:
         db.session.rollback()
         flash(u'ERROR: %s' % e.message)
-
     return redirect(redirect_url)
 
 
 @photo.route(u'/edit_tags/<int:post_id>/', methods=[u'POST'])
-@admin_required
+@permission_required(Permission.CURD_PHOTO)
 def edit_tags(post_id):
     """
     编辑标签
@@ -278,12 +253,11 @@ def edit_tags(post_id):
     except Exception, e:
         db.session.rollback()
         flash(u'ERROR: %s' % e.message)
-
     return redirect(url_for(u'.get_post', post_id=post_id))
 
 
 @photo.route(u'/add-image/<int:post_id>/', methods=[u'POST'])
-@admin_required
+@permission_required(Permission.CURD_PHOTO)
 def add_image(post_id):
     """
     访问权限：已登录，或者访问公开图册
@@ -292,7 +266,6 @@ def add_image(post_id):
     """
     post = Post.query.get_or_404(post_id)
     form = AddImageForm()
-
     if form.validate_on_submit():
         method = form.method.data
         try:
@@ -314,12 +287,11 @@ def add_image(post_id):
         except Exception, e:
             db.session.rollback()
             flash(u'ERROR: %s' % e.message)
-
     return redirect(url_for(u'.get_post', post_id=post_id))
 
 
 @photo.route(u'/edit-image/<int:image_id>/', methods=[u'POST'])
-@admin_required
+@permission_required(Permission.CURD_PHOTO)
 def edit_image(image_id):
     """
     修改图片的可见性及备注信息
@@ -343,7 +315,7 @@ def edit_image(image_id):
 
 
 @photo.route(u'/delete-image/<int:image_id>/', methods=[u'GET'])
-@admin_required
+@permission_required(Permission.CURD_PHOTO)
 def delete_image(image_id):
     """
     删除图片

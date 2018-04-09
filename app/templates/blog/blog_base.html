@@ -6,32 +6,6 @@
 
 {% block content %}
     <div class="container">
-        <div class="docs-page docs-page-blog">
-            <div class="row">
-                <div class="col-md-9 col-md-push-3">
-                    <div class="blog-main-wrapper">{% block blog_main %}{% endblock %}</div>
-                </div>
-                <div class="col-md-3 col-md-pull-9">
-                    <div class="blog-sidebar-wrapper">{% block blog_sidebar %}
-                        <div class="panel panel-success">
-                            <div class="panel-heading">
-                                <b>所有分类</b>
-                            </div>
-                            <div class="panel-body">
-                              xalsdfjaskd
-                            </div>
-                        </div>
-                        <div class="panel panel-success">
-                            <div class="panel-heading">
-                                <b>按时间归档</b>
-                            </div>
-                            <div class="panel-body">
-                              xalsdfjaskd
-                            </div>
-                        </div>
-                    {% endblock %}</div>
-                </div>
-            </div>
-        </div>
+        <div class="docs-page docs-page-blog">{% block blog_main %}{% endblock %}</div>
     </div>
 {% endblock content %}

@@ -57,16 +57,17 @@
                         <li><a href="{{ url_for('music.index') }}">音乐</a></li>
                         <li><a href="{{ url_for('movie.index') }}">电影</a></li>
                         <li><a href="{{ url_for('photo.index') }}">图册</a></li>
-                        <li><a href="{{ url_for('files.index') }}">文件</a></li>
                         <li class="dropdown">
                             <a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">工具 <span class="caret"></span></a>
                             <ul class="dropdown-menu">
-                                <li><a href="#">Action</a></li>
-                                <li><a href="#">Separated link</a></li>
+                                <li><a href="{{ url_for('utils.files') }}">文件中转站</a></li>
+                                {% if current_user.is_authenticated %}
+                                    <li role="separator" class="divider"></li>
+                                    <li><a href="{{ url_for('utils.passbook') }}">密码簿</a></li>
+                                    <li><a href="{{ url_for('utils.cashbook') }}">记账簿</a></li>
+                                {% endif %}
                                 <li role="separator" class="divider"></li>
                                 <li><a href="#">Another action</a></li>
-                                <li role="separator" class="divider"></li>
-                                <li><a href="#">One more separated link</a></li>
                             </ul>
                         </li>
                     </ul>
@@ -156,7 +157,7 @@
             //
             var flash_msg = {% for m in get_flashed_messages() %}'<p>{{ m }}</p><br>' + {% endfor %}'';
             if (flash_msg != '') {
-                notification_init('', flash_msg, '');
+                notification_init(null, flash_msg, null);
                 notification_show();
             }
         });
