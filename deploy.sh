@@ -13,7 +13,7 @@ fi
 cp ./.pysite_env.example ./.pysite_env
 virtualenv venv
 source ./venv/bin/activate
-pip install -r ./requirements/prod.txt
+pip install -r ./requirements/pysite.txt
 python ./manage.py deploy
 deactivate
 chown -R www-data:www-data ./
