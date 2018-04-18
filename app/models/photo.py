@@ -76,7 +76,7 @@ class PhotoPost(db.Model):
     """ 图片相册 """
     __tablename__ = u'photo_post'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=1000001)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     category_id = db.Column(db.Integer, db.ForeignKey(u'photo_category.id'))
     private = db.Column(db.Boolean, default=False)
     title = db.Column(db.String(100), default=u'无标题的图册')
@@ -102,7 +102,7 @@ class PhotoImage(db.Model):
     """ 相册图片 """
     __tablename__ = u'photo_image'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=1)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     post_id = db.Column(db.Integer, db.ForeignKey(u'photo_post.id'))
     private = db.Column(db.Boolean, default=False)
     f_name = db.Column(db.String(40), nullable=False)

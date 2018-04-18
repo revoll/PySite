@@ -60,7 +60,7 @@ class BlogPost(db.Model):
     """ 博客文章 """
     __tablename__ = u'blog_post'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=1000001)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     category_id = db.Column(db.Integer, db.ForeignKey(u'blog_category.id'))
     title = db.Column(db.String(120), nullable=False)
     body = db.Column(db.Text, default=u'')

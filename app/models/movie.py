@@ -83,7 +83,7 @@ class MoviePost(db.Model):
     """ 电影海报 """
     __tablename__ = u'movie_post'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=1000001)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     category_id = db.Column(db.Integer, db.ForeignKey(u'movie_category.id'), nullable=False)
     private = db.Column(db.Boolean, default=False)
     reference = db.Column(db.String(80), default=u'')  # i.e. https://movie.douban.com/...
@@ -114,7 +114,7 @@ class MovieStill(db.Model):
     """ 电影剧照 """
     __tablename__ = u'movie_still'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=100000001)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     timeline = db.Column(db.Integer, default=0)
     comment = db.Column(db.Text, default=u'')
     post_id = db.Column(db.Integer, db.ForeignKey(u'movie_post.id'))

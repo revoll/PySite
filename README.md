@@ -15,7 +15,6 @@
 ```
     # groupadd www-data
     # useradd -g www-data www-data
-    # chown -R www-data:www-data /var/www/pysite
 ```
 
 ### 3. 将工程代码拷贝到指定目录
@@ -29,6 +28,7 @@
     # python ./manage.py deploy
     # deactivate
     # chown -R www-data:www-data ./
+    # chmod 600 ./data/*.sqlite
 ```
 
 ### 4. 配置Nginx
@@ -49,17 +49,16 @@
 ### 6. 利用Let's Encrypt生产SSL证书 & 更新SSL证书
 ```
     # apt-get install bc
-    # service nginx stop
-    # netstat -na | grep ‘:80.*LISTEN’  # 查看80端口是否被占用
+    # netstat -na | grep ‘:80.*LISTEN’  # 查看80端口是否可用
     # git clone https://github.com/letsencrypt/letsencrypt
     # cd letsencrypt
-    # ./certbot-auto certonly
+    # ./certbot-auto certonly  # select 3 and finish the following steps.
 ```
 
 ### 7. 重启Nginx服务
 ```
     echo 'Restarting nginx ...'
-    nginx -s reload　# or /etc/init.d/nginx start(restart)
+    nginx -s reload　# or '/etc/init.d/nginx start(restart)' or 'service nginx restart'
     
     echo 'Restarting uWSGI ...'
     NAME="pysite"
