@@ -86,6 +86,7 @@ class MoviePost(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     category_id = db.Column(db.Integer, db.ForeignKey(u'movie_category.id'), nullable=False)
     private = db.Column(db.Boolean, default=False)
+    view_count = db.Column(db.Integer, default=0)
     reference = db.Column(db.String(80), default=u'')  # i.e. https://movie.douban.com/...
     name = db.Column(db.String(50), unique=True)
     o_name = db.Column(db.String(50), default=u'')
@@ -98,10 +99,15 @@ class MoviePost(db.Model):
     country = db.Column(db.String(100), default=u'')
     introduction = db.Column(db.Text, default=u'')
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    last_modify = db.Column(db.DateTime, default=datetime.utcnow)
 
     category = db.relationship(u'MovieCategory', back_populates=u'posts')
     tags = db.relationship(u'MovieTag', secondary=u're_movie_tag', back_populates=u'posts')
     stills = db.relationship(u'MovieStill', backref=u'post', lazy=u'dynamic')
+
+    def ping(self):
+        self.view_count += 1
+        db.session.merge(self)
 
     @staticmethod
     def on_changed_category(target, value, oldvalue, initiator):

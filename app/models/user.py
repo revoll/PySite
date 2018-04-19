@@ -45,11 +45,11 @@ class Role():
 class User(UserMixin, db.Model):
     __tablename__ = u'user'
     id = db.Column(db.Integer, primary_key=True)
+    confirmed = db.Column(db.Boolean, default=False)
+    permissions = db.Column(db.Integer, default=Role.DEFAULT)
     email = db.Column(db.String(64), unique=True, index=True)
     username = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
-    permissions = db.Column(db.Integer, default=Role.DEFAULT)
-    confirmed = db.Column(db.Boolean, default=False)
     name = db.Column(db.String(64))
     location = db.Column(db.String(64))
     about_me = db.Column(db.Text())

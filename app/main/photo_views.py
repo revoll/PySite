@@ -133,6 +133,7 @@ def get_post(post_id):
             abort(403)
         query = query.filter_by(private=False)
     pagination = query.order_by(Image.timestamp.asc()).paginate(page, per_page=10, error_out=False)
+    post.ping()
     return render_template(u'photo/photo_post.html', post=post, images=pagination.items, pagination=pagination, form=AddImageForm())
 
 
@@ -180,6 +181,7 @@ def edit_post(post_id):
                 raise ValueError(u'与同一天内的其它图册名字冲突')
             old_dir = get_post_dir(post)
             form.to_post(post)
+            post.last_modify = datetime.utcnow()
             db.session.merge(post)
             db.session.flush()
             post.category = Category.query.get_or_404(post.category_id)  # TODO: 执行flush()后post.category未更新！

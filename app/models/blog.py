@@ -62,19 +62,28 @@ class BlogPost(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     category_id = db.Column(db.Integer, db.ForeignKey(u'blog_category.id'))
+    private = db.Column(db.Boolean, default=False)
+    view_count = db.Column(db.Integer, default=0)
     title = db.Column(db.String(120), nullable=False)
     body = db.Column(db.Text, default=u'')
     body_html = db.Column(db.Text, default=u'')
-    private = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    last_modify = db.Column(db.DateTime, default=datetime.utcnow)
 
     category = db.relationship(u'BlogCategory', back_populates=u'posts')
     tags = db.relationship(u'BlogTag', secondary=u're_blog_tag', back_populates=u'posts')
+
+    def ping(self):
+        self.view_count += 1
+        db.session.merge(self)
 
     @staticmethod
     def on_changed_category(target, value, oldvalue, initiator):
         target.tags = []
 
+db.event.listen(BlogPost.category_id, u'set', BlogPost.on_changed_category)
+
+'''
     @staticmethod
     def on_changed_body(target, value, oldvalue, initiator):
         allowed_tags = [u'a', u'abbr', u'acronym', u'b', u'blockquote', u'code',
@@ -83,5 +92,5 @@ class BlogPost(db.Model):
         target.body_html = bleach.linkify(bleach.clean(
             markdown(value, output_format=u'html'), tags=allowed_tags, strip=True))
 
-db.event.listen(BlogPost.category_id, u'set', BlogPost.on_changed_category)
-# db.event.listen(BlogPost.body, 'set', BlogPost.on_changed_body)
+db.event.listen(BlogPost.body, 'set', BlogPost.on_changed_body)
+'''

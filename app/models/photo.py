@@ -79,17 +79,23 @@ class PhotoPost(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     category_id = db.Column(db.Integer, db.ForeignKey(u'photo_category.id'))
     private = db.Column(db.Boolean, default=False)
+    view_count = db.Column(db.Integer, default=0)
     title = db.Column(db.String(100), default=u'无标题的图册')
     persons = db.Column(db.String(100), default=u'')
     address = db.Column(db.String(140), default=u'')
     introduction = db.Column(db.Text, default=u'')
     count = db.Column(db.Integer, default=0)  # 图片数量
     index = db.Column(db.Integer, default=0)  # 图片命名计数器，从index+1开始命名
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow())
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    last_modify = db.Column(db.DateTime, default=datetime.utcnow)
 
     category = db.relationship(u'PhotoCategory', back_populates=u'posts')
     tags = db.relationship(u'PhotoTag', secondary=u're_photo_tag', back_populates=u'posts')
     images = db.relationship(u'PhotoImage', backref=u'post', lazy=u'dynamic')
+
+    def ping(self):
+        self.view_count += 1
+        db.session.merge(self)
 
     @staticmethod
     def on_changed_category(target, value, oldvalue, initiator):

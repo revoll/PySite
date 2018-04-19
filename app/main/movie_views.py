@@ -3,8 +3,9 @@ import os
 import shutil
 import urllib2
 from StringIO import StringIO
+from datetime import datetime
 from flask import request, current_app, render_template, redirect, abort, url_for, flash, send_from_directory
-from flask_login import current_user, login_required
+from flask_login import current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, SelectField, SubmitField, FileField, ValidationError
 from wtforms.validators import DataRequired, Length, URL, Regexp
@@ -152,6 +153,7 @@ def get_post(post_id):
             abort(403)
         query = query.filter_by(private=False)
     pagination = query.order_by(Still.timeline.asc()).paginate(page, per_page=20, error_out=False)
+    post.ping()
     return render_template(u'movie/movie_post.html', post=post, stills=pagination.items,
                            pagination=pagination, form=AddStillForm())
 
@@ -204,6 +206,7 @@ def edit_post(post_id):
                 raise ValueError(u'不能修改')
             old_dir = get_post_dir(post)
             form.to_post(post)
+            post.last_modify = datetime.utcnow()
             db.session.merge(post)
             method = form.method.data
             db.session.flush()

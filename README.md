@@ -75,3 +75,13 @@
 ```
     HTTP: www.wangkui.tech
 ```
+
+
+## 运维相关内容
+
+### 利用Flask-Migrate进行数据库迁移
+```
+    (venv) $ python manage.py db init  # 创建迁移仓库
+    (venv) $ python manage.py db migrate -m "initial migration"  # 手动创建迁移脚本
+    (venv) $ python manage.py db upgrade  # 把迁移应用到数据库中
+```

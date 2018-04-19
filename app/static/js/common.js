@@ -76,28 +76,6 @@ function head_url(url, msg) {
 
 
 /**
- * 更改图片上传方式：使用本地上传 / URL拷贝
- * @param index
- * @param img_file_id
- * @param img_url_id
- */
-function switch_upload_method(index, img_file_id, img_url_id) {
-
-	var e_file = $(img_file_id);
-	var e_url = $(img_url_id);
-	var css_class = 'hidden';
-
-	if (index == 'file') {
-		e_file.removeClass(css_class);
-		e_url.addClass(css_class);
-	} else {
-		e_file.addClass(css_class);
-		e_url.removeClass(css_class);
-	}
-}
-
-
-/**
  * flask-moment组件代码
  */
 function flask_moment_render(elem) {
@@ -148,6 +126,28 @@ function callback_with_reload_or_display(param) {
 	} else {
 		notification_init(null, param.detail, null);
 		notification_show();
+	}
+}
+
+
+/**
+ * 更改图片上传方式：使用本地上传 / URL拷贝
+ * @param index
+ * @param img_file_id
+ * @param img_url_id
+ */
+function switch_upload_method(index, img_file_id, img_url_id) {
+
+	var e_file = $(img_file_id);
+	var e_url = $(img_url_id);
+	var css_class = 'hidden';
+
+	if (index == 'file') {
+		e_file.removeClass(css_class);
+		e_url.addClass(css_class);
+	} else {
+		e_file.addClass(css_class);
+		e_url.removeClass(css_class);
 	}
 }
 

@@ -16,7 +16,9 @@ from ..tools.restful import Result, not_found, unauthorized
 
 
 ########################################################################################################################
+#
 # Section: Files
+#
 ########################################################################################################################
 
 @utils.route(u'/files/', methods=[u'GET'])
@@ -231,7 +233,9 @@ def files_delete(path=u''):
 
 
 ########################################################################################################################
+#
 # Section: Passbook
+#
 ########################################################################################################################
 
 class PassbookRecordForm(FlaskForm):
@@ -276,6 +280,8 @@ def passbook_create_record():
         except IOError:
             db.session.rollback()
             abort(500)
+    else:
+        flash(u'插入失败，可能包含非法的输入！')
     return redirect(url_for(u'.passbook'))
 
 
@@ -297,32 +303,28 @@ def passbook_update_record(record_id):
         except IOError:
             db.session.rollback()
             abort(500)
+    else:
+        flash(u'修改失败，可能包含非法的输入！')
     return redirect(url_for(u'.passbook'))
 
 
 @utils.route(u'/passbook/delete/<int:record_id>', methods=[u'GET', u'POST'])
 @root_required
 def passbook_delete_record(record_id):
-    result = Result()
-    record = Passbook.query.get(record_id)
-    if record is None:
-        return not_found()
+    record = Passbook.query.get_or_404(record_id)
     try:
         db.session.delete(record)
         db.session.commit()
-    except IOError, e:
+    except IOError:
         db.session.rollback()
-        result.status = Result.Status.ERROR
-        result.detail = e.message
-    else:
-        result.status = Result.Status.SUCCESS
-        result.detail = u'删除成功！'
-    finally:
-        return jsonify(result.to_json())
+        flash(u'删除失败！')
+    return redirect(url_for(u'.passbook'))
 
 
 ########################################################################################################################
+#
 # Section: Cashbook
+#
 ########################################################################################################################
 
 '''

@@ -483,6 +483,12 @@ def index():
     return render_template(u'index.html')
 
 
+@main.route(u'/user/detail/')
+@login_required
+def user():
+    return render_template(u'common/user.html')
+
+
 @main.route(u'/shutdown')
 def server_shutdown():
     if not current_app.testing:
@@ -492,9 +498,3 @@ def server_shutdown():
         abort(500)
     shutdown()
     return u'Shutting down...'
-
-
-@main.route(u'/user/detail/')
-@login_required
-def user():
-    return render_template(u'common/user.html')

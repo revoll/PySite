@@ -2,9 +2,9 @@
 import os
 import uuid
 from bs4 import BeautifulSoup
-from datetime import date
+from datetime import date, datetime
 from flask import request, current_app, render_template, redirect, abort, url_for, send_from_directory, jsonify
-from flask_login import current_user, login_required
+from flask_login import current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField
 from wtforms.validators import DataRequired
@@ -12,7 +12,7 @@ from . import blog_blueprint as blog
 from .. import db
 from ..models.user import Permission
 from ..models.blog import BlogPost as Post, BlogCategory as Category, BlogTag as Tag
-from ..tools.decoraters import admin_required, permission_required
+from ..tools.decoraters import permission_required
 from ..tools.restful import Result, bad_request, not_found
 
 
@@ -113,6 +113,7 @@ def get_post(post_id):
     template_name = {
         u'category01': u'blog_post_category01.html',
     }.get(post.category.name, u'blog_post.html')
+    post.ping()
     return render_template(u'blog/' + template_name, post=post)
 
 
@@ -228,6 +229,7 @@ def save_post_content(post_id):
         assert body is not None and body_html is not None
         post.body = body
         post.body_html = body_html
+        post.last_modify = datetime.utcnow()
         db.session.merge(post)
         db.session.commit()
     except AssertionError, e:

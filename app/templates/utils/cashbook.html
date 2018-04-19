@@ -8,30 +8,42 @@
     {{ super() }}
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap-datepicker3.min.css')}}">
     <style type="text/css">
+        .table {
+            width: 968px;
+            table-layout: fixed;
+            word-wrap: break-word;
+            word-break: break-all;
+        }
+        /* .table th, .table td {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        } */
         .record-date {
-            width: 120px;
-            text-align: center;
+            width: 12%;
+            text-align: left;
         }
         .record-comment {
+            width: 35%;
             font-weight: bold;
             text-align: left;
         }
         .record-method {
-            width: 100px;
+            width: 12%;
             text-align: center;
         }
         .record-amount {
-            width: 120px;
+            width: 12%;
             text-align: right;
             font-weight: bold;
         }
         .record-timestamp {
-            width: 175px;
-            text-align: left;
+            width: 21%;
+            text-align: right;
         }
         .widget-box {
-            width: 120px;
-            text-align: center;
+            width: 8%;
+            text-align: right;
         }
         .widget-box > .glyphicon {
             margin: 1px 4px;
@@ -58,8 +70,8 @@
                     <th class="record-comment">记账名目</th>
                     <th class="record-method">支付方式</th>
                     <th class="record-amount">金额</th>
-                    <th class="widget-box">操作</th>
                     <th class="record-timestamp">记账时间</th>
+                    <th class="widget-box">操作</th>
                 </tr>
             </thead>
             <tbody>{% for record in records %}
@@ -68,11 +80,11 @@
                     <td class="record-comment docs-text-common">{{ record.comment }}</td>
                     <td class="record-method">{{ record.method }}</td>
                     <td class="record-amount">{% if record.amount > 0 %}+{% endif %}{{ record.amount }}</td>
+                    <td class="record-timestamp">{{ moment(record.timestamp).format('YYYY-MM-DD HH:mm:ss') }}</td>
                     <td class="widget-box">
                         <span class="glyphicon glyphicon-edit docs-text-common" onclick="update_record({{ record.id }})"></span>
                         <span class="glyphicon glyphicon-remove docs-text-common" onclick="delete_record({{ record.id }})"></span>
                     </td>
-                    <td class="record-timestamp">{{ moment(record.timestamp).format('YYYY-MM-DD HH:mm:ss') }}</td>
                 </tr>{% endfor %}
             </tbody>
         </table>
@@ -163,7 +175,7 @@
         function delete_record(id) {
             var footer_html = '<button type="button" class="btn btn-default" data-dismiss="modal">取消</button><button type="button" class="btn btn-danger" onclick="_delete_record()">删除</button>';
             _record_id = id;
-            notification_init('删除记录', '<br>确定删除此条记录？<br><br><br>', footer_html);
+            notification_init('删除记录', '确定删除此条记录？', footer_html);
             notification_show();
         }
         function _create_record() {
