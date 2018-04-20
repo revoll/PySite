@@ -3,7 +3,7 @@ import os
 import uuid
 from bs4 import BeautifulSoup
 from datetime import date, datetime
-from flask import request, current_app, render_template, redirect, abort, url_for, send_from_directory, jsonify
+from flask import request, current_app, render_template, redirect, flash, abort, url_for, send_from_directory, jsonify
 from flask_login import current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField
@@ -131,7 +131,7 @@ def add_post():
             post = Post()
             post.title = form.title.data
             post.category_id = form.category.data
-            post.private = True if form.private.data == u'1' else False
+            post.private = True if form.private.data == 1 else False
             post.body = u''
             post.body_html = u''
             db.session.add(post)
@@ -268,11 +268,9 @@ def edit_tags(post_id):
     :return:
     """
     post = Post.query.get_or_404(post_id)
-    id_array = request.json[u'check']
-    result = Result()
     try:
         post.tags = []
-        for tag_id in id_array:
+        for tag_id in request.form.values():
             tag = Tag.query.get(tag_id)
             if tag:
                 post.tags.append(tag)
@@ -280,13 +278,10 @@ def edit_tags(post_id):
                 abort(400)
         db.session.merge(post)
         db.session.commit()
-        result.status = Result.Status.SUCCESS
-        result.detail = Result.Detail.SUCCESS
-    except IOError, e:
+    except IOError:
         db.session.rollback()
-        result.status = Result.Status.ERROR
-        result.detail = u'保持标签时发生错误，可能是传入了非法的数据。'
-    return jsonify(result.to_json())
+        flash(u'保存标签失败！')
+    return redirect(url_for('.get_post', post_id=post_id))
 
 
 @blog.route(u'/upload-image/', methods=[u'POST'])

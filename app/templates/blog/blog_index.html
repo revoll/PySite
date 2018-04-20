@@ -2,22 +2,27 @@
 {% import "common/macros.html" as macros %}
 
 
-{% block title %}Index | PySite - Blog{% endblock %}
+{% block title %}PySite - Blog{% endblock %}
 
 
 {% block blog_main %}
     {{ macros.widget_navigation_tabs(categories, c_sel) }}
 
     {% if current_user.can(Permission.CURD_BLOG) %}<div>
-        <a href="javascript:create_post('{{ url_for('.add_post') }}')" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-plus text-muted"></span></a>
+        <a href="javascript:blog_create_post('{{ url_for('.add_post') }}')" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-plus text-muted"></span></a>
     </div>{% endif %}
 
     <div class="clearfix"></div>
 
     <div class="blog-item-list">{% for post in posts %}
         <div class="blog-item-wrapper">
-            <h2 class="blog-item-title"><a href="{{ url_for('.get_post', post_id=post.id) }}" class="docs-text-blog">{{ post.title }}</a>{% if post.private %}<small><span class="glyphicon glyphicon-eye-close"></span></small>{% endif %}</h2>
-            {{ macros.widget_blog_metas(post, moment, editable=false) }}
+            <h2 class="blog-item-title"><a href="{{ url_for('.get_post', post_id=post.id) }}" class="docs-text-blog" target="_blank">{{ post.title }}</a></h2>
+            <div class="docs-post-metas">
+                <span><i class="glyphicon glyphicon-calendar"></i>{{ moment(post.timestamp).format('YYYY-MM-DD HH:mm:ss') }}</span>
+                <span><i class="glyphicon glyphicon-bookmark"></i><a href="{{ url_for('.index', c_id=post.category.id) }}">{{ post.category.name }}</a></span>
+                <span><i class="glyphicon glyphicon-eye-{% if post.private or post.category.private %}close{% else %}open{% endif %}"></i>{{ post.view_count }}</span>
+                {% for tag in post.tags %}<span><i class="glyphicon glyphicon-tag"></i>{{ tag.name }}</span>{% endfor %}
+            </div>
             {% if post.cover_url %}<img src="{{ post.cover_url }}" class="blog-item-thumbnail"/>{% endif %}
             <div class="blog-item-abstract">
                 {{ post.body_text }}

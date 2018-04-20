@@ -124,7 +124,7 @@
             window.location.href="{{ url_for('.get_post', post_id=post.id) }}";
         }
         function exit_editor() {
-            notification_init('', '是否保存已编辑的内容？', '<button class="btn btn-success" onclick="save_post_content(_redirect_post_detail)">需要保存</button><a class="btn btn-danger" href="{{ url_for('.get_post', post_id=post.id) }}">直接退出</a>');
+            notification_init('', '是否保存已编辑的内容？', '<a class="btn btn-danger" href="{{ url_for('.get_post', post_id=post.id) }}">直接退出</a><button class="btn btn-success" onclick="save_post_content(_redirect_post_detail)">保存退出</button>');
             notification_show();
         }
     </script>

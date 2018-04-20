@@ -58,7 +58,7 @@ var scroll_to_top = {
 		});
 	}
 };
-// scroll_to_top.init();
+scroll_to_top.init();
 
 
 /**
@@ -131,7 +131,7 @@ function callback_with_reload_or_display(param) {
 
 
 /**
- * 更改图片上传方式：使用本地上传 / URL拷贝
+ * Movie页面组件：更改图片上传方式（使用本地上传 / URL拷贝）
  * @param index
  * @param img_file_id
  * @param img_url_id
@@ -153,29 +153,16 @@ function switch_upload_method(index, img_file_id, img_url_id) {
 
 
 /**
- * BLOG页面组件：POST增删改查接口 & 标签编辑框
+ * Blog页面组件
  */
-function create_post(api_url) {
+function blog_create_post(api_url) {
 	$.get(api_url, function(form_html) {
 		notification_init('创建新的文章', form_html, '');
 		notification_show();
 	});
 }
 
-function delete_post(api_url) {
+function blog_delete_post(api_url) {
 	notification_init('提示', '确定删除当前文章？', '<button class="btn btn-default" data-dismiss="modal">取消</button><a class="btn btn-danger" href="' + api_url + '">删除</a>');
 	notification_show();
-}
-
-function update_post_metas(api_url) {
-	var check = [];
-	$("input[name^='metas-cb-']:checked").each(function(i){check[i] = $(this).val();});
-	$.ajax({
-		url: api_url,
-		type: "POST",
-		contentType: "application/json",
-		dataType: "json",
-		data: JSON.stringify({check: check}),
-		success: callback_with_reload_or_display
-	});
 }

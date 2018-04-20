@@ -7,14 +7,28 @@
 
 {% block blog_main %}
     {% if current_user.can(Permission.CURD_BLOG) %}<div>
-        <a href="javascript:delete_post('{{ url_for('.delete_post', post_id=post.id) }}');" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-trash text-muted"></span></a>
+        <a href="javascript:blog_delete_post('{{ url_for('.delete_post', post_id=post.id) }}');" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-trash text-muted"></span></a>
         <a href="{{ url_for('.edit_post', post_id=post.id) }}" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-edit text-muted"></span></a>
-        <a href="javascript:create_post('{{ url_for('.add_post') }}')" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-plus text-muted"></span></a>
+        <a href="javascript:blog_create_post('{{ url_for('.add_post') }}')" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-plus text-muted"></span></a>
     </div>{% endif %}
 
-    {{ macros.widget_blog_metas(post, moment=moment, editable=true if current_user.can(Permission.CURD_BLOG) else false) }}
+    <div class="docs-post-metas">
+        <span><i class="glyphicon glyphicon-calendar"></i>{{ moment(post.timestamp).format('YYYY-MM-DD HH:mm:ss') }}</span>
+        <span><i class="glyphicon glyphicon-bookmark"></i><a href="{{ url_for('.index', c_id=post.category.id) }}">{{ post.category.name }}</a></span>
+        <span><i class="glyphicon glyphicon-eye-{% if post.private or post.category.private %}close{% else %}open{% endif %}"></i>{{ post.view_count }}</span>
+        {% for tag in post.tags %}<span><i class="glyphicon glyphicon-tag"></i>{{ tag.name }}</span>{% endfor %}
+        {% if current_user.can(Permission.CURD_BLOG) %}
+        <span><i class="glyphicon glyphicon-pencil" role="button" onclick="$('#docs-edit-metas').toggleClass('hidden');$(this).toggleClass('docs-text-blog');"></i></span>
+        <form id="docs-edit-metas" class="docs-edit-metas hidden" action="{{ url_for('.edit_tags', post_id=post.id) }}" method="POST">{% for tag in post.category.tags %}
+            <label class="checkbox-inline">
+                <input type="checkbox" name="mcb-{{ tag.id }}" value="{{ tag.id }}"{% if tag in post.tags %} checked{% endif %}/> {{ tag.name }}
+            </label>{% endfor %}
+            <label class="checkbox-inline" onclick="$('#docs-edit-metas').submit()"><span class="glyphicon glyphicon-ok docs-text-blog"></span></label>
+        </form>
+        {% endif %}
+    </div>
 
-    <h1 class="docs-post-title docs-text-blog">{{ post.title }}{% if post.private %}<small><span class="glyphicon glyphicon-eye-close"></span></small>{% endif %}</h1>
+    <h1 class="docs-post-title docs-text-blog">{{ post.title }}</h1>
 
     <div class="clearfix"></div>
 
