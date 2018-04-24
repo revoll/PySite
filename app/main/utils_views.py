@@ -239,7 +239,7 @@ def files_delete(path=u''):
 ########################################################################################################################
 
 class PassbookRecordForm(FlaskForm):
-    keyword = StringField(u'关键字', validators=[Regexp(u'^[a-zA-Z\d]{0,20}$')])
+    keyword = StringField(u'关键字', validators=[Regexp(u'^[-_A-Za-z\d]{0,20}$')])
     name = StringField(u'名称', validators=[DataRequired()])
     host = StringField(u'域名')
     username = StringField(u'用户名')
@@ -298,7 +298,7 @@ def passbook_update_record(record_id):
         record = Passbook.query.get_or_404(record_id)
         record.name = form.name.data
         record.host = form.host.data
-        record.keyword = form.keyword.data
+        record.keyword = form.keyword.data.upper()
         record.username = form.username.data
         record.password = form.password.data
         record.comments = form.comments.data
