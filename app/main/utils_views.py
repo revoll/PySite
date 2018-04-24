@@ -259,6 +259,11 @@ def passbook():
     :return:
     """
     records = Passbook.query.order_by(Passbook.keyword.asc()).all()
+    for r in records:
+        r.comments_html = u''
+        lines = r.comments.splitlines()
+        for l in lines:
+            r.comments_html += u'<p>' + l + u'</p>'
     return render_template(u'utils/passbook.html', records=records, form=PassbookRecordForm())
 
 
@@ -347,7 +352,7 @@ def cashbook():
     +----------+------+---------+--------+--------+-----------+
     :return:
     """
-    records = Cashbook.query.order_by(Cashbook.date.desc(), Cashbook.timestamp.desc()).all()
+    records = Cashbook.query.order_by(Cashbook.date.desc(), Cashbook.timestamp.asc()).all()
     return render_template(u'utils/cashbook.html', records=records, form=FlaskForm())
 
 

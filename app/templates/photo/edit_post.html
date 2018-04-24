@@ -9,7 +9,7 @@
     <a href="{{ url_for('.get_post', post_id=post_id) }}" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-off text-muted"></span></a>
     {% endif %}
 
-    <h1 class="docs-page-title docs-text-photo">{% if post_id %}{{ form.title.data }}{% else %}添加新的图册{% endif %}</h1>
+    <h1 class="docs-page-title docs-text-photo">{% if post_id %}编辑《{{ form.title.data }}》{% else %}添加新的图册{% endif %}</h1>
 
     <div class="panel panel-warning">
         <div class="panel-heading">

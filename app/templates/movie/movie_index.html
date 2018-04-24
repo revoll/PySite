@@ -9,9 +9,9 @@
 
     {{ macros.widget_navigation_tabs(categories, c_sel) }}
 
-    {% if current_user.can(Permission.CURD_MOVIE) %}
-    <a href="{{ url_for('.add_post') }}" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-plus text-muted"></span></a>
-    {% endif %}
+    {% if current_user.can(Permission.CURD_MOVIE) %}<div>
+        <a href="{{ url_for('.add_post') }}" class="docs-page-tool pull-right"><span class="glyphicon glyphicon-plus text-muted"></span></a>
+    </div>{% endif %}
 
     <div class="clearfix"></div>
 
@@ -21,8 +21,8 @@
             <img class="movie-item-poster" src="{{ url_for('.serve_image', post_id=post.id, filename='archive.jpg') }}"/>
             <div class="movie-item-main">
                 <h2 class="movie-item-title">
-                    <a href="{{ url_for('.get_post', post_id=post.id) }}" class="docs-text-movie">{{ post.name }}</a>
-                    <small><span>{{ post.o_name }}</span>{% if post.private %}<span class="glyphicon glyphicon-eye-close"></span>{% endif %}</small>
+                    <a href="{{ url_for('.get_post', post_id=post.id) }}" class="docs-text-movie" target="_blank">{{ post.name }}</a>
+                    <small><span>{{ post.o_name }}</span></small>
                 </h2>
                 <p><b>导演：</b>{{ post.director }}</p>
                 <p><b>编剧：</b>{{ post.screenwriter }}</p>
@@ -34,9 +34,10 @@
             </div>
             <div class="clearfix"></div>
             <div class="docs-post-metas">
-                <span><i class="glyphicon glyphicon-film"></i><a href="{{ post.reference }}" target="_blank">豆瓣详情</a></span>
                 <span><i class="glyphicon glyphicon-calendar"></i>{{ moment(post.timestamp).format('YYYY-MM-DD HH:mm:ss') }}</span>
                 <span><i class="glyphicon glyphicon-bookmark"></i><a href="{{ url_for('.index', c_id=post.category_id) }}">{{ post.category.name }}</a></span>
+                <span><i class="glyphicon glyphicon-eye-{% if post.private or post.category.private %}close{% else %}open{% endif %}"></i>{{ post.view_count }}</span>
+                <span><i class="glyphicon glyphicon-film"></i><a href="{{ post.reference }}" target="_blank">豆瓣详情</a></span>
                 {% for tag in post.tags %}
                 <span><i class="glyphicon glyphicon-tag"></i>{{ tag.name }}</span>
                 {% endfor %}

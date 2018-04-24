@@ -22,6 +22,7 @@
             </p>
             <div class="docs-post-metas">
                 <span><i class="glyphicon glyphicon-calendar"></i>{{ moment(post.timestamp).format('YYYY-MM-DD HH:mm:ss') }}</span>
+                <span><i class="glyphicon glyphicon-eye-{% if post.private or post.category.private %}close{% else %}open{% endif %}"></i>{{ post.view_count }}</span>
                 <span><i class="glyphicon glyphicon-bookmark"></i><a href="{{ url_for('.index', c_id=post.category_id) }}">{{ post.category.name }}</a></span>
                 {% for tag in post.tags %}
                 <span><i class="glyphicon glyphicon-tag"></i>{{ tag.name }}</span>

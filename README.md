@@ -21,27 +21,28 @@
 ```
     # cp ./PySite /var/www/pysite
     # cd /var/www/PySite
-    # cp ./.pysite_env.example ./.pysite_env
+    # cp .pysite_env.example .pysite_env
     # virtualenv venv
-    # source ./venv/bin/activate
-    # pip install -r ./requirements/pysite.txt
-    # python ./manage.py deploy
-    # deactivate
+    # source venv/bin/activate
+    (venv) # pip install -r requirements/pysite.txt
+    (venv) # python manage.py db init  # init migration
+    (venv) # python manage.py deploy
+    (venv) # deactivate
     # chown -R www-data:www-data ./
-    # chmod 600 ./data/*.sqlite
+    # chmod 600 data/*.sqlite
 ```
 
 ### 4. 配置Nginx
 ```
     # rm /etc/nginx/conf.d/*
-    # cp ./PySite/tools/pysite_nginx.conf /etc/nginx/conf.d/
+    # cp /var/www/PySite/tools/pysite_nginx.conf /etc/nginx/conf.d/
     # vim /etc/rc.local
         + nginx
 ```
 
 ### 5. 配置uWSGI
 ```
-    # cp ./PySite/tools/pysite_uwsgi.ini /etc/uwsgi/vassals/
+    # cp /var/www/PySite/tools/pysite_uwsgi.ini /etc/uwsgi/vassals/
     # vim /etc/rc.local
         + uwsgi --ini /etc/uwsgi/vassals/pysite_uwsgi.ini
 ```

@@ -14,53 +14,37 @@
             word-break: break-all;
         }
         .record-name {
-            width: 22%;
-            text-align: left;
+            width: 36%;
         }
-        .record-host {
+        .record-user {
             width: 20%;
-            text-align: left;
         }
-        .record-username {
-            width: 12%;
-            text-align: center;
+        .record-user > span:first-child {
             font-weight: bold;
         }
-        .record-password {
-            width: 12%;
-            text-align: center;
+        .record-user > span:last-child {
+            color: red;
         }
         .record-comments {
-            width: 26%;
-            text-align: left;
+            width: 36%;
         }
         .widget-box {
             width: 8%;
-            text-align: center;
         }
         .widget-box > .glyphicon {
             margin: 1px 4px;
+        }
+        .text-center {
+            text-align: center !important;
+        }
+        .clickable {
             cursor: pointer;
         }
-
-        .pointer {
-            cursor: pointer;
+        .table p {
+            margin-bottom: 5px;
         }
-        .password-mask {
-            position: relative;
-        }
-        .password-mask:before {
-            position: absolute;
-            left: 0;
-            top: 8px;
-            z-index: 1;
-            width: 100%;
-            height: 23px;
-            font: italic bold 8px/24px arial,sans-serif;
-            text-align: center;
-            color: #666;
-            background-color: #aaa;
-            content: ' ';
+        .table p:last-child {
+            margin-bottom: 0;
         }
     </style>
 {% endblock %}
@@ -78,23 +62,19 @@
             <thead>
                 <tr>
                     <th class="record-name">记录名称（关键字）</th>
-                    <th class="record-host">域名</th>
-                    <th class="record-username">用户名</th>
-                    <th class="record-password">密码</th>
-                    <th class="record-comments">其它信息</th>
-                    <th class="widget-box">操作</th>
+                    <th class="record-user text-center">用户名 / 密码</th>
+                    <th class="record-comments text-center">其它信息</th>
+                    <th class="widget-box text-center">操作</th>
                 </tr>
             </thead>
             <tbody>{% for record in records %}
-                <tr id="record-{{ record.id }}" data-id="{{ record.id }}" data-name="{{ record.name }}" data-keyword="{{ record.keyword }}">
-                    <th class="record-name docs-text-common pointer" onclick="display_record({{ record.id }})">{{ record.name }}{% if record.keyword %}({{ record.keyword }}){% endif %}</th>
-                    <td class="record-host">{{ record.host }}</td>
-                    <td class="record-username">{{ record.username }}</td>
-                    <td class="record-password pointer password-mask" onclick="$(this).toggleClass('password-mask');">{{ record.password }}</td>
-                    <td class="record-comments">{{ record.comments }}</td>
-                    <td class="widget-box">
-                        <span class="glyphicon glyphicon-edit docs-text-common" onclick="edit_record({{ record.id }})"></span>
-                        <span class="glyphicon glyphicon-remove docs-text-common" onclick="delete_record({{ record.id }})"></span>
+                <tr id="record-{{ record.id }}" data-name="{{ record.name }}" data-keyword="{{ record.keyword }}" data-host="{{ record.host }}" data-username="{{ record.username }}" data-password="{{ record.password }}" data-comments="{{ record.comments }}">
+                    <th class="record-name clickable docs-text-common" onclick="display_record({{ record.id }})">{{ record.name }}{% if record.keyword %}({{ record.keyword }}){% endif %}</th>
+                    <td class="record-user clickable text-center" onclick="switch_password(this)"><span>{{ record.username }}</span><span class="hidden">{{ record.password }}</span></td>
+                    <td class="record-comments">{{ record.comments_html | safe }}</td>
+                    <td class="widget-box text-center">
+                        <span class="glyphicon glyphicon-edit docs-text-common clickable" onclick="edit_record({{ record.id }})"></span>
+                        <span class="glyphicon glyphicon-remove docs-text-common clickable" onclick="delete_record({{ record.id }})"></span>
                     </td>
                 </tr>{% endfor %}
             </tbody>
@@ -105,8 +85,9 @@
 
 {% block scripts %}
     {{ super() }}
-    <!-- <script type="text/javascript" src="{{ url_for('static', filename='js/clipboard.min.js') }}"></script> -->
+    <script type="text/javascript" src="{{ url_for('static', filename='js/clipboard.min.js') }}"></script>
     <script type="text/javascript">
+        var clipboard = new ClipboardJS('.btn-clipboard');
         var form_html = '<form id="record-form" class="form-horizontal" method="POST" action="">\
     {{ form.hidden_tag() }}\
     <input type="text" class="hidden" id="record-id" name="id" value="">\
@@ -125,12 +106,12 @@
     <div class="form-group">\
         <label for="record-host" class="col-sm-3 control-label">主机地址</label>\
         <div class="col-sm-6">\
-            <input type="text" class="form-control" id="record-host" name="host" value="http://">\
+            <input type="text" class="form-control" id="record-host" name="host" placeholder="http://">\
         </div>\
     </div>\
     <div class="form-group">\
         <label for="record-username" class="col-sm-3 control-label">用户名</label>\
-        <div class="col-sm-4">\
+        <div class="col-sm-5">\
             <input type="text" class="form-control" id="record-username" name="username" placeholder="用户名">\
         </div>\
     </div>\
@@ -160,15 +141,13 @@
             notification_init('修改记录', form_html, '');
             $('#record-form').attr('action', '{{ url_for(".passbook_update_record", record_id=0) }}'.replace(/0/, id));
             var id_str = '#record-' + id;
-            $('#record-id').val($(id_str).attr('data-id'));
-            $('#record-keyword').val($(id_str).attr('data-keyword'));
+            $('#record-id').val(id);
             $('#record-name').val($(id_str).attr('data-name'));
-            var children = $(id_str + ' td');
-            $('#record-host').val(children.eq(0).text());
-            $('#record-username').val(children.eq(1).text());
-            $('#record-password').val(children.eq(2).text());
-            $('#record-comments').val(children.eq(3).text());
-            $('#record-btn-delete').toggleClass('hidden');
+            $('#record-keyword').val($(id_str).attr('data-keyword'));
+            $('#record-host').val($(id_str).attr('data-host'));
+            $('#record-username').val($(id_str).attr('data-username'));
+            $('#record-password').val($(id_str).attr('data-password'));
+            $('#record-comments').val($(id_str).attr('data-comments'));
             notification_show();
         }
         function delete_record(id) {
@@ -178,35 +157,49 @@
         }
         function display_record(id) {
             var id_str = '#record-' + id;
-            var children = $(id_str + ' td');
             var header_html = $(id_str).attr('data-name') + ($(id_str).attr('data-keyword') == '' ? '' : ('（' + $(id_str).attr('data-keyword') + '）'));
             var body_html = '<div class="form-horizontal">\
     <div class="form-group">\
         <label class="col-sm-2 control-label">域名</label>\
-        <div class="col-sm-8">\
-            <input type="text" class="form-control" value="' + children.eq(0).text() + '" readonly></input>\
+        <div class="col-sm-9">\
+            <div class="input-group">\
+                <input id="disp-host" type="text" class="form-control" value="' + $(id_str).attr('data-host') + '" readonly></input>\
+                <span class="input-group-addon btn btn-primary btn-clipboard" data-clipboard-target="#disp-host"><i class="glyphicon glyphicon-copy"></i></span>\
+            </div>\
         </div>\
     </div>\
     <div class="form-group">\
         <label class="col-sm-2 control-label">用户名</label>\
-        <div class="col-sm-6">\
-            <input type="text" class="form-control" value="' + children.eq(1).text() + '" readonly></input>\
+        <div class="col-sm-9">\
+            <div class="input-group">\
+                <input id="disp-username" type="text" class="form-control" value="' + $(id_str).attr('data-username') + '" readonly></input>\
+                <span class="input-group-addon btn btn-primary btn-clipboard" data-clipboard-target="#disp-username"><i class="glyphicon glyphicon-copy"></i></span>\
+            </div>\
         </div>\
     </div>\
     <div class="form-group">\
         <label class="col-sm-2 control-label">密码</label>\
-        <div class="col-sm-6">\
-            <input type="text" class="form-control" value="' + children.eq(2).text() + '" readonly></input>\
+        <div class="col-sm-9">\
+            <div class="input-group">\
+                <input id="disp-password" type="text" class="form-control" value="' + $(id_str).attr('data-password') + '" readonly></input>\
+                <span class="input-group-addon btn btn-primary btn-clipboard" data-clipboard-target="#disp-password"><i class="glyphicon glyphicon-copy"></i></span>\
+            </div>\
         </div>\
     </div>\
     <div class="form-group">\
         <label class="col-sm-2 control-label">备注信息</label>\
         <div class="col-sm-9">\
-            <textarea class="form-control" rows="8" readonly>' + children.eq(3).text() + '</textarea>\
+            <textarea class="form-control" rows="8" readonly>' + $(id_str).attr('data-comments') + '</textarea>\
         </div>\
     </div></div>';
             notification_init(header_html, body_html, null);
+            clipboard.destroy();
+            clipboard = new ClipboardJS('.btn-clipboard');
             notification_show();
+        }
+        function switch_password(e) {
+            $(e).children().eq(0).toggleClass("hidden");
+            $(e).children().eq(1).toggleClass("hidden");
         }
     </script>
 {% endblock %}
