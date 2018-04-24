@@ -164,7 +164,7 @@
         <div class="col-sm-9">\
             <div class="input-group">\
                 <input id="disp-host" type="text" class="form-control" value="' + $(id_str).attr('data-host') + '" readonly></input>\
-                <span class="input-group-addon btn btn-primary btn-clipboard" data-clipboard-target="#disp-host"><i class="glyphicon glyphicon-copy"></i></span>\
+                <span class="input-group-addon btn btn-primary btn-clipboard" data-clipboard-target="#disp-host" data-placement="bottom"><i class="glyphicon glyphicon-copy"></i></span>\
             </div>\
         </div>\
     </div>\
@@ -173,7 +173,7 @@
         <div class="col-sm-9">\
             <div class="input-group">\
                 <input id="disp-username" type="text" class="form-control" value="' + $(id_str).attr('data-username') + '" readonly></input>\
-                <span class="input-group-addon btn btn-primary btn-clipboard" data-clipboard-target="#disp-username"><i class="glyphicon glyphicon-copy"></i></span>\
+                <span class="input-group-addon btn btn-primary btn-clipboard" data-clipboard-target="#disp-username" data-placement="bottom"><i class="glyphicon glyphicon-copy"></i></span>\
             </div>\
         </div>\
     </div>\
@@ -182,7 +182,7 @@
         <div class="col-sm-9">\
             <div class="input-group">\
                 <input id="disp-password" type="text" class="form-control" value="' + $(id_str).attr('data-password') + '" readonly></input>\
-                <span class="input-group-addon btn btn-primary btn-clipboard" data-clipboard-target="#disp-password"><i class="glyphicon glyphicon-copy"></i></span>\
+                <span class="input-group-addon btn btn-primary btn-clipboard" data-clipboard-target="#disp-password" data-placement="bottom"><i class="glyphicon glyphicon-copy"></i></span>\
             </div>\
         </div>\
     </div>\
@@ -195,6 +195,9 @@
             notification_init(header_html, body_html, null);
             clipboard.destroy();
             clipboard = new ClipboardJS('.btn-clipboard');
+            clipboard.on('success', function(e) {
+                $(e).tooltip();
+            });
             notification_show();
         }
         function switch_password(e) {
